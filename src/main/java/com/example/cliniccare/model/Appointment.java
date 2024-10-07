@@ -15,6 +15,12 @@ public class Appointment {
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID appointmentId;
 
+    @Column(name = "patient_name")
+    private String patientName;
+
+    @Column(name = "patient_phone")
+    private String patientPhone;
+
     @OneToOne
     @JoinColumn(name = "schedule_id", referencedColumnName = "schedule_id")
     private Schedule schedule;
