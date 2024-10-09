@@ -1,5 +1,6 @@
 package com.example.cliniccare.model;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import lombok.Data;
 
@@ -41,6 +42,7 @@ public class Service {
     private List<MedicalRecord> medicalRecordList;
 
     @ManyToOne
+    @JsonBackReference
     @JoinColumn(name = "promotion_id", referencedColumnName = "promotion_id")
     private Promotion promotion;
 }

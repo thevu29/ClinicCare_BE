@@ -1,6 +1,8 @@
 package com.example.cliniccare.model;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
 
 import java.util.Date;
@@ -16,8 +18,10 @@ public class Promotion {
     @Column(name = "promotion_id")
     private UUID promotionId;
 
+    @NotBlank(message = "Description is required")
     private String description;
 
+    @NotBlank(message = "Discount is required")
     private int discount;
 
     @Column(name = "create_at")
@@ -26,6 +30,7 @@ public class Promotion {
     @Column(name = "delete_at")
     private String deleteAt;
 
+    @JsonBackReference
     @OneToMany(mappedBy = "promotion")
     private List<Service> serviceList;
 }
