@@ -1,6 +1,7 @@
 package com.example.cliniccare.model;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
 
 import java.util.Date;
@@ -19,11 +20,11 @@ public class User {
     @ManyToOne
     @JoinColumn(name = "role_id", referencedColumnName = "role_id")
     private Role role;
-    
+
     private String name;
-    
+
     private String email;
-    
+
     private String password;
     
     private String phone;
@@ -51,4 +52,9 @@ public class User {
 
     @OneToMany(mappedBy = "patient")
     private List<Payment> paymentList;
+
+    @PrePersist
+    protected void onCreate() {
+        createAt = new Date();
+    }
 }
