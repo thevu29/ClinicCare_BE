@@ -1,56 +1,100 @@
 package com.example.cliniccare.controller;
 
+import com.example.cliniccare.dto.UserDTO;
+import com.example.cliniccare.dto.UserFormDTO;
 import com.example.cliniccare.exception.ResourceNotFoundException;
-import com.example.cliniccare.model.User;
-import com.example.cliniccare.repository.UserRepository;
+import com.example.cliniccare.response.ApiResponse;
+import com.example.cliniccare.service.UserService;
 import com.example.cliniccare.utils.Validation;
+import jakarta.validation.Valid;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.support.DefaultMessageSourceResolvable;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @CrossOrigin("*")
 @RestController
 @RequestMapping("api/user")
 public class UserController {
+    private static final Logger logger = LoggerFactory.getLogger(UserController.class);
+    private final UserService userService;
+
     @Autowired
-    private UserRepository userRepository;
+    public UserController(UserService userService) {
+        this.userService = userService;
+    }
 
     @GetMapping("/all")
-    public List<User> getUsers() {
-        return userRepository.findAll();
+    public ResponseEntity<?> getUsers() {
+        try {
+            List<UserDTO> users = userService.getUsers();
+            return ResponseEntity.ok(new ApiResponse<>(
+                    true, "Get users successfully", users
+            ));
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().body(new ApiResponse<>(
+                    false, e.getMessage(), null
+            ));
+        }
     }
 
     @GetMapping("/{id}")
-    public User getUserById(@PathVariable UUID id) {
-        return userRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + id));
+    public ResponseEntity<?> getUserById(@PathVariable UUID id) {
+        try {
+            UserDTO user = userService.getUserById(id);
+            return ResponseEntity.ok(new ApiResponse<>(
+                    true, "Get user successfully", user
+            ));
+        } catch (ResourceNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ApiResponse<>(
+                    false, e.getMessage(), null
+            ));
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().body(new ApiResponse<>(
+                    false, e.getMessage(), null
+            ));
+        }
     }
 
     @PostMapping
-    public User createUser(@RequestBody User user) {
-        List<Object> requiredFields = Arrays.asList(user.getEmail(), user.getPassword(), user.getPhone(),
-                user.getName(), user.getRole());
+    public ResponseEntity<?> createUser(
+            @Valid @RequestBody UserFormDTO userDTO,
+            BindingResult bindingResult
+    ) {
+        try {
+            if (bindingResult.hasErrors()) {
+                String errors = bindingResult.getAllErrors().stream()
+                        .map(DefaultMessageSourceResolvable::getDefaultMessage)
+                        .collect(Collectors.joining(", "));
 
-        if (requiredFields.contains(null)) {
-            throw new ResourceNotFoundException("Required fields are missing");
-        }
-        if (!Validation.isEmailValid(user.getEmail())) {
-            throw new ResourceNotFoundException("Invalid email format");
-        }
-        if (!Validation.isPhoneValid(user.getPhone())) {
-            throw new ResourceNotFoundException("Invalid phone number format");
-        }
+                return ResponseEntity.badRequest().body(new ApiResponse<>(
+                        false, errors, null
+                ));
+            }
 
-        userRepository.findByEmail(user.getEmail()).ifPresent(existingUser -> {
-            throw new ResourceNotFoundException("Email: " + user.getEmail() + " already used");
-        });
-        userRepository.findByPhone(user.getPhone()).ifPresent(existingUser -> {
-            throw new ResourceNotFoundException("Phone number: " + user.getPhone() + " already used");
-        });
+            if (!userDTO.getPhone().isEmpty() && !Validation.isPhoneValid(userDTO.getPhone())) {
+                return ResponseEntity.badRequest().body(new ApiResponse<>(
+                        false, "Invalid phone number format", null
+                ));
+            }
 
-        return userRepository.save(user);
+            UserDTO user = userService.createUser(userDTO);
+            return ResponseEntity.status(HttpStatus.CREATED).body(new ApiResponse<>(
+                    true, "Create user successfully", user
+            ));
+        } catch (Exception e) {
+            logger.error("Failed to create user: {}", e.getMessage(), e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new ApiResponse<>(
+                    false, "Failed to create user", null
+            ));
+        }
     }
 }
