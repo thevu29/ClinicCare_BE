@@ -10,5 +10,5 @@ public interface PromotionService {
     List<Promotion> getAllPromotions();
     Promotion readPromotionById(UUID id) throws Exception;
     Promotion updatePromotion(Promotion promotion) throws Exception;
-    void deletePromotion(String id) throws Exception;
+    void deletePromotion(UUID id) throws Exception;
 }

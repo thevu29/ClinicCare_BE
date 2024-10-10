@@ -30,7 +30,7 @@ public class PromotionServiceImpl implements PromotionService {
     }
 
     @Override
-    public void deletePromotion(String id) throws Exception {
-        promotionRepository.deleteById(UUID.fromString(id));
+    public void deletePromotion(UUID id) throws Exception {
+        promotionRepository.deleteById(id);
     }
 }

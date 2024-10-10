@@ -6,7 +6,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 
 @CrossOrigin("*")
@@ -19,15 +18,18 @@ public class PromotionController {
 
     @GetMapping("")
     public List<Promotion> getUsers() {
+
         return promotionServiceImpl.getAllPromotions();
     }
 
     @PostMapping("")
+    @ExceptionHandler
     public Promotion createPromotion(@RequestBody Promotion promotion) throws Exception {
         return promotionServiceImpl.updatePromotion(promotion);
     }
 
     @PutMapping("/{id}")
+    @ExceptionHandler
     public Promotion updatePromotion(@RequestBody Promotion promotion) throws Exception {
         if(promotionServiceImpl.readPromotionById(promotion.getPromotionId()) == null) {
             throw new Exception("Promotion not found");
@@ -42,6 +44,6 @@ public class PromotionController {
 
     @DeleteMapping("/{id}")
     public void deletePromotion(@PathVariable UUID id) throws Exception {
-        promotionServiceImpl.deletePromotion(id.toString());
+        promotionServiceImpl.deletePromotion(id);
     }
 }
