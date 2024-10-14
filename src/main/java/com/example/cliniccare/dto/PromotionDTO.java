@@ -1,29 +1,29 @@
 package com.example.cliniccare.dto;
 
+import com.example.cliniccare.model.Promotion;
 import jakarta.validation.constraints.NotBlank;
-import lombok.AllArgsConstructor;
 import lombok.Data;
-import lombok.NoArgsConstructor;
 
 import java.util.Date;
 import java.util.UUID;
 
 
 @Data
-@NoArgsConstructor
-@AllArgsConstructor
 public class PromotionDTO {
 
     private UUID promotionId;
 
-
+    @NotBlank(message = "Description is required")
     private String description;
 
-    @NotBlank(message = "Discount is required")
     private int discount;
 
-    private Date createAt;
 
-    private String deleteAt;
+    public PromotionDTO() {}
 
+    public PromotionDTO(Promotion promotion) {
+        this.promotionId = promotion.getPromotionId();
+        this.description = promotion.getDescription();
+        this.discount = promotion.getDiscount();
+    }
 }
