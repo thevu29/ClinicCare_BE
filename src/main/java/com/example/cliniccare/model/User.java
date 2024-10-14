@@ -1,7 +1,6 @@
 package com.example.cliniccare.model;
 
 import jakarta.persistence.*;
-import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
 
 import java.util.Date;

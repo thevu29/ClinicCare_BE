@@ -26,7 +26,7 @@ public class Service {
     private Date createAt;
 
     @Column(name = "delete_at")
-    private String deleteAt;
+    private Date deleteAt;
 
     @OneToMany(mappedBy = "service")
     private List<Feedback> feedbackList;

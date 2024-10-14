@@ -24,7 +24,7 @@ public class Promotion {
     private Date createAt;
 
     @Column(name = "delete_at")
-    private String deleteAt;
+    private Date deleteAt;
 
     @OneToMany(mappedBy = "promotion")
     private List<Service> serviceList;

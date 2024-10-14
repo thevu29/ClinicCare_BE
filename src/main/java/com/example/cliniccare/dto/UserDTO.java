@@ -1,9 +1,6 @@
 package com.example.cliniccare.dto;
 
 import com.example.cliniccare.model.User;
-import jakarta.validation.constraints.Email;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Pattern;
 import lombok.Data;
 
 import java.util.Date;
