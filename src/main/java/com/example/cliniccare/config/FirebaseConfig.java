@@ -22,6 +22,7 @@ public class FirebaseConfig {
 
             FirebaseOptions options = FirebaseOptions.builder()
                     .setCredentials(GoogleCredentials.fromStream(serviceAccount))
+                    .setStorageBucket("cliniccare-26b53.appspot.com")
                     .build();
 
             return FirebaseApp.initializeApp(options);
