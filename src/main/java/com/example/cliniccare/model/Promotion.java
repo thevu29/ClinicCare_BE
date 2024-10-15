@@ -2,7 +2,6 @@ package com.example.cliniccare.model;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
-import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
 
 import java.util.Date;
@@ -13,6 +12,13 @@ import java.util.UUID;
 @Data
 @Table(name = "promotions")
 public class Promotion {
+    public enum PromotionStatus {
+        ACTIVE,
+        INACTIVE,
+        EXPIRED,
+        END
+    }
+
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     @Column(name = "promotion_id")
@@ -22,11 +28,13 @@ public class Promotion {
 
     private int discount;
 
+    private PromotionStatus status;
+
     @Column(name = "create_at")
     private Date createAt;
 
-    @Column(name = "delete_at")
-    private Date deleteAt;
+    @Column(name = "expired_at")
+    private Date expiredAt;
 
     @JsonBackReference
     @OneToMany(mappedBy = "promotion")
