@@ -33,7 +33,7 @@ public class Promotion {
     private Date createAt;
 
     @Column(name = "expired_at")
-    private Date expiredAt;
+    private Date expireAt;
 
     @OneToMany(mappedBy = "promotion")
     private List<Service> serviceList;

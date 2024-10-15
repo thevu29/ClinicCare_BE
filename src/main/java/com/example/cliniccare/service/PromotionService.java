@@ -1,23 +1,17 @@
 package com.example.cliniccare.service;
 
-import com.example.cliniccare.dto.AddPromotionDTO;
 import com.example.cliniccare.dto.PromotionDTO;
-import com.example.cliniccare.exception.ResourceNotFoundException;
+import com.example.cliniccare.exception.NotFoundException;
 import com.example.cliniccare.model.Promotion;
 import com.example.cliniccare.repository.PromotionRepository;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
 @Service
 public class PromotionService {
-    private static final Logger logger = LoggerFactory.getLogger(UserService.class);
-
     private final PromotionRepository promotionRepository;
 
     @Autowired
@@ -26,64 +20,43 @@ public class PromotionService {
     }
 
     public List<PromotionDTO> getAllPromotions() {
-        try{
-            List<Promotion> promotions = promotionRepository.findByDeleteAtIsNull();
-            return promotions.stream().map(PromotionDTO::new).toList();
-        }
-        catch (Exception e) {
-            logger.error("Failed to get promotions: {}", e.getMessage(), e);
-            throw new RuntimeException("Failed to get promotions", e);
-        }
+        List<Promotion> promotions = promotionRepository.findAll();
+        return promotions.stream().map(PromotionDTO::new).toList();
     }
 
-    public PromotionDTO getPromotionById(UUID id){
-        try{
-            Promotion promotion = promotionRepository.findByPromotionIdAndDeleteAtIsNull(id).orElseThrow(() -> new ResourceNotFoundException("Promotion not found"));
-            return new PromotionDTO(promotion);
-        }
-        catch (Exception e) {
-            logger.error("Failed to get promotion: {}", e.getMessage(), e);
-            throw new RuntimeException("Failed to get promotion", e);
-        }
+    public PromotionDTO getPromotionById(UUID id) {
+        Promotion promotion = promotionRepository.findByPromotionId(id)
+                .orElseThrow(() -> new NotFoundException("Promotion not found"));
+        return new PromotionDTO(promotion);
     }
 
-    public PromotionDTO createPromotion(AddPromotionDTO promotionDTO) throws Exception {
-        try{
-            Promotion promotion = new Promotion();
-            promotion.setDescription(promotionDTO.getDescription());
+    public PromotionDTO createPromotion(PromotionDTO promotionDTO) {
+        Promotion promotion = new Promotion();
+        promotion.setDiscount(promotionDTO.getDiscount());
+        promotion.setDescription(promotionDTO.getDescription());
+        promotion.setStatus(Promotion.PromotionStatus.valueOf(promotionDTO.getStatus().toUpperCase()));
+        promotion.setExpireAt(promotionDTO.getExpireAt());
 
-            Promotion savedPromotion = promotionRepository.save(promotion);
-            return new PromotionDTO(savedPromotion);
-        }
-        catch(Exception e){
-            logger.error("Failed to update promotion: {}", e.getMessage(), e);
-            throw new RuntimeException("Failed to update promotion", e);
-        }
+        Promotion savedPromotion = promotionRepository.save(promotion);
+        return new PromotionDTO(savedPromotion);
     }
 
     public PromotionDTO updatePromotion(PromotionDTO promotionDTO) {
-        try{
-            Promotion promotion = promotionRepository.findByPromotionIdAndDeleteAtIsNull(promotionDTO.getPromotionId()).orElseThrow(() -> new ResourceNotFoundException("Promotion not found"));
-            promotion.setDescription(promotionDTO.getDescription());
+        Promotion promotion = promotionRepository.findByPromotionId(promotionDTO.getPromotionId())
+                .orElseThrow(() -> new NotFoundException("Promotion not found"));
 
-            Promotion savedPromotion = promotionRepository.save(promotion);
-            return new PromotionDTO(savedPromotion);
+        if (promotionDTO.getDiscount() != null) {
+            promotion.setDiscount(promotionDTO.getDiscount());
         }
-        catch(Exception e){
-            logger.error("Failed to update promotion: {}", e.getMessage(), e);
-            throw new RuntimeException("Failed to update promotion", e);
+        if (promotionDTO.getExpireAt() != null && !promotionDTO.getExpireAt().toString().isEmpty()) {
+            promotion.setExpireAt(promotionDTO.getExpireAt());
         }
-    }
+        if (promotionDTO.getStatus() != null && !promotionDTO.getStatus().isEmpty()) {
+            promotion.setStatus(Promotion.PromotionStatus.valueOf(promotionDTO.getStatus().toUpperCase()));
+        }
+        promotion.setDescription(promotionDTO.getDescription());
 
-    public void deletePromotion(UUID id){
-        try{
-            Promotion promotion = promotionRepository.findByPromotionIdAndDeleteAtIsNull(id).orElseThrow(() -> new ResourceNotFoundException("Promotion not found"));
-            promotion.setDeleteAt(new Date());
-            promotionRepository.save(promotion);
-        }
-        catch(Exception e){
-            logger.error("Failed to delete promotion: {}", e.getMessage(), e);
-            throw new RuntimeException("Failed to delete promotion", e);
-        }
+        Promotion savedPromotion = promotionRepository.save(promotion);
+        return new PromotionDTO(savedPromotion);
     }
 }

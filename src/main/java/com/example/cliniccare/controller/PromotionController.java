@@ -1,16 +1,19 @@
 package com.example.cliniccare.controller;
 
-import com.example.cliniccare.dto.AddPromotionDTO;
 import com.example.cliniccare.dto.PromotionDTO;
+import com.example.cliniccare.exception.BadRequestException;
+import com.example.cliniccare.exception.NotFoundException;
+import com.example.cliniccare.interfaces.PromotionFormGroup;
 import com.example.cliniccare.response.ApiResponse;
 import com.example.cliniccare.service.PromotionService;
-import jakarta.validation.Valid;
+import com.fasterxml.jackson.databind.JsonMappingException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.support.DefaultMessageSourceResolvable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -28,15 +31,21 @@ public class PromotionController {
         this.promotionService = promotionService;
     }
 
-    @GetMapping("")
+    @ExceptionHandler(JsonMappingException.class)
+    public ResponseEntity<ApiResponse<String>> handleJsonMappingException(JsonMappingException ex) {
+        return ResponseEntity.badRequest().body(new ApiResponse<>(
+                false, "Invalid date format. Please use yyyy-MM-dd ", null)
+        );
+    }
+
+    @GetMapping("/all")
     public ResponseEntity<?> getPromotions() {
         try{
             List<PromotionDTO> promotions = promotionService.getAllPromotions();
             return ResponseEntity.ok(new ApiResponse<>(
                     true, "Get promotions successfully", promotions
             ));
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             logger.error("Failed to get promotions: {}", e.getMessage(), e);
             return ResponseEntity.internalServerError().body(new ApiResponse<>(
                     false, "Failed to get promotions", null
@@ -44,21 +53,39 @@ public class PromotionController {
         }
     }
 
-    @PostMapping("")
-    public ResponseEntity<?> createPromotion(@Valid @RequestBody AddPromotionDTO promotionDTO, BindingResult bindingResult) {
-        try{
-            if(bindingResult.hasErrors()) {
+    @PostMapping("/create")
+    public ResponseEntity<?> createPromotion(
+            @Validated(PromotionFormGroup.Create.class) @RequestBody PromotionDTO promotionDTO,
+            BindingResult bindingResult
+    ) {
+        try {
+            if (bindingResult.hasErrors()) {
                 String errors = bindingResult.getAllErrors().stream()
                         .map(DefaultMessageSourceResolvable::getDefaultMessage)
                         .collect(Collectors.joining(", "));
-                return ResponseEntity.badRequest().body(new ApiResponse<>(false, errors, null));
+
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
+                        new ApiResponse<>(false, errors, null)
+                );
             }
+
             PromotionDTO promotion = promotionService.createPromotion(promotionDTO);
             return ResponseEntity.ok(new ApiResponse<>(
                     true, "Create promotion successfully", promotion
             ));
-        }
-        catch (Exception e) {
+        } catch (NotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ApiResponse<>(
+                    false, e.getMessage(), null
+            ));
+        } catch (BadRequestException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ApiResponse<>(
+                    false, e.getMessage(), null
+            ));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ApiResponse<>(
+                    false, "Status must be one of the following: Active, Inactive, Expired, or End", null
+            ));
+        } catch (Exception e) {
             logger.error("Failed to create promotion: {}", e.getMessage(), e);
             return ResponseEntity.internalServerError().body(new ApiResponse<>(
                     false, "Failed to create promotion", null
@@ -66,20 +93,30 @@ public class PromotionController {
         }
     }
 
-    @PutMapping("/{id}")
-    public ResponseEntity<?> updatePromotion(@PathVariable UUID id, @RequestBody PromotionDTO promotionDTO) {
-        try{
-            if(promotionService.getPromotionById(id) == null) {
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ApiResponse<>(
-                        false, "Promotion not found", null
-                ));
-            }
+    @PutMapping("/update/{id}")
+    public ResponseEntity<?> updatePromotion(
+            @PathVariable UUID id,
+            @Validated(PromotionFormGroup.Update.class) @RequestBody PromotionDTO promotionDTO
+    ) {
+        try {
+            promotionDTO.setPromotionId(id);
             PromotionDTO promotion = promotionService.updatePromotion(promotionDTO);
             return ResponseEntity.ok(new ApiResponse<>(
                     true, "Update promotion successfully", promotion
             ));
-        }
-        catch (Exception e) {
+        } catch (NotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ApiResponse<>(
+                    false, e.getMessage(), null
+            ));
+        } catch (BadRequestException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ApiResponse<>(
+                    false, e.getMessage(), null
+            ));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ApiResponse<>(
+                    false, "Status must be one of the following: Active, Inactive, Expired, or End.", null
+            ));
+        } catch (Exception e) {
             logger.error("Failed to update promotion: {}", e.getMessage(), e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new ApiResponse<>(
                     false, "Failed to update promotion", null
@@ -89,36 +126,18 @@ public class PromotionController {
 
     @GetMapping("/{id}")
     public ResponseEntity<?> getPromotionById(@PathVariable UUID id) {
-        try{
+        try {
             PromotionDTO promotion = promotionService.getPromotionById(id);
             return ResponseEntity.ok(new ApiResponse<>(
                     true, "Get promotion successfully", promotion
             ));
-        }
-        catch (Exception e) {
-            return ResponseEntity.internalServerError().body(new ApiResponse<>(
+        } catch (NotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ApiResponse<>(
                     false, e.getMessage(), null
             ));
-        }
-    }
-
-    @DeleteMapping("/{id}")
-    public ResponseEntity<?> deletePromotion(@PathVariable UUID id) {
-        try{
-            if(promotionService.getPromotionById(id) == null) {
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ApiResponse<>(
-                        false, "Promotion not found", null
-                ));
-            }
-            promotionService.deletePromotion(id);
-            return ResponseEntity.ok(new ApiResponse<>(
-                    true, "Delete promotion successfully", null
-            ));
-        }
-        catch(Exception e){
-            logger.error("Failed to delete promotion: {}", e.getMessage(), e);
+        } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new ApiResponse<>(
-                    false, "Failed to delete promotion", null
+                    false, e.getMessage(), null
             ));
         }
     }
