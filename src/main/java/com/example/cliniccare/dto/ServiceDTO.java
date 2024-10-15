@@ -26,11 +26,8 @@ public class ServiceDTO {
 
     private Date createAt;
 
-    @NotNull(message = "Expire date is required")
-    private Date expireAt;
-
-    @NotNull(message = "Status is required")
-    private Service.ServiceStatus status;
+    @NotBlank(message = "Status is required")
+    private String status;
 
     @NotNull(message = "Promotion is required")
     private UUID promotionId;
@@ -42,6 +39,7 @@ public class ServiceDTO {
         this.name = service.getName();
         this.description = service.getDescription();
         this.price = service.getPrice();
+        this.status = service.getStatus().name();
         this.createAt = service.getCreateAt();
         this.promotionId = service.getPromotion().getPromotionId();
     }

@@ -4,11 +4,9 @@ import com.example.cliniccare.dto.UserDTO;
 import com.example.cliniccare.dto.UserFormDTO;
 import com.example.cliniccare.exception.BadRequestException;
 import com.example.cliniccare.exception.NotFoundException;
-import com.example.cliniccare.interfaces.CreateUserFormGroup;
-import com.example.cliniccare.interfaces.UpdateUserForm;
+import com.example.cliniccare.interfaces.UserFormGroup;
 import com.example.cliniccare.response.ApiResponse;
 import com.example.cliniccare.service.UserService;
-import jakarta.validation.groups.Default;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -85,7 +83,7 @@ public class UserController {
 
     @PostMapping("/create")
     public ResponseEntity<?> createUser(
-            @Validated({Default.class, CreateUserFormGroup.class}) @ModelAttribute UserFormDTO userDTO,
+            @Validated(UserFormGroup.Create.class) @ModelAttribute UserFormDTO userDTO,
             BindingResult bindingResult
     ) {
         try {
@@ -98,7 +96,7 @@ public class UserController {
                     true, "Create user successfully", user
             ));
         } catch (NotFoundException e) {
-          return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ApiResponse<>(
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ApiResponse<>(
                     false, e.getMessage(), null
             ));
         } catch (BadRequestException e) {
@@ -121,7 +119,7 @@ public class UserController {
     @PutMapping("/update/{id}")
     public ResponseEntity<?> updateUser(
             @PathVariable UUID id,
-            @Validated({Default.class, UpdateUserForm.class}) @ModelAttribute UserFormDTO userDTO,
+            @Validated(UserFormGroup.Update.class) @ModelAttribute UserFormDTO userDTO,
             BindingResult bindingResult
     ) {
         try {

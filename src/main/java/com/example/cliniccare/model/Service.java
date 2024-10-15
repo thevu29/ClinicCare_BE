@@ -13,10 +13,8 @@ import java.util.UUID;
 @Table(name = "services")
 public class Service {
     public enum ServiceStatus {
-        ACTIVE,
-        INACTIVE,
-        EXPIRED,
-        END
+        AVAILABLE,
+        UNAVAILABLE
     }
 
     @Id
@@ -34,9 +32,6 @@ public class Service {
 
     @Column(name = "create_at")
     private Date createAt;
-
-    @Column(name = "expire_at")
-    private Date expireAt;
 
     @OneToMany(mappedBy = "service")
     private List<Feedback> feedbackList;
