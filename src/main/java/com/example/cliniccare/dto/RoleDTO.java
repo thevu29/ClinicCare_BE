@@ -10,12 +10,8 @@ import java.util.UUID;
 @Data
 public class RoleDTO {
     private UUID roleId;
-
-    @NotNull(message = "Name is required")
     private String name;
-
     private String description;
-
     private Date createAt;
 
     public RoleDTO() {}

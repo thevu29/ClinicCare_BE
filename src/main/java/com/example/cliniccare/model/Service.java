@@ -11,6 +11,13 @@ import java.util.UUID;
 @Data
 @Table(name = "services")
 public class Service {
+    public enum ServiceStatus {
+        ACTIVE,
+        INACTIVE,
+        EXPIRED,
+        END
+    }
+
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     @Column(name = "service_id")
@@ -22,11 +29,13 @@ public class Service {
 
     private double price;
 
+    private ServiceStatus status;
+
     @Column(name = "create_at")
     private Date createAt;
 
-    @Column(name = "delete_at")
-    private Date deleteAt;
+    @Column(name = "expire_at")
+    private Date expireAt;
 
     @OneToMany(mappedBy = "service")
     private List<Feedback> feedbackList;
@@ -43,4 +52,9 @@ public class Service {
     @ManyToOne
     @JoinColumn(name = "promotion_id", referencedColumnName = "promotion_id")
     private Promotion promotion;
+
+    @PrePersist
+    public void prePersist() {
+        this.createAt = new Date();
+    }
 }

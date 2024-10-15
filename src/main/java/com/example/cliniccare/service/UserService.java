@@ -54,8 +54,8 @@ public class UserService {
             throw new BadRequestException("Email already exists");
         }
         if (userDTO.getPhone() != null &&
-                !userDTO.getPhone().isEmpty()
-                && userRepository.existsByPhoneAndDeleteAtIsNull(userDTO.getPhone())
+                !userDTO.getPhone().isEmpty() &&
+                userRepository.existsByPhoneAndDeleteAtIsNull(userDTO.getPhone())
         ) {
             throw new BadRequestException("Phone already exists");
         }
