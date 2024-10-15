@@ -8,7 +8,6 @@ import com.example.cliniccare.interfaces.CreateUserFormGroup;
 import com.example.cliniccare.interfaces.UpdateUserForm;
 import com.example.cliniccare.response.ApiResponse;
 import com.example.cliniccare.service.UserService;
-import com.example.cliniccare.validation.ValidValidation;
 import jakarta.validation.groups.Default;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -94,12 +93,6 @@ public class UserController {
                 return handleValidate(bindingResult);
             }
 
-            if (!userDTO.getPhone().isEmpty() && ValidValidation.isInvalidPhone(userDTO.getPhone())) {
-                return ResponseEntity.badRequest().body(new ApiResponse<>(
-                        false, "Invalid phone number format", null
-                ));
-            }
-
             UserDTO user = userService.createUser(userDTO);
             return ResponseEntity.status(HttpStatus.CREATED).body(new ApiResponse<>(
                     true, "Create user successfully", user
@@ -134,15 +127,6 @@ public class UserController {
         try {
             if (handleValidate(bindingResult) != null) {
                 return handleValidate(bindingResult);
-            }
-
-            if (userDTO.getPhone() != null &&
-                    !userDTO.getPhone().isEmpty() &&
-                    ValidValidation.isInvalidPhone(userDTO.getPhone())
-            ) {
-                return ResponseEntity.badRequest().body(new ApiResponse<>(
-                        false, "Invalid phone number format", null
-                ));
             }
 
             UserDTO user = userService.updateUser(id, userDTO);
