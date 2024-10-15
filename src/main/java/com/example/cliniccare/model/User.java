@@ -28,6 +28,8 @@ public class User {
     
     private String phone;
 
+    private String image;
+
     @Column(name = "create_at")
     private Date createAt;
 

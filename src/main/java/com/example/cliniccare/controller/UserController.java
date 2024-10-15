@@ -20,6 +20,7 @@ import org.springframework.validation.BindingResult;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -85,7 +86,7 @@ public class UserController {
 
     @PostMapping("/create")
     public ResponseEntity<?> createUser(
-            @Validated({Default.class, CreateUserFormGroup.class}) @RequestBody UserFormDTO userDTO,
+            @Validated({Default.class, CreateUserFormGroup.class}) @ModelAttribute UserFormDTO userDTO,
             BindingResult bindingResult
     ) {
         try {
@@ -111,6 +112,11 @@ public class UserController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ApiResponse<>(
                     false, e.getMessage(), null
             ));
+        } catch (IOException e) {
+            logger.error("Failed to upload avatar: {}", e.getMessage(), e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new ApiResponse<>(
+                    false, "Failed to upload avatar", null
+            ));
         } catch (Exception e) {
             logger.error("Failed to create user: {}", e.getMessage(), e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new ApiResponse<>(
@@ -122,7 +128,7 @@ public class UserController {
     @PutMapping("/update/{id}")
     public ResponseEntity<?> updateUser(
             @PathVariable UUID id,
-            @Validated({Default.class, UpdateUserForm.class}) @RequestBody UserFormDTO userDTO,
+            @Validated({Default.class, UpdateUserForm.class}) @ModelAttribute UserFormDTO userDTO,
             BindingResult bindingResult
     ) {
         try {
@@ -150,6 +156,11 @@ public class UserController {
         } catch (BadRequestException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ApiResponse<>(
                     false, e.getMessage(), null
+            ));
+        } catch (IOException e) {
+            logger.error("Failed to upload avatar: {}", e.getMessage(), e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new ApiResponse<>(
+                    false, "Failed to upload avatar", null
             ));
         } catch (Exception e) {
             logger.error("Failed to update user: {}", e.getMessage(), e);

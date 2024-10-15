@@ -12,6 +12,7 @@ public class UserDTO {
     private String name;
     private String email;
     private String phone;
+    private String image;
     private String role;
     private Date createAt;
 
@@ -22,6 +23,7 @@ public class UserDTO {
         this.name = user.getName();
         this.email = user.getEmail();
         this.phone = user.getPhone();
+        this.image = user.getImage();
         this.role = user.getRole().getName();
         this.createAt = user.getCreateAt();
     }

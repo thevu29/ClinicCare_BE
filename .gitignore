@@ -15,6 +15,7 @@ target/
 
 ### environments ###
 application.properties
+/src/main/resources/serviceAccountKey.json
 
 ### IntelliJ IDEA ###
 .idea

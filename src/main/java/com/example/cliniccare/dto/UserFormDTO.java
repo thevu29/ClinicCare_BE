@@ -5,6 +5,7 @@ import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.Date;
 import java.util.UUID;
@@ -22,6 +23,8 @@ public class UserFormDTO {
 
     @NotBlank(message = "Password is required", groups = {CreateUserFormGroup.class})
     private String password;
+
+    private MultipartFile image;
 
     @NotNull(message = "Role is required", groups = {CreateUserFormGroup.class})
     private UUID roleId;

@@ -12,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.io.IOException;
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
@@ -21,16 +22,19 @@ public class UserService {
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
     private final PasswordEncoder passwordEncoder;
+    private final FirebaseStorageService firebaseStorageService;
 
     @Autowired
     public UserService(
             UserRepository userRepository,
             RoleRepository roleRepository,
-            PasswordEncoder passwordEncoder
+            PasswordEncoder passwordEncoder,
+            FirebaseStorageService firebaseStorageService
     ) {
         this.userRepository = userRepository;
         this.roleRepository = roleRepository;
         this.passwordEncoder = passwordEncoder;
+        this.firebaseStorageService = firebaseStorageService;
     }
 
     public List<UserDTO> getUsers() {
@@ -45,11 +49,14 @@ public class UserService {
         return new UserDTO(user);
     }
 
-    public UserDTO createUser(UserFormDTO userDTO) {
+    public UserDTO createUser(UserFormDTO userDTO) throws IOException {
         if (userRepository.existsByEmailAndDeleteAtIsNull(userDTO.getEmail())) {
             throw new BadRequestException("Email already exists");
         }
-        if (userRepository.existsByPhoneAndDeleteAtIsNull(userDTO.getPhone())) {
+        if (userDTO.getPhone() != null &&
+                !userDTO.getPhone().isEmpty()
+                && userRepository.existsByPhoneAndDeleteAtIsNull(userDTO.getPhone())
+        ) {
             throw new BadRequestException("Phone already exists");
         }
 
@@ -61,6 +68,11 @@ public class UserService {
         String encodedPassword = passwordEncoder.encode(userDTO.getPassword());
         user.setPassword(encodedPassword);
 
+        if (userDTO.getImage() != null && !userDTO.getImage().isEmpty()) {
+            String imageUrl = firebaseStorageService.uploadImage(userDTO.getImage());
+            user.setImage(imageUrl);
+        }
+
         Role role = roleRepository.findById(userDTO.getRoleId())
                 .orElseThrow(() -> new NotFoundException("Role not found"));
         user.setRole(role);
@@ -69,7 +81,7 @@ public class UserService {
         return new UserDTO(savedUser);
     }
 
-    public UserDTO updateUser(UUID id, UserFormDTO userDTO) {
+    public UserDTO updateUser(UUID id, UserFormDTO userDTO) throws IOException {
         User user = userRepository.findByUserIdAndDeleteAtIsNull(id)
                 .orElseThrow(() -> new NotFoundException("User not found"));
 
@@ -81,6 +93,11 @@ public class UserService {
             }
 
             user.setPhone(userDTO.getPhone());
+        }
+
+        if (userDTO.getImage() != null && !userDTO.getImage().isEmpty()) {
+            String imageUrl = firebaseStorageService.uploadImage(userDTO.getImage());
+            user.setImage(imageUrl);
         }
 
         User savedUser = userRepository.save(user);
