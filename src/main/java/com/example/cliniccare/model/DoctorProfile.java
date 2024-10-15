@@ -22,11 +22,13 @@ public class DoctorProfile {
 
     private String specialty;
 
+    private String image;
+
     @Column(name = "create_at")
     private Date createAt;
 
     @Column(name = "delete_at")
-    private String deleteAt;
+    private Date deleteAt;
 
     @OneToMany(mappedBy = "doctor")
     private List<Feedback> feedbackList;

@@ -1,5 +1,6 @@
 package com.example.cliniccare.exception;
 
+import com.example.cliniccare.response.ApiResponse;
 import jakarta.validation.ConstraintViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

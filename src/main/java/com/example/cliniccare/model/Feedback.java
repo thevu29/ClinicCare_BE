@@ -35,6 +35,6 @@ public class Feedback {
     private Date createAt;
 
     @Column(name = "delete_at")
-    private String deleteAt;
+    private Date deleteAt;
 
 }

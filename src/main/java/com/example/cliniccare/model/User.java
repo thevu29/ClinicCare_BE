@@ -1,7 +1,6 @@
 package com.example.cliniccare.model;
 
 import jakarta.persistence.*;
-import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
 
 import java.util.Date;
@@ -28,6 +27,8 @@ public class User {
     private String password;
     
     private String phone;
+
+    private String image;
 
     @Column(name = "create_at")
     private Date createAt;

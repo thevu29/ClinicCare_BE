@@ -1,6 +1,5 @@
 package com.example.cliniccare.model;
 
-import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import lombok.Data;
 
@@ -36,7 +35,6 @@ public class Promotion {
     @Column(name = "expired_at")
     private Date expiredAt;
 
-    @JsonBackReference
     @OneToMany(mappedBy = "promotion")
     private List<Service> serviceList;
 
