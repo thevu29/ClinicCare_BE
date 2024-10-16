@@ -28,14 +28,14 @@ public class RoleService {
         }
     }
 
-    public RoleDTO getRoleById(UUID id) {
+    public RoleDTO getRoleById(UUID id) throws NotFoundException {
         Role role = roleRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("Role not found"));
 
         return new RoleDTO(role);
     }
 
-    public RoleDTO createRole(RoleDTO roleDTO) {
+    public RoleDTO createRole(RoleDTO roleDTO) throws BadRequestException {
         if (roleRepository.findByNameIgnoreCase(roleDTO.getName()) != null) {
             throw new BadRequestException("Name already exists");
         }
@@ -48,7 +48,8 @@ public class RoleService {
         return new RoleDTO(savedRole);
     }
 
-    public RoleDTO updateRole(UUID id, RoleDTO roleDTO) {
+    public RoleDTO updateRole(UUID id, RoleDTO roleDTO)
+            throws NotFoundException, BadRequestException {
         Role role = roleRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("Role not found"));
 

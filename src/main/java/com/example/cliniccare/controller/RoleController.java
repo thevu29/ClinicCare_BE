@@ -64,7 +64,8 @@ public class RoleController {
     }
 
     @PostMapping("/create")
-    public ResponseEntity<?> createRole(@Valid @RequestBody RoleDTO roleDTO, BindingResult bindingResult) {
+    public ResponseEntity<?> createRole(@Valid @RequestBody RoleDTO roleDTO,
+                                        BindingResult bindingResult) {
         try {
             if (bindingResult.hasErrors()) {
                 return ResponseEntity.badRequest().body(bindingResult.getAllErrors());
@@ -87,7 +88,8 @@ public class RoleController {
     }
 
     @PutMapping("/update/{id}")
-    public ResponseEntity<?> updateRole(@PathVariable UUID id, @RequestBody RoleDTO roleDTO) {
+    public ResponseEntity<?> updateRole(@PathVariable UUID id,
+                                        @RequestBody RoleDTO roleDTO) {
         try {
             RoleDTO role = roleService.updateRole(id, roleDTO);
             return ResponseEntity.ok(new ApiResponse<>(

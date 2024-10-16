@@ -26,4 +26,9 @@ public class Notification {
 
     @Column(name = "delete_at")
     private Date deleteAt;
+
+    @PrePersist
+    protected void onCreate() {
+        createAt = new Date();
+    }
 }
