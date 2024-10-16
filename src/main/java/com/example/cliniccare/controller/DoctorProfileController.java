@@ -3,6 +3,8 @@ package com.example.cliniccare.controller;
 import com.example.cliniccare.dto.DoctorProfileDTO;
 import com.example.cliniccare.exception.BadRequestException;
 import com.example.cliniccare.exception.NotFoundException;
+import com.example.cliniccare.interfaces.DoctorProfileGroup;
+import com.example.cliniccare.interfaces.PromotionFormGroup;
 import com.example.cliniccare.response.ApiResponse;
 import com.example.cliniccare.service.DoctorProfileService;
 import org.slf4j.Logger;
@@ -11,6 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.support.DefaultMessageSourceResolvable;
 import org.springframework.http.HttpStatus;
 import org.springframework.validation.BindingResult;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.http.ResponseEntity;
 
@@ -79,7 +82,7 @@ public class DoctorProfileController {
     }
 
     @PostMapping
-    public ResponseEntity<?> createDoctorProfile(@RequestBody DoctorProfileDTO doctorProfileDTO, BindingResult bindingResult) {
+    public ResponseEntity<?> createDoctorProfile(@Validated(DoctorProfileGroup.Create.class) @RequestBody DoctorProfileDTO doctorProfileDTO, BindingResult bindingResult) {
         try {
             if (handleValidate(bindingResult) != null) {
                 return handleValidate(bindingResult);
@@ -118,7 +121,7 @@ public class DoctorProfileController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<?> updateDoctorProfile(@PathVariable UUID id, @RequestBody DoctorProfileDTO doctorProfileDTO, BindingResult bindingResult) {
+    public ResponseEntity<?> updateDoctorProfile(@PathVariable UUID id, @Validated(DoctorProfileGroup.Update.class) @RequestBody DoctorProfileDTO doctorProfileDTO, BindingResult bindingResult) {
         try {
             if (handleValidate(bindingResult) != null) {
                 return handleValidate(bindingResult);

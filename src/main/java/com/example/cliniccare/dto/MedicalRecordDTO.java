@@ -14,11 +14,17 @@ import java.util.UUID;
 @Data
 public class MedicalRecordDTO {
     private UUID medicalRecordId;
+
     private UserDTO patient;
+
     private DoctorProfileDTO doctor;
+
     private String service;
+
     private String message;
+
     private Date createAt;
+
     private Date deleteAt;
 
     public MedicalRecordDTO() {

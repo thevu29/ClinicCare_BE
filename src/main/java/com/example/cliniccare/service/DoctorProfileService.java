@@ -74,7 +74,10 @@ public class DoctorProfileService {
             throw new BadRequestException("Specialty already exists");
         }
 
-        doctorProfile.setSpecialty(doctorProfileDTO.getSpecialty());
+        if(doctorProfileDTO.getSpecialty() != null) {
+            doctorProfile.setSpecialty(doctorProfileDTO.getSpecialty());
+        }
+
         doctorProfile.setCreateAt(Timestamp.valueOf(LocalDateTime.now()));
         doctorProfile.setDeleteAt(doctorProfileDTO.getDeleteAt());
 
