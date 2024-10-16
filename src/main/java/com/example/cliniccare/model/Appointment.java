@@ -32,6 +32,11 @@ public class Appointment {
     private Date date;
 
     @Enumerated(EnumType.STRING)
-    private Status status;
+    private AppointmentStatus status;
 }
 
+enum AppointmentStatus {
+    PENDING,
+    CONFIRMED,
+    CANCELLED
+}

@@ -11,6 +11,13 @@ import java.util.UUID;
 @Data
 @Table(name = "promotions")
 public class Promotion {
+    public enum PromotionStatus {
+        ACTIVE,
+        INACTIVE,
+        EXPIRED,
+        END
+    }
+
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     @Column(name = "promotion_id")
@@ -20,12 +27,19 @@ public class Promotion {
 
     private int discount;
 
+    private PromotionStatus status;
+
     @Column(name = "create_at")
     private Date createAt;
 
-    @Column(name = "delete_at")
-    private Date deleteAt;
+    @Column(name = "expired_at")
+    private Date expireAt;
 
     @OneToMany(mappedBy = "promotion")
     private List<Service> serviceList;
+
+    @PrePersist
+    public void onCreate() {
+        createAt = new Date();
+    }
 }

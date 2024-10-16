@@ -29,6 +29,10 @@ public class Schedule {
     private Date date;
 
     @Enumerated(EnumType.STRING)
-    private Status status;
+    private ScheduleStatus status;
 }
 
+enum ScheduleStatus {
+    Available,
+    NotAvailable
+}
