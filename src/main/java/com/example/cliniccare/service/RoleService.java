@@ -48,13 +48,11 @@ public class RoleService {
         return new RoleDTO(savedRole);
     }
 
-    public RoleDTO updateRole(UUID id, RoleDTO roleDTO)
-            throws NotFoundException, BadRequestException {
+    public RoleDTO updateRole(UUID id, RoleDTO roleDTO) {
         Role role = roleRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("Role not found"));
 
-        if (roleDTO.getName() != null) {
-
+        if (roleDTO.getName() != null && !roleDTO.getName().isEmpty()) {
             if (roleRepository.findByNameIgnoreCase(roleDTO.getName()) != null) {
                 throw new BadRequestException("Name already exists");
             }
@@ -62,7 +60,7 @@ public class RoleService {
             role.setName(roleDTO.getName());
         }
 
-        if (roleDTO.getDescription() != null) {
+        if (roleDTO.getDescription() != null && !roleDTO.getDescription().isEmpty()) {
             role.setDescription(roleDTO.getDescription());
         }
 
