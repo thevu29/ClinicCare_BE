@@ -7,6 +7,7 @@ import com.example.cliniccare.interfaces.PromotionFormGroup;
 import com.example.cliniccare.response.ApiResponse;
 import com.example.cliniccare.service.PromotionService;
 import com.fasterxml.jackson.databind.JsonMappingException;
+import jakarta.validation.groups.Default;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.support.DefaultMessageSourceResolvable;
@@ -55,7 +56,7 @@ public class PromotionController {
 
     @PostMapping("/create")
     public ResponseEntity<?> createPromotion(
-            @Validated(PromotionFormGroup.Create.class) @RequestBody PromotionDTO promotionDTO,
+            @Validated({Default.class, PromotionFormGroup.Create.class}) @RequestBody PromotionDTO promotionDTO,
             BindingResult bindingResult
     ) {
         try {
@@ -96,7 +97,7 @@ public class PromotionController {
     @PutMapping("/update/{id}")
     public ResponseEntity<?> updatePromotion(
             @PathVariable UUID id,
-            @Validated(PromotionFormGroup.Update.class) @RequestBody PromotionDTO promotionDTO
+            @Validated({Default.class, PromotionFormGroup.Update.class}) @RequestBody PromotionDTO promotionDTO
     ) {
         try {
             promotionDTO.setPromotionId(id);

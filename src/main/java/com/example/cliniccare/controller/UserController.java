@@ -7,6 +7,7 @@ import com.example.cliniccare.exception.NotFoundException;
 import com.example.cliniccare.interfaces.UserFormGroup;
 import com.example.cliniccare.response.ApiResponse;
 import com.example.cliniccare.service.UserService;
+import jakarta.validation.groups.Default;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -83,7 +84,7 @@ public class UserController {
 
     @PostMapping("/create")
     public ResponseEntity<?> createUser(
-            @Validated(UserFormGroup.Create.class) @ModelAttribute UserFormDTO userDTO,
+            @Validated({Default.class, UserFormGroup.Create.class}) @ModelAttribute UserFormDTO userDTO,
             BindingResult bindingResult
     ) {
         try {
@@ -119,7 +120,7 @@ public class UserController {
     @PutMapping("/update/{id}")
     public ResponseEntity<?> updateUser(
             @PathVariable UUID id,
-            @Validated(UserFormGroup.Update.class) @ModelAttribute UserFormDTO userDTO,
+            @Validated({Default.class, UserFormGroup.Update.class}) @ModelAttribute UserFormDTO userDTO,
             BindingResult bindingResult
     ) {
         try {

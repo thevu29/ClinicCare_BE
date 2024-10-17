@@ -88,7 +88,8 @@ public class UserService {
         if (userDTO.getName() != null && !userDTO.getName().isEmpty()) user.setName(userDTO.getName());
 
         if (userDTO.getPhone() != null && !userDTO.getPhone().isEmpty()) {
-            if (userRepository.existsByPhoneAndDeleteAtIsNull(userDTO.getPhone())) {
+            if (!userDTO.getPhone().equals(user.getPhone())
+                    && userRepository.existsByPhoneAndDeleteAtIsNull(userDTO.getPhone())) {
                 throw new BadRequestException("Phone already exists");
             }
 
