@@ -76,7 +76,7 @@ public class MedicalRecordController {
         }
     }
 
-    @PostMapping
+    @PostMapping ("/create")
     public ResponseEntity<?> createMedicalRecord(@RequestBody MedicalRecordDTO medicalRecordDTO,  BindingResult bindingResult) {
         try {
 

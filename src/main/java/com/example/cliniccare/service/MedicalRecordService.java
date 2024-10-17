@@ -51,22 +51,17 @@ public class MedicalRecordService {
     }
 
     public MedicalRecordDTO createMedicalRecord(MedicalRecordDTO medicalRecordDTO) {
-        if (medicalRecordRepository.existsByMessageAndDeleteAtIsNull(medicalRecordDTO.getMessage())) {
-            throw new NotFoundException("Message already exists");
-        }
 
         MedicalRecord medicalRecord = new MedicalRecord();
         medicalRecord.setMessage(medicalRecordDTO.getMessage());
-        medicalRecord.setCreateAt(medicalRecordDTO.getCreateAt());
+        medicalRecord.setCreateAt(Timestamp.valueOf(LocalDateTime.now()));
         medicalRecord.setDeleteAt(medicalRecordDTO.getDeleteAt());
 
-        UUID userId = medicalRecordDTO.getPatient().getUserId();
-        User user = userRepository.findByUserIdAndDeleteAtIsNull(userId)
+        User user = userRepository.findByUserIdAndDeleteAtIsNull(medicalRecordDTO.getPatientId())
                 .orElseThrow(() -> new NotFoundException("User not found"));
         medicalRecord.setPatient(user);
 
-        UUID doctorProfileId = medicalRecordDTO.getDoctor().getDoctorProfileId();
-        DoctorProfile doctorProfile = doctorProfileRepository.findByDoctorProfileIdAndDeleteAtIsNull(doctorProfileId)
+        DoctorProfile doctorProfile = doctorProfileRepository.findByDoctorProfileIdAndDeleteAtIsNull(medicalRecordDTO.getDoctorProfileId())
                 .orElseThrow(() -> new NotFoundException("Doctor profile not found"));
         medicalRecord.setDoctor(doctorProfile);
 
@@ -78,22 +73,18 @@ public class MedicalRecordService {
         MedicalRecord medicalRecord = medicalRecordRepository.findByMedicalRecordIdAndDeleteAtIsNull(id)
                 .orElseThrow(() -> new NotFoundException("Medical record not found"));
 
-        if (medicalRecordRepository.existsByMessageAndDeleteAtIsNull(medicalRecordDTO.getMessage())) {
-            throw new NotFoundException("Message already exists");
-        }
         medicalRecord.setMessage(medicalRecordDTO.getMessage());
         medicalRecord.setCreateAt(medicalRecordDTO.getCreateAt());
         medicalRecord.setDeleteAt(medicalRecordDTO.getDeleteAt());
 
-        UUID userId = medicalRecordDTO.getPatient().getUserId();
-        User user = userRepository.findByUserIdAndDeleteAtIsNull(userId)
+        User user = userRepository.findByUserIdAndDeleteAtIsNull(medicalRecordDTO.getPatientId())
                 .orElseThrow(() -> new NotFoundException("User not found"));
         medicalRecord.setPatient(user);
 
-        UUID doctorProfileId = medicalRecordDTO.getDoctor().getDoctorProfileId();
-        DoctorProfile doctorProfile = doctorProfileRepository.findByDoctorProfileIdAndDeleteAtIsNull(doctorProfileId)
+        DoctorProfile doctorProfile = doctorProfileRepository.findByDoctorProfileIdAndDeleteAtIsNull(medicalRecordDTO.getDoctorProfileId())
                 .orElseThrow(() -> new NotFoundException("Doctor profile not found"));
         medicalRecord.setDoctor(doctorProfile);
+
 
         MedicalRecord savedMedicalRecord = medicalRecordRepository.save(medicalRecord);
         return new MedicalRecordDTO(savedMedicalRecord);

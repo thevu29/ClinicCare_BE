@@ -2,6 +2,7 @@ package com.example.cliniccare.dto;
 
 import com.example.cliniccare.model.MedicalRecord;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
@@ -15,11 +16,13 @@ import java.util.UUID;
 public class MedicalRecordDTO {
     private UUID medicalRecordId;
 
-    private UserDTO patient;
+    @NotNull(message = "Patient is required")
+    private UUID patientId;
 
-    private DoctorProfileDTO doctor;
+    @NotNull(message = "Doctor is required")
+    private UUID doctorProfileId;
 
-    private String service;
+    private UUID serviceId;
 
     private String message;
 
@@ -32,9 +35,9 @@ public class MedicalRecordDTO {
 
     public MedicalRecordDTO(MedicalRecord medicalRecord) {
         this.medicalRecordId = medicalRecord.getMedicalRecordId();
-        this.patient = new UserDTO(medicalRecord.getPatient());
-        this.doctor = new DoctorProfileDTO(medicalRecord.getDoctor());
-        this.service = null;
+        this.patientId = medicalRecord.getPatient().getUserId();
+        this.doctorProfileId = medicalRecord.getDoctor().getDoctorProfileId();
+        this.serviceId = null;
         this.message = medicalRecord.getMessage();
         this.createAt = medicalRecord.getCreateAt();
         this.deleteAt = medicalRecord.getDeleteAt();

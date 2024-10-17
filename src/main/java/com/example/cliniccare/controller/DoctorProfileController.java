@@ -81,7 +81,7 @@ public class DoctorProfileController {
         }
     }
 
-    @PostMapping
+    @PostMapping ("/create")
     public ResponseEntity<?> createDoctorProfile(@Validated(DoctorProfileGroup.Create.class) @RequestBody DoctorProfileDTO doctorProfileDTO, BindingResult bindingResult) {
         try {
             if (handleValidate(bindingResult) != null) {
@@ -91,12 +91,6 @@ public class DoctorProfileController {
             if (doctorProfileDTO.getSpecialty() == null || doctorProfileDTO.getSpecialty().isEmpty()) {
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ApiResponse<>(
                         false, "Specialty is required", null
-                ));
-            }
-
-            if (doctorProfileDTO.getUser().getUserId() == null || doctorProfileDTO.getUser().getUserId().toString().isEmpty()) {
-                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ApiResponse<>(
-                        false, "User is required", null
                 ));
             }
 
@@ -133,12 +127,6 @@ public class DoctorProfileController {
                 ));
             }
 
-            if (doctorProfileDTO.getUser().getUserId() == null || doctorProfileDTO.getUser().getUserId().toString().isEmpty()) {
-                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ApiResponse<>(
-                        false, "User is required", null
-                ));
-            }
-
             DoctorProfileDTO doctorProfile = doctorProfileService.updateDoctorProfile(id, doctorProfileDTO);
             return ResponseEntity.ok(new ApiResponse<>(
                     true, "Update doctor profile successfully", doctorProfile
@@ -152,9 +140,9 @@ public class DoctorProfileController {
                     false, e.getMessage(), null
             ));
         } catch (Exception e) {
-            logger.error("Failed to create user: {}", e.getMessage(), e);
+            logger.error("Failed to update doctorProfile: {}", e.getMessage(), e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new ApiResponse<>(
-                    false, "Failed to create user", null
+                    false, "Failed to update doctorProfile", null
             ));
         }
     }
@@ -166,13 +154,11 @@ public class DoctorProfileController {
             return ResponseEntity.ok(new ApiResponse<>(
                     true, "Delete doctor profile successfully", null
             ));
-        }
-        catch (NotFoundException e) {
+        } catch (NotFoundException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ApiResponse<>(
                     false, e.getMessage(), null
             ));
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             logger.error("Failed to delete doctor profile: {}", e.getMessage(), e);
             return ResponseEntity.internalServerError().body(new ApiResponse<>(
                     false, e.getMessage(), null

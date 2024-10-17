@@ -13,6 +13,4 @@ import java.util.UUID;
 public interface MedicalRecordRepository extends JpaRepository<MedicalRecord, UUID> {
     List<MedicalRecord> findByDeleteAtIsNull();
     Optional<MedicalRecord> findByMedicalRecordIdAndDeleteAtIsNull(UUID medicalRecordId);
-
-    boolean existsByMessageAndDeleteAtIsNull(@NotBlank(message = "Message is required") String message);
 }

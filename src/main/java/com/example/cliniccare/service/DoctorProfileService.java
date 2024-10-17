@@ -1,7 +1,6 @@
 package com.example.cliniccare.service;
 
 import com.example.cliniccare.dto.DoctorProfileDTO;
-import com.example.cliniccare.dto.UserDTO;
 import com.example.cliniccare.exception.BadRequestException;
 import com.example.cliniccare.exception.NotFoundException;
 import com.example.cliniccare.model.DoctorProfile;
@@ -25,6 +24,7 @@ public class DoctorProfileService {
 
     private final UserRepository userRepository;
     private final DoctorProfileRepository doctorProfileRepository;
+
     @Autowired
     public DoctorProfileService(
             UserRepository userRepository,
@@ -47,18 +47,12 @@ public class DoctorProfileService {
     }
 
     public DoctorProfileDTO createDoctorProfile(DoctorProfileDTO doctorProfileDTO) {
-
-        if (doctorProfileRepository.existsBySpecialtyAndDeleteAtIsNull(doctorProfileDTO.getSpecialty())) {
-            throw new BadRequestException("Specialty already exists");
-        }
-
         DoctorProfile doctorProfile = new DoctorProfile();
         doctorProfile.setSpecialty(doctorProfileDTO.getSpecialty());
         doctorProfile.setCreateAt(Timestamp.valueOf(LocalDateTime.now()));
         doctorProfile.setDeleteAt(doctorProfileDTO.getDeleteAt());
 
-        UUID userId = doctorProfileDTO.getUser().getUserId();
-        User user = userRepository.findByUserIdAndDeleteAtIsNull(userId)
+        User user = userRepository.findById(doctorProfileDTO.getUserId())
                 .orElseThrow(() -> new NotFoundException("User not found"));
         doctorProfile.setUser(user);
 
@@ -70,20 +64,15 @@ public class DoctorProfileService {
         DoctorProfile doctorProfile = doctorProfileRepository.findByDoctorProfileIdAndDeleteAtIsNull(id)
                 .orElseThrow(() -> new NotFoundException("Doctor profile not found"));
 
-        if (doctorProfileRepository.existsBySpecialtyAndDeleteAtIsNull(doctorProfileDTO.getSpecialty())) {
-            throw new BadRequestException("Specialty already exists");
-        }
-
-        if(doctorProfileDTO.getSpecialty() != null) {
+        if (doctorProfileDTO.getSpecialty() != null) {
             doctorProfile.setSpecialty(doctorProfileDTO.getSpecialty());
         }
 
         doctorProfile.setCreateAt(Timestamp.valueOf(LocalDateTime.now()));
         doctorProfile.setDeleteAt(doctorProfileDTO.getDeleteAt());
 
-        UUID userId = doctorProfileDTO.getUser().getUserId();
-        User user = userRepository.findByUserIdAndDeleteAtIsNull(userId)
-                .orElseThrow(() -> new NotFoundException("User not found"));
+        User user = userRepository.findById(doctorProfileDTO.getUserId())
+                .orElseThrow(() -> new NotFoundException("Role not found"));
         doctorProfile.setUser(user);
 
         DoctorProfile updatedDoctorProfile = doctorProfileRepository.save(doctorProfile);

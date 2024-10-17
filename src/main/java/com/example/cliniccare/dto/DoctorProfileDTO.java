@@ -2,6 +2,7 @@ package com.example.cliniccare.dto;
 
 import com.example.cliniccare.interfaces.DoctorProfileGroup;
 import com.example.cliniccare.interfaces.PromotionFormGroup;
+import com.example.cliniccare.interfaces.UserFormGroup;
 import com.example.cliniccare.model.DoctorProfile;
 import com.example.cliniccare.model.User;
 import jakarta.validation.constraints.NotBlank;
@@ -27,7 +28,8 @@ public class DoctorProfileDTO {
 
     private Date deleteAt;
 
-    private UserDTO user;
+    @NotNull(message = "User is required", groups = {DoctorProfileGroup.Create.class})
+    private UUID userId;
 
     public DoctorProfileDTO() {
     }
@@ -37,6 +39,6 @@ public class DoctorProfileDTO {
         this.specialty = doctorProfile.getSpecialty();
         this.createAt = doctorProfile.getCreateAt();
         this.deleteAt = doctorProfile.getDeleteAt();
-        this.user = new UserDTO(doctorProfile.getUser());
+        this.userId = doctorProfile.getUser().getUserId();
     }
 }
