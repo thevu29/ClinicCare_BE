@@ -1,8 +1,10 @@
 package com.example.cliniccare.controller;
 
+import com.example.cliniccare.dto.FeedbackDTO;
 import com.example.cliniccare.dto.NotificationDTO;
 import com.example.cliniccare.exception.NotFoundException;
 import com.example.cliniccare.response.ApiResponse;
+import com.example.cliniccare.service.FeedbackService;
 import com.example.cliniccare.service.NotificationService;
 import jakarta.validation.Valid;
 import org.slf4j.Logger;
@@ -20,14 +22,14 @@ import java.util.stream.Collectors;
 
 @CrossOrigin("*")
 @RestController
-@RequestMapping("/api/notification")
-public class NotificationController {
-    private static final Logger logger = LoggerFactory.getLogger(NotificationController.class);
-    private final NotificationService notificationService;
+@RequestMapping("/api/feedback")
+public class FeedbackController {
+    private static final Logger logger = LoggerFactory.getLogger(FeedbackController.class);
+    private final FeedbackService feedbackService;
 
     @Autowired
-    public NotificationController(NotificationService notificationService) {
-        this.notificationService = notificationService;
+    public FeedbackController(FeedbackService feedbackService) {
+        this.feedbackService = feedbackService;
     }
 
     public ResponseEntity<?> handleValidate(BindingResult bindingResult) {
@@ -44,14 +46,14 @@ public class NotificationController {
     }
 
     @GetMapping("/all")
-    public ResponseEntity<?> getNotifications() {
+    public ResponseEntity<?> getFeedbacks() {
         try {
-            List<NotificationDTO> notifications = notificationService.getNotifications();
+            List<FeedbackDTO> feedbacks = feedbackService.getFeedbacks();
             return ResponseEntity.ok(new ApiResponse<>(
-                    true, "Get notifications successfully", notifications
+                    true, "Get feedbacks successfully", feedbacks
             ));
         } catch (Exception e) {
-            logger.error("Failed to get notifications: {}", e.getMessage(), e);
+            logger.error("Failed to get feedbacks: {}", e.getMessage(), e);
             return ResponseEntity.internalServerError().body(new ApiResponse<>(
                     false, e.getMessage(), null
             ));
@@ -59,18 +61,18 @@ public class NotificationController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<?> getNotificationById(@PathVariable UUID id) {
+    public ResponseEntity<?> getFeedbackById(@PathVariable UUID id) {
         try {
-            NotificationDTO notification = notificationService.getNotificationById(id);
+            FeedbackDTO feedback = feedbackService.getFeedbackById(id);
             return ResponseEntity.ok(new ApiResponse<>(
-                    true, "Get notification successfully", notification
+                    true, "Get feedback successfully", feedback
             ));
         } catch (NotFoundException e) {
             return ResponseEntity
                     .status(HttpStatus.NOT_FOUND)
                     .body(new ApiResponse<>(false, e.getMessage(), null));
         } catch (Exception e) {
-            logger.error("Failed to get notification: {}", e.getMessage(), e);
+            logger.error("Failed to get feedback: {}", e.getMessage(), e);
             return ResponseEntity
                     .internalServerError()
                     .body(new ApiResponse<>(false, e.getMessage(), null));
@@ -78,75 +80,79 @@ public class NotificationController {
     }
 
     @PostMapping("/create")
-    public ResponseEntity<?> createNotification(
-            @Valid @RequestBody NotificationDTO notificationDTO,
+    public ResponseEntity<?> createFeedback(
+            @Valid @RequestBody FeedbackDTO feedbackDTO,
             BindingResult bindingResult) {
         try {
             if (handleValidate(bindingResult) != null) {
                 return handleValidate(bindingResult);
             }
 
-            NotificationDTO notification = notificationService.createNotification(notificationDTO);
+            FeedbackDTO feedback = feedbackService.createFeedback(feedbackDTO);
             return ResponseEntity
                     .status(HttpStatus.CREATED)
                     .body(new ApiResponse<>(
-                            true, "Create notification successfully", notification
+                            true, "Create feedback successfully", feedback
                     ));
         } catch (NotFoundException e) {
             return ResponseEntity
                     .status(HttpStatus.NOT_FOUND)
                     .body(new ApiResponse<>(
-                    false, e.getMessage(), null
-            ));
+                            false, e.getMessage(), null
+                    ));
         } catch (Exception e) {
-            logger.error("Failed to create notification: {}", e.getMessage(), e);
+            logger.error("Failed to create feedback: {}", e.getMessage(), e);
             return ResponseEntity
                     .status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(new ApiResponse<>(
-                    false, "Failed to create notification", null
-            ));
+                            false, "Failed to create feedback", null
+                    ));
         }
     }
 
-    @PutMapping("/read/{id}")
-    public ResponseEntity<?> readNotification(@PathVariable UUID id) {
+    @PutMapping("/update/{id}")
+    public ResponseEntity<?> updateFeedback(@PathVariable UUID id,
+                                            @RequestBody FeedbackDTO feedbackDTO) {
         try {
-            NotificationDTO notification = notificationService.readNotification(id);
+            FeedbackDTO feedback = feedbackService.updateFeedback(id, feedbackDTO);
+
             return ResponseEntity.ok(new ApiResponse<>(
-                    true, "Read notification successfully", notification
+                    true, "Update feedback successfully", feedback
             ));
         } catch (NotFoundException e) {
             return ResponseEntity
                     .status(HttpStatus.NOT_FOUND)
-                    .body(new ApiResponse<>(false, e.getMessage(), null));
+                    .body(new ApiResponse<>(
+                            false, e.getMessage(), null
+                    ));
         } catch (Exception e) {
-            logger.error("Failed to read notification: {}", e.getMessage(), e);
+            logger.error("Failed to update feedback: {}", e.getMessage(), e);
             return ResponseEntity
                     .status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(new ApiResponse<>(
-                    false, "Failed to read notification", null
-            ));
+                            false, "Failed to update feedback", null
+                    ));
         }
     }
 
     @DeleteMapping("/delete/{id}")
-    public ResponseEntity<?> deleteNotification(@PathVariable UUID id) {
+    public ResponseEntity<?> deleteFeedback(@PathVariable UUID id) {
         try {
-            notificationService.deleteNotification(id);
+            feedbackService.deleteFeedback(id);
             return ResponseEntity.ok(new ApiResponse<>(
-                    true, "Delete notification successfully", null
+                    true, "Delete feedback successfully", null
             ));
         } catch (NotFoundException e) {
             return ResponseEntity
                     .status(HttpStatus.NOT_FOUND)
                     .body(new ApiResponse<>(false, e.getMessage(), null));
         } catch (Exception e) {
-            logger.error("Failed to delete notification: {}", e.getMessage(), e);
+            logger.error("Failed to delete feedback: {}", e.getMessage(), e);
             return ResponseEntity
                     .status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(new ApiResponse<>(
-                    false, "Failed to delete notification", null
-            ));
+                            false, "Failed to delete feedback", null
+                    ));
         }
     }
 }
