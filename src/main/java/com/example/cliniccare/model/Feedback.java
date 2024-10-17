@@ -37,4 +37,8 @@ public class Feedback {
     @Column(name = "delete_at")
     private Date deleteAt;
 
+    @PrePersist
+    protected void onCreate() {
+        this.createAt = new Date();
+    }
 }
