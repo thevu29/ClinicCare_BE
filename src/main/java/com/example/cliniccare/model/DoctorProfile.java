@@ -22,11 +22,6 @@ public class DoctorProfile {
 
     private String specialty;
 
-    private String image;
-
-    @Column(name = "create_at")
-    private Date createAt;
-
     @Column(name = "delete_at")
     private Date deleteAt;
 
