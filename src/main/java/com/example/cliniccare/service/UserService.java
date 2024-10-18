@@ -4,10 +4,12 @@ import com.example.cliniccare.dto.UserDTO;
 import com.example.cliniccare.dto.UserFormDTO;
 import com.example.cliniccare.exception.BadRequestException;
 import com.example.cliniccare.exception.NotFoundException;
-import com.example.cliniccare.pagination.PaginationQuery;
+import com.example.cliniccare.model.DoctorProfile;
 import com.example.cliniccare.model.Role;
 import com.example.cliniccare.model.User;
+import com.example.cliniccare.pagination.PaginationQuery;
 import com.example.cliniccare.pagination.PaginationService;
+import com.example.cliniccare.repository.DoctorProfileRepository;
 import com.example.cliniccare.repository.RoleRepository;
 import com.example.cliniccare.repository.UserRepository;
 import com.example.cliniccare.response.PaginationResponse;
@@ -26,6 +28,7 @@ import java.util.UUID;
 public class UserService {
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
+    private final DoctorProfileRepository doctorProfileRepository;
     private final PasswordEncoder passwordEncoder;
     private final FirebaseStorageService firebaseStorageService;
     private final PaginationService paginationService;
@@ -34,12 +37,14 @@ public class UserService {
     public UserService(
             UserRepository userRepository,
             RoleRepository roleRepository,
+            DoctorProfileRepository doctorProfileRepository,
             PasswordEncoder passwordEncoder,
             FirebaseStorageService firebaseStorageService,
             PaginationService paginationService
     ) {
         this.userRepository = userRepository;
         this.roleRepository = roleRepository;
+        this.doctorProfileRepository = doctorProfileRepository;
         this.passwordEncoder = passwordEncoder;
         this.firebaseStorageService = firebaseStorageService;
         this.paginationService = paginationService;
@@ -87,13 +92,10 @@ public class UserService {
         user.setName(userDTO.getName());
         user.setEmail(userDTO.getEmail());
         user.setPhone(userDTO.getPhone());
-
-        String encodedPassword = passwordEncoder.encode(userDTO.getPassword());
-        user.setPassword(encodedPassword);
+        user.setPassword(passwordEncoder.encode(userDTO.getPassword()));
 
         if (userDTO.getImage() != null && !userDTO.getImage().isEmpty()) {
-            String imageUrl = firebaseStorageService.uploadImage(userDTO.getImage());
-            user.setImage(imageUrl);
+            user.setImage(firebaseStorageService.uploadImage(userDTO.getImage()));
         }
 
         Role role = roleRepository.findById(userDTO.getRoleId())
@@ -108,20 +110,14 @@ public class UserService {
         User user = userRepository.findByUserIdAndDeleteAtIsNull(id)
                 .orElseThrow(() -> new NotFoundException("User not found"));
 
-        if (userDTO.getName() != null && !userDTO.getName().isEmpty()) user.setName(userDTO.getName());
-
+        if (userDTO.getName() != null && !userDTO.getName().isEmpty()) {
+            user.setName(userDTO.getName());
+        }
         if (userDTO.getPhone() != null && !userDTO.getPhone().isEmpty()) {
-            if (!userDTO.getPhone().equals(user.getPhone())
-                    && userRepository.existsByPhoneAndDeleteAtIsNull(userDTO.getPhone())) {
-                throw new BadRequestException("Phone already exists");
-            }
-
             user.setPhone(userDTO.getPhone());
         }
-
         if (userDTO.getImage() != null && !userDTO.getImage().isEmpty()) {
-            String imageUrl = firebaseStorageService.uploadImage(userDTO.getImage());
-            user.setImage(imageUrl);
+            user.setImage(firebaseStorageService.uploadImage(userDTO.getImage()));
         }
 
         User savedUser = userRepository.save(user);
@@ -131,6 +127,18 @@ public class UserService {
     public void deleteUser(UUID id) {
         User user = userRepository.findByUserIdAndDeleteAtIsNull(id)
                 .orElseThrow(() -> new NotFoundException("User not found"));
+
+        if (user.getRole().getName().equals("Admin")) {
+            throw new BadRequestException("Cannot delete admin");
+        }
+
+        if (user.getRole().getName().equals("Doctor")) {
+            DoctorProfile doctor = doctorProfileRepository.findByUser_UserIdAndDeleteAtIsNull(user.getUserId())
+                    .orElseThrow(() -> new NotFoundException("Doctor not found"));
+
+            doctor.setDeleteAt(new Date());
+            doctorProfileRepository.save(doctor);
+        }
 
         user.setDeleteAt(new Date());
         userRepository.save(user);
