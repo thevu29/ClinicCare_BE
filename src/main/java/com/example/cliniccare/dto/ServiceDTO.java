@@ -20,7 +20,6 @@ public class ServiceDTO {
     private String description;
 
     @NotBlank(message = "Price is required")
-    @Pattern(regexp = "\\d+", message = "Price must be a number")
     @Min(value = 0, message = "Price must be greater than 0")
     private double price;
 

@@ -1,0 +1,24 @@
+version: '3.8'
+
+services:
+  backend:
+    build: .
+    ports:
+      - "8080:8080"
+    environment:
+      - SPRING_PROFILES_ACTIVE=prod
+      - SPRING_DATASOURCE_URL=jdbc:mysql://db:3306/cliniccare?useSSL=false&allowPublicKeyRetrieval=true
+      - SPRING_DATASOURCE_USERNAME=thevu
+      - SPRING_DATASOURCE_PASSWORD=123
+    depends_on:
+      - db
+
+  db:
+    image: mysql:9.0
+    environment:
+      MYSQL_DATABASE: cliniccare
+      MYSQL_USER: thevu
+      MYSQL_PASSWORD: 123
+      MYSQL_ROOT_PASSWORD: 123
+    ports:
+      - "3306:3306"

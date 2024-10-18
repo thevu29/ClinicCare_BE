@@ -4,11 +4,16 @@ import com.example.cliniccare.dto.UserDTO;
 import com.example.cliniccare.dto.UserFormDTO;
 import com.example.cliniccare.exception.BadRequestException;
 import com.example.cliniccare.exception.NotFoundException;
+import com.example.cliniccare.pagination.PaginationQuery;
 import com.example.cliniccare.model.Role;
 import com.example.cliniccare.model.User;
+import com.example.cliniccare.pagination.PaginationService;
 import com.example.cliniccare.repository.RoleRepository;
 import com.example.cliniccare.repository.UserRepository;
+import com.example.cliniccare.response.PaginationResponse;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -23,23 +28,38 @@ public class UserService {
     private final RoleRepository roleRepository;
     private final PasswordEncoder passwordEncoder;
     private final FirebaseStorageService firebaseStorageService;
+    private final PaginationService paginationService;
 
     @Autowired
     public UserService(
             UserRepository userRepository,
             RoleRepository roleRepository,
             PasswordEncoder passwordEncoder,
-            FirebaseStorageService firebaseStorageService
+            FirebaseStorageService firebaseStorageService,
+            PaginationService paginationService
     ) {
         this.userRepository = userRepository;
         this.roleRepository = roleRepository;
         this.passwordEncoder = passwordEncoder;
         this.firebaseStorageService = firebaseStorageService;
+        this.paginationService = paginationService;
     }
 
-    public List<UserDTO> getUsers() {
-        List<User> users = userRepository.findByDeleteAtIsNull();
-        return users.stream().map(UserDTO::new).toList();
+    public PaginationResponse<List<UserDTO>> getUsers(PaginationQuery paginationQuery) {
+        Pageable pageable = paginationService.getPageable(paginationQuery);
+        Page<User> users = userRepository.findByDeleteAtIsNull(pageable);
+        int totalPage = paginationService.getTotalPages(users.getTotalElements(), paginationQuery.size);
+        long totalElements = users.getTotalElements();
+
+        return new PaginationResponse<>(
+                true,
+                "Get users successfully",
+                users.map(UserDTO::new).getContent(),
+                paginationQuery.page,
+                paginationQuery.size,
+                totalPage,
+                totalElements
+        );
     }
 
     public UserDTO getUserById(UUID id) {

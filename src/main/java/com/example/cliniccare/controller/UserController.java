@@ -4,8 +4,11 @@ import com.example.cliniccare.dto.UserDTO;
 import com.example.cliniccare.dto.UserFormDTO;
 import com.example.cliniccare.exception.BadRequestException;
 import com.example.cliniccare.exception.NotFoundException;
+import com.example.cliniccare.model.User;
+import com.example.cliniccare.pagination.PaginationQuery;
 import com.example.cliniccare.interfaces.UserFormGroup;
 import com.example.cliniccare.response.ApiResponse;
+import com.example.cliniccare.response.PaginationResponse;
 import com.example.cliniccare.service.UserService;
 import jakarta.validation.groups.Default;
 import org.slf4j.Logger;
@@ -49,12 +52,17 @@ public class UserController {
     }
 
     @GetMapping("/all")
-    public ResponseEntity<?> getUsers() {
+    public ResponseEntity<?> getUsers(
+            @RequestParam(defaultValue = "1") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "userId") String sortBy,
+            @RequestParam(defaultValue = "asc") String order
+    ) {
         try {
-            List<UserDTO> users = userService.getUsers();
-            return ResponseEntity.ok(new ApiResponse<>(
-                    true, "Get users successfully", users
-            ));
+            PaginationQuery paginationQuery = new PaginationQuery(page, size, sortBy, order);
+            PaginationResponse<List<UserDTO>> response = userService.getUsers(paginationQuery);
+
+            return ResponseEntity.ok(response);
         } catch (Exception e) {
             logger.error("Failed to get users: {}", e.getMessage(), e);
             return ResponseEntity.internalServerError().body(new ApiResponse<>(
