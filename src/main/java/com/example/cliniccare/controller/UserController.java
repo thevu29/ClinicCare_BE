@@ -56,11 +56,12 @@ public class UserController {
             @RequestParam(defaultValue = "1") int page,
             @RequestParam(defaultValue = "10") int size,
             @RequestParam(defaultValue = "userId") String sortBy,
-            @RequestParam(defaultValue = "asc") String order
+            @RequestParam(defaultValue = "asc") String order,
+            @RequestParam(defaultValue = "") String search
     ) {
         try {
             PaginationQuery paginationQuery = new PaginationQuery(page, size, sortBy, order);
-            PaginationResponse<List<UserDTO>> response = userService.getUsers(paginationQuery);
+            PaginationResponse<List<UserDTO>> response = userService.getUsers(paginationQuery, search);
 
             return ResponseEntity.ok(response);
         } catch (Exception e) {

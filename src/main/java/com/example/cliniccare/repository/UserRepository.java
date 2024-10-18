@@ -12,10 +12,8 @@ import java.util.UUID;
 
 @Repository
 public interface UserRepository extends JpaRepository<User, UUID> {
-    Page<User> findByDeleteAtIsNull(Pageable pageable);
+    Page<User> findByDeleteAtIsNullAndNameContainingOrPhoneContaining(String name, String phone, Pageable pageable);
     Optional<User> findByUserIdAndDeleteAtIsNull(UUID userId);
-    Optional<User> findByEmail(String email);
-    Optional<User> findByPhone(String phone);
     Boolean existsByEmailAndDeleteAtIsNull(String email);
     Boolean existsByPhoneAndDeleteAtIsNull(String phone);
 }
