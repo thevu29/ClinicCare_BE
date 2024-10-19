@@ -36,7 +36,7 @@ public class RoleService {
     }
 
     public RoleDTO createRole(RoleDTO roleDTO) throws BadRequestException {
-        if (roleRepository.findByNameIgnoreCase(roleDTO.getName()) != null) {
+        if (roleRepository.findByNameIgnoreCase(roleDTO.getName()).orElse(null) != null) {
             throw new BadRequestException("Name already exists");
         }
 
@@ -53,7 +53,7 @@ public class RoleService {
                 .orElseThrow(() -> new NotFoundException("Role not found"));
 
         if (roleDTO.getName() != null && !roleDTO.getName().isEmpty()) {
-            if (roleRepository.findByNameIgnoreCase(roleDTO.getName()) != null) {
+            if (roleRepository.findByNameIgnoreCase(roleDTO.getName()).orElse(null) != null) {
                 throw new BadRequestException("Name already exists");
             }
 
