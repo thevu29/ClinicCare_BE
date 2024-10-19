@@ -14,7 +14,8 @@ import java.util.UUID;
 public class Service {
     public enum ServiceStatus {
         AVAILABLE,
-        UNAVAILABLE
+        UNAVAILABLE,
+        DELETED
     }
 
     @Id
