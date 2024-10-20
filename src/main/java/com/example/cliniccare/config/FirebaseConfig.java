@@ -14,7 +14,7 @@ public class FirebaseConfig {
     @Bean
     public FirebaseApp firebaseApp() throws IOException {
         if (FirebaseApp.getApps().isEmpty()) {
-            InputStream serviceAccount = getClass().getClassLoader().getResourceAsStream("serviceAccountKey.json");
+            InputStream serviceAccount = getClass().getClassLoader().getResourceAsStream("serviceAccount.json");
 
             if (serviceAccount == null) {
                 throw new IOException("Firebase service account key file not found");

@@ -1,5 +1,6 @@
 package com.example.cliniccare.dto;
 
+import com.example.cliniccare.interfaces.ServiceFormGroup;
 import com.example.cliniccare.model.Service;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
@@ -14,22 +15,20 @@ import java.util.UUID;
 public class ServiceDTO {
     private UUID serviceId;
 
-    @NotBlank(message = "Name is required")
+    @NotBlank(message = "Name is required", groups = {ServiceFormGroup.Create.class})
     private String name;
 
     private String description;
 
-    @NotBlank(message = "Price is required")
-    @Pattern(regexp = "\\d+", message = "Price must be a number")
+    @NotBlank(message = "Price is required", groups = {ServiceFormGroup.Create.class})
     @Min(value = 0, message = "Price must be greater than 0")
     private double price;
 
     private Date createAt;
 
-    @NotBlank(message = "Status is required")
+    @NotBlank(message = "Status is required", groups = {ServiceFormGroup.Create.class})
     private String status;
 
-    @NotNull(message = "Promotion is required")
     private UUID promotionId;
 
     public ServiceDTO() {}
@@ -41,6 +40,6 @@ public class ServiceDTO {
         this.price = service.getPrice();
         this.status = service.getStatus().name();
         this.createAt = service.getCreateAt();
-        this.promotionId = service.getPromotion().getPromotionId();
+        this.promotionId = service.getPromotion() == null ? null : service.getPromotion().getPromotionId();
     }
 }
