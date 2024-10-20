@@ -103,7 +103,7 @@ public class MedicalRecordService {
                 .orElseThrow(() -> new NotFoundException("Doctor profile not found"));
         medicalRecord.setDoctor(doctorProfile);
 
-        Service service = serviceRepository.findByServiceId(medicalRecordDTO.getServiceId())
+        Service service = serviceRepository.findServiceId(medicalRecordDTO.getServiceId())
                 .orElseThrow(() -> new NotFoundException("Service not found"));
         medicalRecord.setService(service);
 
