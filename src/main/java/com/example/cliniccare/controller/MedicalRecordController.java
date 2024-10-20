@@ -20,7 +20,7 @@ import static org.springframework.data.jpa.domain.AbstractPersistable_.id;
 
 @CrossOrigin("*")
 @RestController
-@RequestMapping("api/medicalRecord")
+@RequestMapping("api/medical-record")
 public class MedicalRecordController {
     private static final Logger logger = LoggerFactory.getLogger(MedicalRecordController.class);
 
@@ -88,7 +88,12 @@ public class MedicalRecordController {
             return ResponseEntity.ok(new ApiResponse<>(
                     true, "Create medical record successfully", medicalRecord
             ));
-        } catch (Exception e) {
+        }
+        catch (NotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ApiResponse<>(
+                    false, e.getMessage(), null
+            ));
+        }catch (Exception e) {
             logger.error("Failed to create medical record: {}", e.getMessage(), e);
             return ResponseEntity.internalServerError().body(new ApiResponse<>(
                     false, e.getMessage(), null
