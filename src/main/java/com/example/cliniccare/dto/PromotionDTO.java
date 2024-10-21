@@ -13,7 +13,7 @@ public class PromotionDTO {
     private UUID promotionId;
 
     @NotNull(message = "Discount is required", groups = {PromotionFormGroup.Create.class})
-    @Min(value = 0, message = "Discount must be greater than 0")
+    @Min(value = 1, message = "Discount must be greater than 0")
     private Integer discount;
 
     private String description;
