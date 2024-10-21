@@ -27,8 +27,6 @@ public class Feedback {
     @JoinColumn(name = "service_id", referencedColumnName = "service_id")
     private Service service;
 
-    private Date date;
-
     private String feedback;
 
     @Column(name = "create_at")
