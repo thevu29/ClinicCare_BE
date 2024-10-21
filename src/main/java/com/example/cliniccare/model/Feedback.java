@@ -27,8 +27,6 @@ public class Feedback {
     @JoinColumn(name = "service_id", referencedColumnName = "service_id")
     private Service service;
 
-    private Date date;
-
     private String feedback;
 
     @Column(name = "create_at")
@@ -37,4 +35,8 @@ public class Feedback {
     @Column(name = "delete_at")
     private Date deleteAt;
 
+    @PrePersist
+    protected void onCreate() {
+        this.createAt = new Date();
+    }
 }
