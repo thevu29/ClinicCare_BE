@@ -32,13 +32,6 @@ public class PromotionController {
         this.promotionService = promotionService;
     }
 
-    @ExceptionHandler(JsonMappingException.class)
-    public ResponseEntity<ApiResponse<String>> handleJsonMappingException(JsonMappingException ex) {
-        return ResponseEntity.badRequest().body(new ApiResponse<>(
-                false, "Invalid date format. Please use yyyy-MM-dd ", null)
-        );
-    }
-
     @GetMapping("/all")
     public ResponseEntity<?> getPromotions() {
         try{
