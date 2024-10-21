@@ -12,4 +12,5 @@ import java.util.UUID;
 public interface MedicalRecordRepository extends JpaRepository<MedicalRecord, UUID> {
     List<MedicalRecord> findByDeleteAtIsNull();
     Optional<MedicalRecord> findByMedicalRecordIdAndDeleteAtIsNull(UUID medicalRecordId);
+    List<MedicalRecord> findAllByPatient_UserId(UUID patientId);
 }

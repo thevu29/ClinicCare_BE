@@ -42,6 +42,11 @@ public class MedicalRecordService {
         return medicalRecord.stream().map(MedicalRecordDTO::new).toList();
     }
 
+    public List<MedicalRecordDTO> getMedicalRecordByPatientId(UUID patientId) {
+        List<MedicalRecord> medicalRecord = medicalRecordRepository.findAllByPatient_UserId(patientId);
+        return medicalRecord.stream().map(MedicalRecordDTO::new).toList();
+    }
+
     public MedicalRecordDTO getMedicalRecordById(UUID id) {
         MedicalRecord medicalRecord = medicalRecordRepository.findByMedicalRecordIdAndDeleteAtIsNull(id)
                 .orElseThrow(() -> new NotFoundException("Medical Record not found"));

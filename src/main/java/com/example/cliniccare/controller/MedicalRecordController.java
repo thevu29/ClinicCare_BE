@@ -59,6 +59,25 @@ public class MedicalRecordController {
         }
     }
 
+    @GetMapping("/patient/{patientId}")
+    public ResponseEntity<?> getMedicalRecordsByPatientId(@PathVariable UUID patientId) {
+        try {
+            List<MedicalRecordDTO> medicalRecords = medicalRecordService.getMedicalRecordByPatientId(patientId);
+            return ResponseEntity.ok(new ApiResponse<>(
+                    true, "Get all medical records by patient id successfully", medicalRecords
+            ));
+        } catch (NotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ApiResponse<>(
+                    false, e.getMessage(), null
+            ));
+        } catch (Exception e) {
+            logger.error("Failed to get all medical records by patient id: {}", e.getMessage(), e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new ApiResponse<>(
+                    false, "Failed to get all medical records by patient id", null
+            ));
+        }
+    }
+
     @GetMapping("/{id}")
     public ResponseEntity<?> getMedicalRecordById(@PathVariable UUID id) {
         try {
