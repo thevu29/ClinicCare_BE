@@ -1,10 +1,10 @@
 package com.example.cliniccare.dto;
 
+import com.example.cliniccare.interfaces.ServiceFormGroup;
 import com.example.cliniccare.model.Service;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Pattern;
 import lombok.Data;
 
 import java.util.Date;
@@ -14,24 +14,24 @@ import java.util.UUID;
 public class ServiceDTO {
     private UUID serviceId;
 
-    @NotBlank(message = "Name is required")
+    @NotBlank(message = "Name is required", groups = {ServiceFormGroup.Create.class})
     private String name;
 
     private String description;
 
-    @NotBlank(message = "Price is required")
-    @Min(value = 0, message = "Price must be greater than 0")
-    private double price;
+    @NotNull(message = "Price is required", groups = {ServiceFormGroup.Create.class})
+    @Min(value = 1, message = "Price must be greater than 0", groups = {ServiceFormGroup.Create.class, ServiceFormGroup.Update.class})
+    private Double price;
 
     private Date createAt;
 
-    @NotBlank(message = "Status is required")
     private String status;
 
-    @NotNull(message = "Promotion is required")
+    @NotNull(message = "Promotion is required", groups = {ServiceFormGroup.ApplyPromotion.class})
     private UUID promotionId;
 
-    public ServiceDTO() {}
+    public ServiceDTO() {
+    }
 
     public ServiceDTO(Service service) {
         this.serviceId = service.getServiceId();
@@ -40,6 +40,6 @@ public class ServiceDTO {
         this.price = service.getPrice();
         this.status = service.getStatus().name();
         this.createAt = service.getCreateAt();
-        this.promotionId = service.getPromotion().getPromotionId();
+        this.promotionId = service.getPromotion() == null ? null : service.getPromotion().getPromotionId();
     }
 }
