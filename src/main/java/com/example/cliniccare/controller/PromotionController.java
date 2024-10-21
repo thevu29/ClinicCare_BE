@@ -6,7 +6,6 @@ import com.example.cliniccare.exception.NotFoundException;
 import com.example.cliniccare.interfaces.PromotionFormGroup;
 import com.example.cliniccare.response.ApiResponse;
 import com.example.cliniccare.service.PromotionService;
-import com.fasterxml.jackson.databind.JsonMappingException;
 import jakarta.validation.groups.Default;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
