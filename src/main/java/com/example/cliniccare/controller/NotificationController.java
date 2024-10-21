@@ -1,12 +1,9 @@
 package com.example.cliniccare.controller;
 
 import com.example.cliniccare.dto.NotificationDTO;
-import com.example.cliniccare.dto.RoleDTO;
-import com.example.cliniccare.exception.BadRequestException;
 import com.example.cliniccare.exception.NotFoundException;
 import com.example.cliniccare.response.ApiResponse;
 import com.example.cliniccare.service.NotificationService;
-import com.example.cliniccare.service.RoleService;
 import jakarta.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
