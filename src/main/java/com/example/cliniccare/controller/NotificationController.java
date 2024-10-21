@@ -23,7 +23,7 @@ import java.util.stream.Collectors;
 
 @CrossOrigin("*")
 @RestController
-@RequestMapping("/api/notification")
+@RequestMapping("/api/notifications")
 public class NotificationController {
     private static final Logger logger = LoggerFactory.getLogger(NotificationController.class);
     private final NotificationService notificationService;
@@ -46,7 +46,7 @@ public class NotificationController {
         return null;
     }
 
-    @GetMapping("/all")
+    @GetMapping
     public ResponseEntity<?> getNotifications() {
         try {
             List<NotificationDTO> notifications = notificationService.getNotifications();
@@ -80,7 +80,7 @@ public class NotificationController {
         }
     }
 
-    @PostMapping("/create")
+    @PostMapping
     public ResponseEntity<?> createNotification(
             @Valid @RequestBody NotificationDTO notificationDTO,
             BindingResult bindingResult) {

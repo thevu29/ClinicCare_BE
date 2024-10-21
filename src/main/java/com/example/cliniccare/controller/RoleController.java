@@ -21,7 +21,7 @@ import java.util.stream.Collectors;
 
 @CrossOrigin("*")
 @RestController
-@RequestMapping("/api/role")
+@RequestMapping("/api/roles")
 public class RoleController {
     private static final Logger logger = LoggerFactory.getLogger(RoleController.class);
     private final RoleService roleService;
@@ -44,7 +44,7 @@ public class RoleController {
         return null;
     }
 
-    @GetMapping("/all")
+    @GetMapping
     public ResponseEntity<?> getRoles() {
         try {
             List<RoleDTO> roles = roleService.getRoles();
@@ -78,7 +78,7 @@ public class RoleController {
         }
     }
 
-    @PostMapping("/create")
+    @PostMapping
     public ResponseEntity<?> createRole(
             @Valid @RequestBody RoleDTO roleDTO,
             BindingResult bindingResult

@@ -22,7 +22,7 @@ import java.util.stream.Collectors;
 
 @CrossOrigin("*")
 @RestController
-@RequestMapping("api/promotion")
+@RequestMapping("api/promotions")
 public class PromotionController {
     private static final Logger logger = LoggerFactory.getLogger(PromotionController.class);
     private final PromotionService promotionService;
@@ -31,7 +31,7 @@ public class PromotionController {
         this.promotionService = promotionService;
     }
 
-    @GetMapping("/all")
+    @GetMapping
     public ResponseEntity<?> getPromotions() {
         try{
             List<PromotionDTO> promotions = promotionService.getAllPromotions();
@@ -46,7 +46,7 @@ public class PromotionController {
         }
     }
 
-    @PostMapping("/create")
+    @PostMapping
     public ResponseEntity<?> createPromotion(
             @Validated({Default.class, PromotionFormGroup.Create.class}) @RequestBody PromotionDTO promotionDTO,
             BindingResult bindingResult

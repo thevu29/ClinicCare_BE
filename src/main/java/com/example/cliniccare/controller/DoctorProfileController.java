@@ -24,7 +24,7 @@ import java.util.stream.Collectors;
 
 @CrossOrigin("*")
 @RestController
-@RequestMapping("api/doctor")
+@RequestMapping("api/doctors")
 public class DoctorProfileController {
     private static final Logger logger = LoggerFactory.getLogger(DoctorProfileController.class);
     private final DoctorProfileService doctorProfileService;
@@ -47,7 +47,7 @@ public class DoctorProfileController {
         return null;
     }
 
-    @GetMapping("/all")
+    @GetMapping
     public ResponseEntity<?> getDoctorProfiles() {
         try {
             List<DoctorProfileDTO> doctorProfiles = doctorProfileService.getDoctorProfiles();
@@ -81,7 +81,7 @@ public class DoctorProfileController {
         }
     }
 
-    @PostMapping ("/create")
+    @PostMapping
     public ResponseEntity<?> createDoctorProfile(
             @Validated(DoctorProfileGroup.Create.class) @ModelAttribute DoctorProfileFormDTO doctorProfileDTO,
             BindingResult bindingResult
