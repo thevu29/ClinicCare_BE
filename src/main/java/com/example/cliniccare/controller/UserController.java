@@ -28,7 +28,7 @@ import java.util.stream.Collectors;
 
 @CrossOrigin("*")
 @RestController
-@RequestMapping("api/user")
+@RequestMapping("api/users")
 public class UserController {
     private static final Logger logger = LoggerFactory.getLogger(UserController.class);
     private final UserService userService;
@@ -51,7 +51,7 @@ public class UserController {
         return null;
     }
 
-    @GetMapping("/all")
+    @GetMapping
     public ResponseEntity<?> getUsers(
             @RequestParam(defaultValue = "1") int page,
             @RequestParam(defaultValue = "10") int size,
@@ -91,7 +91,7 @@ public class UserController {
         }
     }
 
-    @PostMapping("/create")
+    @PostMapping
     public ResponseEntity<?> createUser(
             @Validated({Default.class, UserFormGroup.Create.class}) @ModelAttribute UserFormDTO userDTO,
             BindingResult bindingResult
