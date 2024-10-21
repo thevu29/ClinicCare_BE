@@ -1,7 +1,6 @@
 package com.example.cliniccare.repository;
 
 import com.example.cliniccare.model.MedicalRecord;
-import jakarta.validation.constraints.NotBlank;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
