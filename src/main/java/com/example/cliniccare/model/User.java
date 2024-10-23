@@ -42,7 +42,7 @@ public class User {
     @OneToMany(mappedBy = "patient")
     private List<Feedback> feedbackList;
 
-    @OneToMany(mappedBy = "user")
+    @OneToMany(mappedBy = "patient")
     private List<Appointment> appointmentList;
 
     @OneToMany(mappedBy = "patient")
