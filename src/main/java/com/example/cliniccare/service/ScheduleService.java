@@ -45,7 +45,7 @@ public class ScheduleService {
                     ? Schedule.ScheduleStatus.valueOf(status.toUpperCase())
                     : Schedule.ScheduleStatus.AVAILABLE;
         } catch (IllegalArgumentException e) {
-            throw new BadRequestException("Invalid status");
+            throw new NotFoundException("Invalid status");
         }
     }
 
