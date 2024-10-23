@@ -7,6 +7,7 @@ import com.example.cliniccare.exception.NotFoundException;
 import com.example.cliniccare.interfaces.ScheduleFormGroup;
 import com.example.cliniccare.response.ApiResponse;
 import com.example.cliniccare.service.ScheduleService;
+import com.example.cliniccare.validation.Validation;
 import jakarta.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -32,19 +33,6 @@ public class ScheduleController {
     @Autowired
     public ScheduleController(ScheduleService scheduleService) {
         this.scheduleService = scheduleService;
-    }
-
-    private ResponseEntity<?> handleValidate(BindingResult bindingResult) {
-        if (bindingResult.hasErrors()) {
-            String errors = bindingResult.getAllErrors().stream()
-                    .map(DefaultMessageSourceResolvable::getDefaultMessage)
-                    .collect(Collectors.joining(", "));
-
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ApiResponse<>(
-                    false, errors, null
-            ));
-        }
-        return null;
     }
 
     @GetMapping
@@ -107,8 +95,8 @@ public class ScheduleController {
             BindingResult bindingResult
     ) {
         try {
-            if (handleValidate(bindingResult) != null) {
-                return handleValidate(bindingResult);
+            if (Validation.validateBody(bindingResult) != null) {
+                return Validation.validateBody(bindingResult);
             }
 
             ScheduleDTO newSchedule = scheduleService.createSchedule(scheduleDTO);
@@ -139,8 +127,8 @@ public class ScheduleController {
             BindingResult bindingResult
     ) {
         try {
-            if (handleValidate(bindingResult) != null) {
-                return handleValidate(bindingResult);
+            if (Validation.validateBody(bindingResult) != null) {
+                return Validation.validateBody(bindingResult);
             }
 
             ScheduleDTO updatedSchedule = scheduleService.updateSchedule(id, scheduleDTO);

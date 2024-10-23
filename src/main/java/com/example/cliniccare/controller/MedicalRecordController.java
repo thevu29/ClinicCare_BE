@@ -6,6 +6,7 @@ import com.example.cliniccare.exception.NotFoundException;
 import com.example.cliniccare.interfaces.MedicalRecordGroup;
 import com.example.cliniccare.response.ApiResponse;
 import com.example.cliniccare.service.MedicalRecordService;
+import com.example.cliniccare.validation.Validation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.support.DefaultMessageSourceResolvable;
@@ -29,19 +30,6 @@ public class MedicalRecordController {
 
     public MedicalRecordController(MedicalRecordService medicalRecordService) {
         this.medicalRecordService = medicalRecordService;
-    }
-
-    public ResponseEntity<?> handleValidate(BindingResult bindingResult) {
-        if (bindingResult.hasErrors()) {
-            String errors = bindingResult.getAllErrors().stream()
-                    .map(DefaultMessageSourceResolvable::getDefaultMessage)
-                    .collect(Collectors.joining(", "));
-
-            return ResponseEntity.badRequest().body(new ApiResponse<>(
-                    false, errors, null
-            ));
-        }
-        return null;
     }
 
     @GetMapping
@@ -103,8 +91,8 @@ public class MedicalRecordController {
             BindingResult bindingResult
     ) {
         try {
-            if (handleValidate(bindingResult) != null) {
-                return handleValidate(bindingResult);
+            if (Validation.validateBody(bindingResult) != null) {
+                return Validation.validateBody(bindingResult);
             }
 
             MedicalRecordDTO medicalRecord = medicalRecordService.createMedicalRecord(medicalRecordDTO);
@@ -134,8 +122,8 @@ public class MedicalRecordController {
             BindingResult bindingResult
     ) {
         try {
-            if (handleValidate(bindingResult) != null) {
-                return handleValidate(bindingResult);
+            if (Validation.validateBody(bindingResult) != null) {
+                return Validation.validateBody(bindingResult);
             }
 
             MedicalRecordDTO medicalRecord = medicalRecordService.updateMedicalRecord(id, medicalRecordDTO);

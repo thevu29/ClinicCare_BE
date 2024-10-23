@@ -6,6 +6,7 @@ import com.example.cliniccare.exception.NotFoundException;
 import com.example.cliniccare.interfaces.FeedbackFormGroup;
 import com.example.cliniccare.response.ApiResponse;
 import com.example.cliniccare.service.FeedbackService;
+import com.example.cliniccare.validation.Validation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,19 +31,6 @@ public class FeedbackController {
     @Autowired
     public FeedbackController(FeedbackService feedbackService) {
         this.feedbackService = feedbackService;
-    }
-
-    public ResponseEntity<?> handleValidate(BindingResult bindingResult) {
-        if (bindingResult.hasErrors()) {
-            String errors = bindingResult.getAllErrors().stream()
-                    .map(DefaultMessageSourceResolvable::getDefaultMessage)
-                    .collect(Collectors.joining(", "));
-
-            return ResponseEntity.badRequest().body(new ApiResponse<>(
-                    false, errors, null
-            ));
-        }
-        return null;
     }
 
     @GetMapping
@@ -100,8 +88,8 @@ public class FeedbackController {
             BindingResult bindingResult
     ) {
         try {
-            if (handleValidate(bindingResult) != null) {
-                return handleValidate(bindingResult);
+            if (Validation.validateBody(bindingResult) != null) {
+                return Validation.validateBody(bindingResult);
             }
 
             FeedbackDTO feedback = feedbackService.createFeedback(feedbackDTO);
@@ -138,8 +126,8 @@ public class FeedbackController {
             @Validated(FeedbackFormGroup.Update.class) @RequestBody FeedbackDTO feedbackDTO,
             BindingResult bindingResult
     ) {
-        if (handleValidate(bindingResult) != null) {
-            return handleValidate(bindingResult);
+        if (Validation.validateBody(bindingResult) != null) {
+            return Validation.validateBody(bindingResult);
         }
 
         try {
