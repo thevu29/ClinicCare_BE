@@ -1,13 +1,12 @@
 package com.example.cliniccare.service;
 
 import com.example.cliniccare.dto.MedicalRecordDTO;
+import com.example.cliniccare.dto.PaginationDTO;
 import com.example.cliniccare.exception.BadRequestException;
 import com.example.cliniccare.exception.NotFoundException;
 import com.example.cliniccare.model.DoctorProfile;
 import com.example.cliniccare.model.MedicalRecord;
 import com.example.cliniccare.model.User;
-import com.example.cliniccare.pagination.PaginationQuery;
-import com.example.cliniccare.pagination.PaginationService;
 import com.example.cliniccare.repository.DoctorProfileRepository;
 import com.example.cliniccare.repository.MedicalRecordRepository;
 import com.example.cliniccare.repository.ServiceRepository;
@@ -47,11 +46,10 @@ public class MedicalRecordService {
     }
 
     public PaginationResponse<List<MedicalRecordDTO>> getMedicalRecords(
-            PaginationQuery paginationQuery,
+            PaginationDTO paginationQuery,
             String search
     ) {
         Pageable pageable = paginationService.getPageable(paginationQuery);
-
         Page<MedicalRecord> medicalRecords = medicalRecordRepository.findByDeleteAtIsNullAndDescriptionContaining(search, pageable);
         int totalPage = paginationService.getTotalPages(medicalRecords.getTotalElements(), paginationQuery.size);
         long totalElements = medicalRecords.getTotalElements();

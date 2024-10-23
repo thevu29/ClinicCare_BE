@@ -2,13 +2,11 @@ package com.example.cliniccare.service;
 
 import com.example.cliniccare.dto.DoctorProfileDTO;
 import com.example.cliniccare.dto.DoctorProfileFormDTO;
-import com.example.cliniccare.dto.UserDTO;
+import com.example.cliniccare.dto.PaginationDTO;
 import com.example.cliniccare.exception.BadRequestException;
 import com.example.cliniccare.exception.NotFoundException;
 import com.example.cliniccare.model.DoctorProfile;
 import com.example.cliniccare.model.User;
-import com.example.cliniccare.pagination.PaginationQuery;
-import com.example.cliniccare.pagination.PaginationService;
 import com.example.cliniccare.repository.DoctorProfileRepository;
 import com.example.cliniccare.repository.RoleRepository;
 import com.example.cliniccare.repository.UserRepository;
@@ -52,7 +50,7 @@ public class DoctorProfileService {
     }
 
     public PaginationResponse<List<DoctorProfileDTO>> getDoctorProfiles(
-            PaginationQuery paginationQuery,
+            PaginationDTO paginationQuery,
             String search
     ) {
         Pageable pageable = paginationService.getPageable(paginationQuery);

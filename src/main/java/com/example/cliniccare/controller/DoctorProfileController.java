@@ -2,11 +2,11 @@ package com.example.cliniccare.controller;
 
 import com.example.cliniccare.dto.DoctorProfileDTO;
 import com.example.cliniccare.dto.DoctorProfileFormDTO;
+import com.example.cliniccare.dto.PaginationDTO;
 import com.example.cliniccare.dto.UserDTO;
 import com.example.cliniccare.exception.BadRequestException;
 import com.example.cliniccare.exception.NotFoundException;
 import com.example.cliniccare.interfaces.DoctorProfileGroup;
-import com.example.cliniccare.pagination.PaginationQuery;
 import com.example.cliniccare.response.ApiResponse;
 import com.example.cliniccare.response.PaginationResponse;
 import com.example.cliniccare.service.DoctorProfileService;
@@ -46,7 +46,7 @@ public class DoctorProfileController {
             @RequestParam(defaultValue = "asc") String order,
             @RequestParam(defaultValue = "") String search) {
         try {
-            PaginationQuery paginationQuery = new PaginationQuery(page, size, sortBy, order);
+            PaginationDTO paginationQuery = new PaginationDTO(page, size, sortBy, order);
             PaginationResponse<List<DoctorProfileDTO>> response = doctorProfileService.getDoctorProfiles(paginationQuery, search);
 
             return ResponseEntity.ok(response);

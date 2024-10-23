@@ -2,10 +2,10 @@ package com.example.cliniccare.controller;
 
 import com.example.cliniccare.dto.DoctorProfileDTO;
 import com.example.cliniccare.dto.MedicalRecordDTO;
+import com.example.cliniccare.dto.PaginationDTO;
 import com.example.cliniccare.exception.BadRequestException;
 import com.example.cliniccare.exception.NotFoundException;
 import com.example.cliniccare.interfaces.MedicalRecordGroup;
-import com.example.cliniccare.pagination.PaginationQuery;
 import com.example.cliniccare.response.ApiResponse;
 import com.example.cliniccare.response.PaginationResponse;
 import com.example.cliniccare.service.MedicalRecordService;
@@ -43,7 +43,7 @@ public class MedicalRecordController {
             @RequestParam(defaultValue = "asc") String order,
             @RequestParam(defaultValue = "") String search) {
         try {
-            PaginationQuery paginationQuery = new PaginationQuery(page, size, sortBy, order);
+            PaginationDTO paginationQuery = new PaginationDTO(page, size, sortBy, order);
             PaginationResponse<List<MedicalRecordDTO>> response = medicalRecordService.getMedicalRecords(paginationQuery, search);
             return ResponseEntity.ok(response);
         }catch (Exception e) {
