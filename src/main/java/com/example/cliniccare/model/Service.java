@@ -14,7 +14,7 @@ import java.util.UUID;
 public class Service {
     public enum ServiceStatus {
         AVAILABLE,
-        UNAVAILABLE
+        UNAVAILABLE,
     }
 
     @Id
@@ -32,6 +32,9 @@ public class Service {
 
     @Column(name = "create_at")
     private Date createAt;
+
+    @Column(name = "delete_at")
+    private Date deleteAt;
 
     @OneToMany(mappedBy = "service")
     private List<Feedback> feedbackList;

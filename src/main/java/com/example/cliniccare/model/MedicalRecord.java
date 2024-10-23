@@ -16,7 +16,7 @@ public class MedicalRecord {
     private UUID medicalRecordId;
 
     @ManyToOne
-    @JoinColumn(name = "patien_id", referencedColumnName = "user_id")
+    @JoinColumn(name = "patient_id", referencedColumnName = "user_id")
     private User patient;
 
     @ManyToOne
@@ -27,11 +27,16 @@ public class MedicalRecord {
     @JoinColumn(name = "service_id", referencedColumnName = "service_id")
     private Service service;
 
-    private String message;
+    private String description;
 
     @Column(name = "create_at")
     private Date createAt;
 
     @Column(name = "delete_at")
     private Date deleteAt;
+
+    @PrePersist
+    public void onCreate() {
+        this.createAt = new Date();
+    }
 }

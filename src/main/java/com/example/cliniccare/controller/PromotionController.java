@@ -6,7 +6,6 @@ import com.example.cliniccare.exception.NotFoundException;
 import com.example.cliniccare.interfaces.PromotionFormGroup;
 import com.example.cliniccare.response.ApiResponse;
 import com.example.cliniccare.service.PromotionService;
-import com.fasterxml.jackson.databind.JsonMappingException;
 import jakarta.validation.groups.Default;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,7 +22,7 @@ import java.util.stream.Collectors;
 
 @CrossOrigin("*")
 @RestController
-@RequestMapping("api/promotion")
+@RequestMapping("api/promotions")
 public class PromotionController {
     private static final Logger logger = LoggerFactory.getLogger(PromotionController.class);
     private final PromotionService promotionService;
@@ -32,14 +31,7 @@ public class PromotionController {
         this.promotionService = promotionService;
     }
 
-    @ExceptionHandler(JsonMappingException.class)
-    public ResponseEntity<ApiResponse<String>> handleJsonMappingException(JsonMappingException ex) {
-        return ResponseEntity.badRequest().body(new ApiResponse<>(
-                false, "Invalid date format. Please use yyyy-MM-dd ", null)
-        );
-    }
-
-    @GetMapping("/all")
+    @GetMapping
     public ResponseEntity<?> getPromotions() {
         try{
             List<PromotionDTO> promotions = promotionService.getAllPromotions();
@@ -54,7 +46,7 @@ public class PromotionController {
         }
     }
 
-    @PostMapping("/create")
+    @PostMapping
     public ResponseEntity<?> createPromotion(
             @Validated({Default.class, PromotionFormGroup.Create.class}) @RequestBody PromotionDTO promotionDTO,
             BindingResult bindingResult
@@ -82,10 +74,6 @@ public class PromotionController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ApiResponse<>(
                     false, e.getMessage(), null
             ));
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ApiResponse<>(
-                    false, "Status must be one of the following: Active, Inactive, Expired, or End", null
-            ));
         } catch (Exception e) {
             logger.error("Failed to create promotion: {}", e.getMessage(), e);
             return ResponseEntity.internalServerError().body(new ApiResponse<>(
@@ -112,10 +100,6 @@ public class PromotionController {
         } catch (BadRequestException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ApiResponse<>(
                     false, e.getMessage(), null
-            ));
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ApiResponse<>(
-                    false, "Status must be one of the following: Active, Inactive, Expired, or End.", null
             ));
         } catch (Exception e) {
             logger.error("Failed to update promotion: {}", e.getMessage(), e);

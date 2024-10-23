@@ -20,7 +20,7 @@ public class UserFormDTO {
     @Email(message = "Invalid email format", groups = {UserFormGroup.Create.class})
     private String email;
 
-    @ValidPhone(message = "Invalid phone number")
+    @ValidPhone(message = "Invalid phone number", groups = {UserFormGroup.Create.class, UserFormGroup.Update.class})
     private String phone;
 
     @NotBlank(message = "Password is required", groups = {UserFormGroup.Create.class})

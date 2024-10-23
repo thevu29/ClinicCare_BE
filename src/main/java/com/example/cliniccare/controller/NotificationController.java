@@ -1,12 +1,9 @@
 package com.example.cliniccare.controller;
 
 import com.example.cliniccare.dto.NotificationDTO;
-import com.example.cliniccare.dto.RoleDTO;
-import com.example.cliniccare.exception.BadRequestException;
 import com.example.cliniccare.exception.NotFoundException;
 import com.example.cliniccare.response.ApiResponse;
 import com.example.cliniccare.service.NotificationService;
-import com.example.cliniccare.service.RoleService;
 import jakarta.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,7 +20,7 @@ import java.util.stream.Collectors;
 
 @CrossOrigin("*")
 @RestController
-@RequestMapping("/api/notification")
+@RequestMapping("/api/notifications")
 public class NotificationController {
     private static final Logger logger = LoggerFactory.getLogger(NotificationController.class);
     private final NotificationService notificationService;
@@ -46,7 +43,7 @@ public class NotificationController {
         return null;
     }
 
-    @GetMapping("/all")
+    @GetMapping
     public ResponseEntity<?> getNotifications() {
         try {
             List<NotificationDTO> notifications = notificationService.getNotifications();
@@ -80,7 +77,7 @@ public class NotificationController {
         }
     }
 
-    @PostMapping("/create")
+    @PostMapping
     public ResponseEntity<?> createNotification(
             @Valid @RequestBody NotificationDTO notificationDTO,
             BindingResult bindingResult) {

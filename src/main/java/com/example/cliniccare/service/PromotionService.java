@@ -19,6 +19,16 @@ public class PromotionService {
         this.promotionRepository = promotionRepository;
     }
 
+    private Promotion.PromotionStatus getPromotionStatus(String status) {
+        try {
+            return status != null && !status.isEmpty()
+                    ? Promotion.PromotionStatus.valueOf(status.toUpperCase())
+                    : Promotion.PromotionStatus.ACTIVE;
+        } catch (IllegalArgumentException e) {
+            throw new NotFoundException("Invalid promotion status");
+        }
+    }
+
     public List<PromotionDTO> getAllPromotions() {
         List<Promotion> promotions = promotionRepository.findAll();
         return promotions.stream().map(PromotionDTO::new).toList();
@@ -34,7 +44,7 @@ public class PromotionService {
         Promotion promotion = new Promotion();
         promotion.setDiscount(promotionDTO.getDiscount());
         promotion.setDescription(promotionDTO.getDescription());
-        promotion.setStatus(Promotion.PromotionStatus.valueOf(promotionDTO.getStatus().toUpperCase()));
+        promotion.setStatus(getPromotionStatus(promotionDTO.getStatus()));
         promotion.setExpireAt(promotionDTO.getExpireAt());
 
         Promotion savedPromotion = promotionRepository.save(promotion);
@@ -52,7 +62,7 @@ public class PromotionService {
             promotion.setExpireAt(promotionDTO.getExpireAt());
         }
         if (promotionDTO.getStatus() != null && !promotionDTO.getStatus().isEmpty()) {
-            promotion.setStatus(Promotion.PromotionStatus.valueOf(promotionDTO.getStatus().toUpperCase()));
+            promotion.setStatus(getPromotionStatus(promotionDTO.getStatus()));
         }
         promotion.setDescription(promotionDTO.getDescription());
 

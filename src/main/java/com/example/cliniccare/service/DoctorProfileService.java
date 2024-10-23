@@ -9,8 +9,6 @@ import com.example.cliniccare.model.User;
 import com.example.cliniccare.repository.DoctorProfileRepository;
 import com.example.cliniccare.repository.RoleRepository;
 import com.example.cliniccare.repository.UserRepository;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -80,7 +78,7 @@ public class DoctorProfileService {
         user.setPhone(doctorProfileDTO.getPhone());
         user.setPassword(passwordEncoder.encode(doctorProfileDTO.getPassword()));
         user.setImage(firebaseStorageService.uploadImage(doctorProfileDTO.getImage()));
-        user.setRole(roleRepository.findByName("Doctor")
+        user.setRole(roleRepository.findByNameIgnoreCase("Doctor")
                 .orElseThrow(() -> new NotFoundException("Doctor role not found")));
 
         User savedUser = userRepository.save(user);

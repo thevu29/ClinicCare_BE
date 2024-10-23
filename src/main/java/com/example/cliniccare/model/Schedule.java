@@ -3,13 +3,21 @@ package com.example.cliniccare.model;
 import jakarta.persistence.*;
 import lombok.Data;
 
-import java.util.Date;
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Entity
 @Data
 @Table(name = "schedules")
 public class Schedule {
+    public enum ScheduleStatus {
+        AVAILABLE,
+        UNAVAILABLE,
+        BOOKED,
+        CANCELLED,
+        COMPLETED
+    }
+
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     @Column(name = "schedule_id")
@@ -23,16 +31,13 @@ public class Schedule {
     @JoinColumn(name = "doctor_profile_id", referencedColumnName = "doctor_profile_id")
     private DoctorProfile doctor;
 
+    @Column(name = "date_time")
+    private LocalDateTime dateTime;
+
+    private int duration;
+
+    private ScheduleStatus status;
+
     @OneToOne(mappedBy = "schedule")
     private Appointment appointment;
-
-    private Date date;
-
-    @Enumerated(EnumType.STRING)
-    private ScheduleStatus status;
-}
-
-enum ScheduleStatus {
-    Available,
-    NotAvailable
 }

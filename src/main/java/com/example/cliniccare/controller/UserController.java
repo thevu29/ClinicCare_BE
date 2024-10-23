@@ -4,13 +4,11 @@ import com.example.cliniccare.dto.UserDTO;
 import com.example.cliniccare.dto.UserFormDTO;
 import com.example.cliniccare.exception.BadRequestException;
 import com.example.cliniccare.exception.NotFoundException;
-import com.example.cliniccare.model.User;
 import com.example.cliniccare.pagination.PaginationQuery;
 import com.example.cliniccare.interfaces.UserFormGroup;
 import com.example.cliniccare.response.ApiResponse;
 import com.example.cliniccare.response.PaginationResponse;
 import com.example.cliniccare.service.UserService;
-import jakarta.validation.groups.Default;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,7 +26,7 @@ import java.util.stream.Collectors;
 
 @CrossOrigin("*")
 @RestController
-@RequestMapping("api/user")
+@RequestMapping("api/users")
 public class UserController {
     private static final Logger logger = LoggerFactory.getLogger(UserController.class);
     private final UserService userService;
@@ -51,7 +49,7 @@ public class UserController {
         return null;
     }
 
-    @GetMapping("/all")
+    @GetMapping
     public ResponseEntity<?> getUsers(
             @RequestParam(defaultValue = "1") int page,
             @RequestParam(defaultValue = "10") int size,
@@ -91,9 +89,9 @@ public class UserController {
         }
     }
 
-    @PostMapping("/create")
+    @PostMapping
     public ResponseEntity<?> createUser(
-            @Validated({Default.class, UserFormGroup.Create.class}) @ModelAttribute UserFormDTO userDTO,
+            @Validated(UserFormGroup.Create.class) @ModelAttribute UserFormDTO userDTO,
             BindingResult bindingResult
     ) {
         try {
@@ -129,7 +127,7 @@ public class UserController {
     @PutMapping("/update/{id}")
     public ResponseEntity<?> updateUser(
             @PathVariable UUID id,
-            @Validated({Default.class, UserFormGroup.Update.class}) @ModelAttribute UserFormDTO userDTO,
+            @Validated(UserFormGroup.Update.class) @ModelAttribute UserFormDTO userDTO,
             BindingResult bindingResult
     ) {
         try {

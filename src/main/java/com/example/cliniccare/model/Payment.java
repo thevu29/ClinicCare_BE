@@ -10,6 +10,12 @@ import java.util.UUID;
 @Data
 @Table(name = "payments")
 public class Payment {
+    public enum PaymentStatus {
+        PENDING,
+        PAID,
+        CANCELLED
+    }
+
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     @Column(name = "payment_id")
@@ -28,12 +34,5 @@ public class Payment {
     @Column(name = "total_price")
     private double totalPrice;
 
-    @Enumerated(EnumType.STRING)
     private PaymentStatus status;
-}
-
-enum PaymentStatus {
-    PENDING,
-    PAID,
-    CANCELLED
 }

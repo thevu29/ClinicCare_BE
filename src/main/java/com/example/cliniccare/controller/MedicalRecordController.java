@@ -1,7 +1,9 @@
 package com.example.cliniccare.controller;
 
 import com.example.cliniccare.dto.MedicalRecordDTO;
+import com.example.cliniccare.exception.BadRequestException;
 import com.example.cliniccare.exception.NotFoundException;
+import com.example.cliniccare.interfaces.MedicalRecordGroup;
 import com.example.cliniccare.response.ApiResponse;
 import com.example.cliniccare.service.MedicalRecordService;
 import org.slf4j.Logger;
@@ -10,17 +12,16 @@ import org.springframework.context.support.DefaultMessageSourceResolvable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-import static org.springframework.data.jpa.domain.AbstractPersistable_.id;
-
 @CrossOrigin("*")
 @RestController
-@RequestMapping("api/medical-record")
+@RequestMapping("api/medical-records")
 public class MedicalRecordController {
     private static final Logger logger = LoggerFactory.getLogger(MedicalRecordController.class);
 
@@ -43,16 +44,36 @@ public class MedicalRecordController {
         return null;
     }
 
-    @GetMapping("/all")
+    @GetMapping
     public ResponseEntity<?> getMedicalRecords() {
         try {
             List<MedicalRecordDTO> medicalRecords = medicalRecordService.getMedicalRecord();
             return ResponseEntity.ok(new ApiResponse<>(
-                    true, "Get medical records successfully", medicalRecords
+                    true, "Get all medical records successfully", medicalRecords
             ));
         } catch (Exception e) {
-            return org.springframework.http.ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new ApiResponse<>(
+            logger.error("Failed to get all medical records: {}", e.getMessage(), e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new ApiResponse<>(
+                    false, "Failed to get all medical records", null
+            ));
+        }
+    }
+
+    @GetMapping("/patient/{patientId}")
+    public ResponseEntity<?> getMedicalRecordsByPatientId(@PathVariable UUID patientId) {
+        try {
+            List<MedicalRecordDTO> medicalRecords = medicalRecordService.getMedicalRecordByPatientId(patientId);
+            return ResponseEntity.ok(new ApiResponse<>(
+                    true, "Get all medical records by patient id successfully", medicalRecords
+            ));
+        } catch (NotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ApiResponse<>(
                     false, e.getMessage(), null
+            ));
+        } catch (Exception e) {
+            logger.error("Failed to get all medical records by patient id: {}", e.getMessage(), e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new ApiResponse<>(
+                    false, "Failed to get all medical records by patient id", null
             ));
         }
     }
@@ -62,24 +83,26 @@ public class MedicalRecordController {
         try {
             MedicalRecordDTO user = medicalRecordService.getMedicalRecordById(id);
             return ResponseEntity.ok(new ApiResponse<>(
-                    true, "Get user successfully", user
+                    true, "Get medical record successfully", user
             ));
         } catch (NotFoundException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ApiResponse<>(
                     false, e.getMessage(), null
             ));
         } catch (Exception e) {
-            logger.error("Failed to get user: {}", e.getMessage(), e);
+            logger.error("Failed to get medical record: {}", e.getMessage(), e);
             return ResponseEntity.internalServerError().body(new ApiResponse<>(
-                    false, e.getMessage(), null
+                    false, "Failed to get medical record", null
             ));
         }
     }
 
-    @PostMapping ("/create")
-    public ResponseEntity<?> createMedicalRecord(@RequestBody MedicalRecordDTO medicalRecordDTO,  BindingResult bindingResult) {
+    @PostMapping
+    public ResponseEntity<?> createMedicalRecord(
+            @Validated(MedicalRecordGroup.Create.class) @RequestBody MedicalRecordDTO medicalRecordDTO,
+            BindingResult bindingResult
+    ) {
         try {
-
             if (handleValidate(bindingResult) != null) {
                 return handleValidate(bindingResult);
             }
@@ -88,12 +111,15 @@ public class MedicalRecordController {
             return ResponseEntity.ok(new ApiResponse<>(
                     true, "Create medical record successfully", medicalRecord
             ));
-        }
-        catch (NotFoundException e) {
+        } catch (NotFoundException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ApiResponse<>(
                     false, e.getMessage(), null
             ));
-        }catch (Exception e) {
+        } catch (BadRequestException e) {
+            return ResponseEntity.badRequest().body(new ApiResponse<>(
+                    false, e.getMessage(), null
+            ));
+        } catch (Exception e) {
             logger.error("Failed to create medical record: {}", e.getMessage(), e);
             return ResponseEntity.internalServerError().body(new ApiResponse<>(
                     false, e.getMessage(), null
@@ -101,8 +127,12 @@ public class MedicalRecordController {
         }
     }
 
-    @PutMapping("/{id}")
-    public ResponseEntity<?> updateMedicalRecord(@PathVariable UUID id, @RequestBody MedicalRecordDTO medicalRecordDTO, BindingResult bindingResult) {
+    @PutMapping("/update/{id}")
+    public ResponseEntity<?> updateMedicalRecord(
+            @PathVariable UUID id,
+            @Validated(MedicalRecordGroup.Update.class) @RequestBody MedicalRecordDTO medicalRecordDTO,
+            BindingResult bindingResult
+    ) {
         try {
             if (handleValidate(bindingResult) != null) {
                 return handleValidate(bindingResult);
@@ -116,6 +146,10 @@ public class MedicalRecordController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ApiResponse<>(
                     false, e.getMessage(), null
             ));
+        } catch (BadRequestException e) {
+            return ResponseEntity.badRequest().body(new ApiResponse<>(
+                    false, e.getMessage(), null
+            ));
         } catch (Exception e) {
             logger.error("Failed to update medical record: {}", e.getMessage(), e);
             return ResponseEntity.internalServerError().body(new ApiResponse<>(
@@ -124,7 +158,7 @@ public class MedicalRecordController {
         }
     }
 
-    @DeleteMapping("/{id}")
+    @DeleteMapping("/delete/{id}")
     public ResponseEntity<?> deleteMedicalRecord(@PathVariable UUID id) {
         try {
             medicalRecordService.deleteMedicalRecord(id);
