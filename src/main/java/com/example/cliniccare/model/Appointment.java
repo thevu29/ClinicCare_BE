@@ -10,6 +10,12 @@ import java.util.UUID;
 @Data
 @Table(name = "appointments")
 public class Appointment {
+    public enum AppointmentStatus {
+        PENDING,
+        CONFIRMED,
+        CANCELLED
+    }
+
     @Id
     @Column(name = "appointment_id")
     @GeneratedValue(strategy = GenerationType.UUID)
@@ -31,12 +37,5 @@ public class Appointment {
 
     private Date date;
 
-    @Enumerated(EnumType.STRING)
     private AppointmentStatus status;
-}
-
-enum AppointmentStatus {
-    PENDING,
-    CONFIRMED,
-    CANCELLED
 }
