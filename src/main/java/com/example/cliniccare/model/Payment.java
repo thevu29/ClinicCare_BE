@@ -3,7 +3,7 @@ package com.example.cliniccare.model;
 import jakarta.persistence.*;
 import lombok.Data;
 
-import java.util.Date;
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Entity
@@ -29,7 +29,7 @@ public class Payment {
     @JoinColumn(name = "service_id", referencedColumnName = "service_id")
     private Service service;
 
-    private Date date;
+    private LocalDateTime date;
 
     @Column(name = "total_price")
     private double totalPrice;

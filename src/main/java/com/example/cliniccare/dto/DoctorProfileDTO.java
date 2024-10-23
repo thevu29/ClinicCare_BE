@@ -4,7 +4,7 @@ import com.example.cliniccare.model.DoctorProfile;
 import com.example.cliniccare.model.User;
 import lombok.Data;
 
-import java.util.Date;
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Data
@@ -16,7 +16,7 @@ public class DoctorProfileDTO {
     private String phone;
     private String image;
     private String specialty;
-    private Date createAt;
+    private LocalDateTime createAt;
 
     public DoctorProfileDTO() {
     }

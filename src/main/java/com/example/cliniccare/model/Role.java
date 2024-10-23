@@ -3,8 +3,7 @@ package com.example.cliniccare.model;
 import jakarta.persistence.*;
 import lombok.Data;
 
-
-import java.util.Date;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
@@ -22,13 +21,13 @@ public class Role {
     private String description;
 
     @Column(name = "create_at")
-    private Date createAt;
+    private LocalDateTime createAt;
 
     @OneToMany(mappedBy = "role")
     private List<User> userList;
 
     @PrePersist
     protected void onCreate() {
-        createAt = new Date();
+        createAt = LocalDateTime.now();
     }
 }

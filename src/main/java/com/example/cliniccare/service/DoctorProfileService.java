@@ -20,7 +20,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
-import java.util.Date;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
@@ -151,10 +151,10 @@ public class DoctorProfileService {
         User user = userRepository.findByUserIdAndDeleteAtIsNull(doctorProfile.getUser().getUserId())
                 .orElseThrow(() -> new NotFoundException("User not found"));
 
-        doctorProfile.setDeleteAt(new Date());
+        doctorProfile.setDeleteAt(LocalDateTime.now());
         doctorProfileRepository.save(doctorProfile);
 
-        user.setDeleteAt(new Date());
+        user.setDeleteAt(LocalDateTime.now());
         userRepository.save(user);
     }
 }

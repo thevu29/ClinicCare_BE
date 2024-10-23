@@ -5,7 +5,7 @@ import com.example.cliniccare.model.MedicalRecord;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 
-import java.util.Date;
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Data
@@ -25,7 +25,7 @@ public class MedicalRecordDTO {
 
     private String description;
 
-    private Date createAt;
+    private LocalDateTime createAt;
 
     public MedicalRecordDTO() {
     }

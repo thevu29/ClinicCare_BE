@@ -1,18 +1,15 @@
 package com.example.cliniccare.controller;
 
-import com.example.cliniccare.dto.ScheduleDTO;
-import com.example.cliniccare.dto.ScheduleFormDTO;
+import com.example.cliniccare.dto.AppointmentDTO;
 import com.example.cliniccare.exception.BadRequestException;
 import com.example.cliniccare.exception.NotFoundException;
-import com.example.cliniccare.interfaces.ScheduleFormGroup;
+import com.example.cliniccare.interfaces.AppointmentGroup;
 import com.example.cliniccare.response.ApiResponse;
-import com.example.cliniccare.service.ScheduleService;
+import com.example.cliniccare.service.AppointmentService;
 import com.example.cliniccare.validation.Validation;
-import jakarta.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.support.DefaultMessageSourceResolvable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
@@ -21,68 +18,69 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 @CrossOrigin("*")
 @RestController
-@RequestMapping("api/schedules")
-public class ScheduleController {
-    private static final Logger logger = LoggerFactory.getLogger(ScheduleController.class);
-    private final ScheduleService scheduleService;
+@RequestMapping("/api/appointments")
+public class AppointmentController {
+    private static final Logger logger = LoggerFactory.getLogger(AppointmentController.class);
+    private final AppointmentService appointmentService;
 
     @Autowired
-    public ScheduleController(ScheduleService scheduleService) {
-        this.scheduleService = scheduleService;
+    public AppointmentController(AppointmentService appointmentService) {
+        this.appointmentService = appointmentService;
     }
 
     @GetMapping
-    public ResponseEntity<?> getSchedules() {
+    public ResponseEntity<?> getAppointments() {
         try {
+            List<AppointmentDTO> appointments = appointmentService.getAppointments();
+
             return ResponseEntity.status(HttpStatus.OK).body(new ApiResponse<>(
-                    true, "Get schedules successfully", scheduleService.getSchedules()
+                    true, "Get appointments successfully", appointments
             ));
         } catch (Exception e) {
-            logger.error("Failed to get schedules: {}", e.getMessage(), e);
+            logger.error("Failed to get appointments: {}", e.getMessage(), e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new ApiResponse<>(
                     false, e.getMessage(), null
             ));
         }
     }
 
-    @GetMapping("/doctor/{doctorProfileId}")
-    public ResponseEntity<?> getDoctorSchedules(@PathVariable UUID doctorProfileId) {
+    @GetMapping("/patient/{patientId}")
+    public ResponseEntity<?> getPatientAppointments(@PathVariable UUID patientId) {
         try {
-            List<ScheduleDTO> doctorSchedules = scheduleService.getDoctorSchedules(doctorProfileId);
+            List<AppointmentDTO> appointments = appointmentService.getPatientAppointments(patientId);
 
             return ResponseEntity.status(HttpStatus.OK).body(new ApiResponse<>(
-                    true, "Get doctor schedules successfully", doctorSchedules
+                    true, "Get patient appointments successfully", appointments
             ));
         } catch (NotFoundException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ApiResponse<>(
                     false, e.getMessage(), null
             ));
         } catch (Exception e) {
-            logger.error("Failed to get doctor schedules: {}", e.getMessage(), e);
+            logger.error("Failed to get patient appointments: {}", e.getMessage(), e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new ApiResponse<>(
                     false, e.getMessage(), null
             ));
         }
     }
 
-    @GetMapping("/service/{serviceId}")
-    public ResponseEntity<?> getServiceSchedules(@PathVariable UUID serviceId) {
+    @GetMapping("/doctor/{doctorId}")
+    public ResponseEntity<?> getDoctorAppointments(@PathVariable UUID doctorId) {
         try {
-            List<ScheduleDTO> serviceSchedules = scheduleService.getServiceSchedules(serviceId);
+            List<AppointmentDTO> appointments = appointmentService.getDoctorAppointments(doctorId);
 
             return ResponseEntity.status(HttpStatus.OK).body(new ApiResponse<>(
-                    true, "Get service schedules successfully", serviceSchedules
+                    true, "Get doctor appointments successfully", appointments
             ));
         } catch (NotFoundException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ApiResponse<>(
                     false, e.getMessage(), null
             ));
         } catch (Exception e) {
-            logger.error("Failed to get service schedules: {}", e.getMessage(), e);
+            logger.error("Failed to get doctor appointments: {}", e.getMessage(), e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new ApiResponse<>(
                     false, e.getMessage(), null
             ));
@@ -90,8 +88,8 @@ public class ScheduleController {
     }
 
     @PostMapping
-    public ResponseEntity<?> createSchedule(
-            @Validated(ScheduleFormGroup.Create.class) @RequestBody ScheduleFormDTO scheduleDTO,
+    public ResponseEntity<?> createAppointment(
+            @Validated(AppointmentGroup.Create.class) @RequestBody AppointmentDTO appointmentDTO,
             BindingResult bindingResult
     ) {
         try {
@@ -99,10 +97,10 @@ public class ScheduleController {
                 return Validation.validateBody(bindingResult);
             }
 
-            ScheduleDTO newSchedule = scheduleService.createSchedule(scheduleDTO);
+            AppointmentDTO newAppointment = appointmentService.createAppointment(appointmentDTO);
 
             return ResponseEntity.status(HttpStatus.CREATED).body(new ApiResponse<>(
-                    true, "Create schedule successfully", newSchedule
+                    true, "Create appointment successfully", newAppointment
             ));
         } catch (NotFoundException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ApiResponse<>(
@@ -113,17 +111,17 @@ public class ScheduleController {
                     false, e.getMessage(), null
             ));
         } catch (Exception e) {
-            logger.error("Failed to create schedule: {}", e.getMessage(), e);
+            logger.error("Failed to create appointment: {}", e.getMessage(), e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new ApiResponse<>(
                     false, e.getMessage(), null
             ));
         }
     }
 
-    @PutMapping("/{id}")
-    public ResponseEntity<?> updateSchedule(
+    @PutMapping("/cancel/{id}")
+    public ResponseEntity<?> cancelAppointment(
             @PathVariable UUID id,
-            @Valid @RequestBody ScheduleFormDTO scheduleDTO,
+            @Validated(AppointmentGroup.Cancel.class) @RequestBody AppointmentDTO appointmentDTO,
             BindingResult bindingResult
     ) {
         try {
@@ -131,23 +129,23 @@ public class ScheduleController {
                 return Validation.validateBody(bindingResult);
             }
 
-            ScheduleDTO updatedSchedule = scheduleService.updateSchedule(id, scheduleDTO);
+            AppointmentDTO appointment = appointmentService.cancelAppointment(id, appointmentDTO);
 
             return ResponseEntity.status(HttpStatus.OK).body(new ApiResponse<>(
-                true, "Update schedule successfully", updatedSchedule
+                    true, "Cancel appointment successfully", appointment
             ));
         } catch (NotFoundException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ApiResponse<>(
-                false, e.getMessage(), null
+                    false, e.getMessage(), null
             ));
         } catch (BadRequestException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ApiResponse<>(
-                false, e.getMessage(), null
+                    false, e.getMessage(), null
             ));
         } catch (Exception e) {
-            logger.error("Failed to update schedule: {}", e.getMessage(), e);
+            logger.error("Failed to cancel appointment: {}", e.getMessage(), e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new ApiResponse<>(
-                false, e.getMessage(), null
+                    false, e.getMessage(), null
             ));
         }
     }

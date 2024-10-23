@@ -7,8 +7,7 @@ import com.example.cliniccare.exception.NotFoundException;
 import com.example.cliniccare.model.DoctorProfile;
 import com.example.cliniccare.model.Role;
 import com.example.cliniccare.model.User;
-import com.example.cliniccare.pagination.PaginationQuery;
-import com.example.cliniccare.pagination.PaginationService;
+import com.example.cliniccare.dto.PaginationDTO;
 import com.example.cliniccare.repository.DoctorProfileRepository;
 import com.example.cliniccare.repository.RoleRepository;
 import com.example.cliniccare.repository.UserRepository;
@@ -20,7 +19,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
-import java.util.Date;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
@@ -51,7 +50,7 @@ public class UserService {
     }
 
     public PaginationResponse<List<UserDTO>> getUsers(
-            PaginationQuery paginationQuery,
+            PaginationDTO paginationQuery,
             String search
     ) {
         Pageable pageable = paginationService.getPageable(paginationQuery);
@@ -136,11 +135,11 @@ public class UserService {
             DoctorProfile doctor = doctorProfileRepository.findByUser_UserIdAndDeleteAtIsNull(user.getUserId())
                     .orElseThrow(() -> new NotFoundException("Doctor not found"));
 
-            doctor.setDeleteAt(new Date());
+            doctor.setDeleteAt(LocalDateTime.now());
             doctorProfileRepository.save(doctor);
         }
 
-        user.setDeleteAt(new Date());
+        user.setDeleteAt(LocalDateTime.now());
         userRepository.save(user);
     }
 }

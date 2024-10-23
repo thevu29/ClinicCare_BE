@@ -5,7 +5,7 @@ import com.example.cliniccare.model.Promotion;
 import jakarta.validation.constraints.*;
 import lombok.Data;
 
-import java.util.Date;
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Data
@@ -21,11 +21,11 @@ public class PromotionDTO {
     @NotBlank(message = "Status is required", groups = {PromotionFormGroup.Create.class})
     private String status;
 
-    private Date createdAt;
+    private LocalDateTime createdAt;
 
     @NotNull(message = "Expired At is required", groups = {PromotionFormGroup.Create.class})
     @Future(message = "Expiration date must be in the future")
-    private Date expireAt;
+    private LocalDateTime expireAt;
 
     public PromotionDTO() {}
 

@@ -3,7 +3,7 @@ package com.example.cliniccare.model;
 import jakarta.persistence.*;
 import lombok.Data;
 
-import java.util.Date;
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Entity
@@ -25,14 +25,11 @@ public class Notification {
     private boolean isRead;
 
     @Column(name = "create_at")
-    private Date createAt;
-
-    @Column(name = "delete_at")
-    private Date deleteAt;
+    private LocalDateTime createAt;
 
     @PrePersist
     protected void onCreate() {
-        createAt = new Date();
+        createAt = LocalDateTime.now();
         isRead = false;
     }
 }

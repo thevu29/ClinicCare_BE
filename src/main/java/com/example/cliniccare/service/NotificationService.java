@@ -9,7 +9,6 @@ import com.example.cliniccare.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
@@ -31,7 +30,7 @@ public class NotificationService {
 
     public NotificationDTO getNotificationById(UUID id) {
         Notification notification = notificationRepository
-                .findByNotificationIdAndDeleteAtIsNull(id)
+                .findById(id)
                 .orElseThrow(() -> new NotFoundException("Notification not found"));
 
         return new NotificationDTO(notification);
@@ -53,20 +52,11 @@ public class NotificationService {
 
     public NotificationDTO readNotification(UUID id) {
         Notification notification = notificationRepository
-                .findByNotificationIdAndDeleteAtIsNull(id)
+                .findById(id)
                 .orElseThrow(() -> new NotFoundException("Notification not found"));
 
         notification.setRead(true);
         Notification savedNotification = notificationRepository.save(notification);
         return new NotificationDTO(savedNotification);
-    }
-
-    public void deleteNotification(UUID id) {
-        Notification notification = notificationRepository
-                .findByNotificationIdAndDeleteAtIsNull(id)
-                .orElseThrow(() -> new NotFoundException("Notification not found"));
-
-        notification.setDeleteAt(new Date());
-        notificationRepository.save(notification);
     }
 }

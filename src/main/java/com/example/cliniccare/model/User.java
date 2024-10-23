@@ -3,7 +3,7 @@ package com.example.cliniccare.model;
 import jakarta.persistence.*;
 import lombok.Data;
 
-import java.util.Date;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
@@ -31,10 +31,10 @@ public class User {
     private String image;
 
     @Column(name = "create_at")
-    private Date createAt;
+    private LocalDateTime createAt;
 
     @Column(name = "delete_at")
-    private Date deleteAt;
+    private LocalDateTime deleteAt;
 
     @OneToOne(mappedBy = "user")
     private DoctorProfile doctorProfile;
@@ -42,7 +42,7 @@ public class User {
     @OneToMany(mappedBy = "patient")
     private List<Feedback> feedbackList;
 
-    @OneToMany(mappedBy = "user")
+    @OneToMany(mappedBy = "patient")
     private List<Appointment> appointmentList;
 
     @OneToMany(mappedBy = "patient")
@@ -56,6 +56,6 @@ public class User {
 
     @PrePersist
     protected void onCreate() {
-        createAt = new Date();
+        createAt = LocalDateTime.now();
     }
 }

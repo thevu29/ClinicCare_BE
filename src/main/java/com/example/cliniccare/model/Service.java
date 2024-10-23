@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import lombok.Data;
 
-import java.util.Date;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
@@ -31,10 +31,10 @@ public class Service {
     private ServiceStatus status;
 
     @Column(name = "create_at")
-    private Date createAt;
+    private LocalDateTime createAt;
 
     @Column(name = "delete_at")
-    private Date deleteAt;
+    private LocalDateTime deleteAt;
 
     @OneToMany(mappedBy = "service")
     private List<Feedback> feedbackList;
@@ -55,6 +55,6 @@ public class Service {
 
     @PrePersist
     public void prePersist() {
-        this.createAt = new Date();
+        this.createAt = LocalDateTime.now();
     }
 }

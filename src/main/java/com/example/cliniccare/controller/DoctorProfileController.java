@@ -10,6 +10,7 @@ import com.example.cliniccare.pagination.PaginationQuery;
 import com.example.cliniccare.response.ApiResponse;
 import com.example.cliniccare.response.PaginationResponse;
 import com.example.cliniccare.service.DoctorProfileService;
+import com.example.cliniccare.validation.Validation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,19 +36,6 @@ public class DoctorProfileController {
     @Autowired
     public DoctorProfileController(DoctorProfileService doctorProfileService) {
         this.doctorProfileService = doctorProfileService;
-    }
-
-    public ResponseEntity<?> handleValidate(BindingResult bindingResult) {
-        if (bindingResult.hasErrors()) {
-            String errors = bindingResult.getAllErrors().stream()
-                    .map(DefaultMessageSourceResolvable::getDefaultMessage)
-                    .collect(Collectors.joining(", "));
-
-            return ResponseEntity.badRequest().body(new ApiResponse<>(
-                    false, errors, null
-            ));
-        }
-        return null;
     }
 
     @GetMapping
@@ -95,8 +83,8 @@ public class DoctorProfileController {
             BindingResult bindingResult
     ) {
         try {
-            if (handleValidate(bindingResult) != null) {
-                return handleValidate(bindingResult);
+            if (Validation.validateBody(bindingResult) != null) {
+                return Validation.validateBody(bindingResult);
             }
 
             DoctorProfileDTO doctorProfile = doctorProfileService.createDoctorProfile(doctorProfileDTO);
@@ -132,8 +120,8 @@ public class DoctorProfileController {
             BindingResult bindingResult
     ) {
         try {
-            if (handleValidate(bindingResult) != null) {
-                return handleValidate(bindingResult);
+            if (Validation.validateBody(bindingResult) != null) {
+                return Validation.validateBody(bindingResult);
             }
 
             DoctorProfileDTO doctorProfile = doctorProfileService.updateDoctorProfile(id, doctorProfileDTO);

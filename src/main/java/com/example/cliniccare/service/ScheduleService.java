@@ -131,6 +131,10 @@ public class ScheduleService {
                 .findById(scheduleDTO.getServiceId())
                 .orElseThrow(() -> new NotFoundException("Service not found"));
 
+        if (service.getStatus() != Service.ServiceStatus.AVAILABLE) {
+            throw new BadRequestException("Service is unavailable");
+        }
+
         DoctorProfile doctorProfile = doctorProfileRepository
                 .findById(scheduleDTO.getDoctorProfileId())
                 .orElseThrow(() -> new NotFoundException("Doctor not found"));

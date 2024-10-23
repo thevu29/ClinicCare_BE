@@ -3,7 +3,7 @@ package com.example.cliniccare.model;
 import jakarta.persistence.*;
 import lombok.Data;
 
-import java.util.Date;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
@@ -23,7 +23,7 @@ public class DoctorProfile {
     private String specialty;
 
     @Column(name = "delete_at")
-    private Date deleteAt;
+    private LocalDateTime deleteAt;
 
     @OneToMany(mappedBy = "doctor")
     private List<Feedback> feedbackList;

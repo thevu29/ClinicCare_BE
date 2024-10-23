@@ -6,7 +6,7 @@ import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.util.Date;
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Getter
@@ -22,9 +22,7 @@ public class NotificationDTO {
 
     private boolean isRead;
 
-    private Date createAt;
-
-    private Date deleteAt;
+    private LocalDateTime createAt;
 
     public NotificationDTO() {
     }
@@ -35,6 +33,5 @@ public class NotificationDTO {
         this.message = notification.getMessage();
         this.isRead = notification.isRead();
         this.createAt = notification.getCreateAt();
-        this.deleteAt = notification.getDeleteAt();
     }
 }

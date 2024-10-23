@@ -7,7 +7,7 @@ import com.example.cliniccare.repository.PromotionRepository;
 import com.example.cliniccare.repository.ServiceRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import java.util.Date;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
@@ -94,7 +94,7 @@ public class ServiceManager {
                 .orElseThrow(() -> new NotFoundException("Service not found"));
 
         service.setStatus(Service.ServiceStatus.UNAVAILABLE);
-        service.setDeleteAt(new Date());
+        service.setDeleteAt(LocalDateTime.now());
         serviceRepository.save(service);
         return new ServiceDTO(service);
     }
