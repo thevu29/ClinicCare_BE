@@ -27,9 +27,6 @@ public class Notification {
     @Column(name = "create_at")
     private LocalDateTime createAt;
 
-    @Column(name = "delete_at")
-    private LocalDateTime deleteAt;
-
     @PrePersist
     protected void onCreate() {
         createAt = LocalDateTime.now();

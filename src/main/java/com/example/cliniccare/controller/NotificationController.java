@@ -4,11 +4,11 @@ import com.example.cliniccare.dto.NotificationDTO;
 import com.example.cliniccare.exception.NotFoundException;
 import com.example.cliniccare.response.ApiResponse;
 import com.example.cliniccare.service.NotificationService;
+import com.example.cliniccare.validation.Validation;
 import jakarta.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.support.DefaultMessageSourceResolvable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
@@ -28,19 +28,6 @@ public class NotificationController {
     @Autowired
     public NotificationController(NotificationService notificationService) {
         this.notificationService = notificationService;
-    }
-
-    public ResponseEntity<?> handleValidate(BindingResult bindingResult) {
-        if (bindingResult.hasErrors()) {
-            String errors = bindingResult.getAllErrors().stream()
-                    .map(DefaultMessageSourceResolvable::getDefaultMessage)
-                    .collect(Collectors.joining(", "));
-
-            return ResponseEntity.badRequest().body(new ApiResponse<>(
-                    false, errors, null
-            ));
-        }
-        return null;
     }
 
     @GetMapping
@@ -82,8 +69,8 @@ public class NotificationController {
             @Valid @RequestBody NotificationDTO notificationDTO,
             BindingResult bindingResult) {
         try {
-            if (handleValidate(bindingResult) != null) {
-                return handleValidate(bindingResult);
+            if (Validation.validateBody(bindingResult) != null) {
+                return Validation.validateBody(bindingResult);
             }
 
             NotificationDTO notification = notificationService.createNotification(notificationDTO);
@@ -125,27 +112,6 @@ public class NotificationController {
                     .status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(new ApiResponse<>(
                     false, "Failed to read notification", null
-            ));
-        }
-    }
-
-    @DeleteMapping("/delete/{id}")
-    public ResponseEntity<?> deleteNotification(@PathVariable UUID id) {
-        try {
-            notificationService.deleteNotification(id);
-            return ResponseEntity.ok(new ApiResponse<>(
-                    true, "Delete notification successfully", null
-            ));
-        } catch (NotFoundException e) {
-            return ResponseEntity
-                    .status(HttpStatus.NOT_FOUND)
-                    .body(new ApiResponse<>(false, e.getMessage(), null));
-        } catch (Exception e) {
-            logger.error("Failed to delete notification: {}", e.getMessage(), e);
-            return ResponseEntity
-                    .status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(new ApiResponse<>(
-                    false, "Failed to delete notification", null
             ));
         }
     }
