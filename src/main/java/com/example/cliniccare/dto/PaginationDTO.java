@@ -1,14 +1,14 @@
-package com.example.cliniccare.pagination;
+package com.example.cliniccare.dto;
 
-public class PaginationQuery {
+public class PaginationDTO {
     public int page;
     public int size;
     public String sortBy;
     public String order;
 
-    public PaginationQuery() {}
+    public PaginationDTO() {}
 
-    public PaginationQuery(int page, int size, String sortBy, String order) {
+    public PaginationDTO(int page, int size, String sortBy, String order) {
         this.page = page;
         this.size = size;
         this.sortBy = sortBy;

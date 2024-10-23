@@ -4,7 +4,7 @@ import com.example.cliniccare.dto.UserDTO;
 import com.example.cliniccare.dto.UserFormDTO;
 import com.example.cliniccare.exception.BadRequestException;
 import com.example.cliniccare.exception.NotFoundException;
-import com.example.cliniccare.pagination.PaginationQuery;
+import com.example.cliniccare.dto.PaginationDTO;
 import com.example.cliniccare.interfaces.UserFormGroup;
 import com.example.cliniccare.response.ApiResponse;
 import com.example.cliniccare.response.PaginationResponse;
@@ -58,7 +58,7 @@ public class UserController {
             @RequestParam(defaultValue = "") String search
     ) {
         try {
-            PaginationQuery paginationQuery = new PaginationQuery(page, size, sortBy, order);
+            PaginationDTO paginationQuery = new PaginationDTO(page, size, sortBy, order);
             PaginationResponse<List<UserDTO>> response = userService.getUsers(paginationQuery, search);
 
             return ResponseEntity.ok(response);

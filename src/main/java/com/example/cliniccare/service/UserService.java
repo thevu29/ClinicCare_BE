@@ -7,8 +7,7 @@ import com.example.cliniccare.exception.NotFoundException;
 import com.example.cliniccare.model.DoctorProfile;
 import com.example.cliniccare.model.Role;
 import com.example.cliniccare.model.User;
-import com.example.cliniccare.pagination.PaginationQuery;
-import com.example.cliniccare.pagination.PaginationService;
+import com.example.cliniccare.dto.PaginationDTO;
 import com.example.cliniccare.repository.DoctorProfileRepository;
 import com.example.cliniccare.repository.RoleRepository;
 import com.example.cliniccare.repository.UserRepository;
@@ -51,7 +50,7 @@ public class UserService {
     }
 
     public PaginationResponse<List<UserDTO>> getUsers(
-            PaginationQuery paginationQuery,
+            PaginationDTO paginationQuery,
             String search
     ) {
         Pageable pageable = paginationService.getPageable(paginationQuery);
