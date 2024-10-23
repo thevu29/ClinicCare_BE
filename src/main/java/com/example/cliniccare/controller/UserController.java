@@ -9,7 +9,6 @@ import com.example.cliniccare.interfaces.UserFormGroup;
 import com.example.cliniccare.response.ApiResponse;
 import com.example.cliniccare.response.PaginationResponse;
 import com.example.cliniccare.service.UserService;
-import jakarta.validation.groups.Default;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -92,7 +91,7 @@ public class UserController {
 
     @PostMapping
     public ResponseEntity<?> createUser(
-            @Validated({Default.class, UserFormGroup.Create.class}) @ModelAttribute UserFormDTO userDTO,
+            @Validated(UserFormGroup.Create.class) @ModelAttribute UserFormDTO userDTO,
             BindingResult bindingResult
     ) {
         try {
@@ -128,7 +127,7 @@ public class UserController {
     @PutMapping("/update/{id}")
     public ResponseEntity<?> updateUser(
             @PathVariable UUID id,
-            @Validated({Default.class, UserFormGroup.Update.class}) @ModelAttribute UserFormDTO userDTO,
+            @Validated(UserFormGroup.Update.class) @ModelAttribute UserFormDTO userDTO,
             BindingResult bindingResult
     ) {
         try {
