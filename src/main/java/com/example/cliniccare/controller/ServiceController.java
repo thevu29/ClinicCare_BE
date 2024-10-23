@@ -95,10 +95,6 @@ public class ServiceController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ApiResponse<>(
                     false, e.getMessage(), null
             ));
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ApiResponse<>(
-                    false, "Status must be one of the following: Available, Unavailable", null
-            ));
         } catch (Exception e) {
             logger.error("Failed to create service: {}", e.getMessage(), e);
             return ResponseEntity.internalServerError().body(new ApiResponse<>(

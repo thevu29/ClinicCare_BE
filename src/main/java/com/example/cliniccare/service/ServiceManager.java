@@ -22,6 +22,16 @@ public class ServiceManager {
         this.promotionRepository = promotionRepository;
     }
 
+    private Service.ServiceStatus getServiceStatus(String status) {
+        try {
+            return status != null && !status.isEmpty()
+                    ? Service.ServiceStatus.valueOf(status.toUpperCase())
+                    : Service.ServiceStatus.AVAILABLE;
+        } catch (IllegalArgumentException e) {
+            throw new NotFoundException("Service status not found");
+        }
+    }
+
     public List<ServiceDTO> getAllServices() {
         List<Service> services = serviceRepository.findAllByDeleteAtIsNull();
         return services.stream().map(ServiceDTO::new).toList();
@@ -38,13 +48,8 @@ public class ServiceManager {
         service.setName(serviceDTO.getName());
         service.setDescription(serviceDTO.getDescription());
         service.setPrice(serviceDTO.getPrice());
+        service.setStatus(getServiceStatus(serviceDTO.getStatus()));
         service.setPromotion(promotionRepository.findByPromotionId(serviceDTO.getPromotionId()).orElse(null));
-
-        if (serviceDTO.getStatus() == null || serviceDTO.getStatus().isEmpty()) {
-            service.setStatus(Service.ServiceStatus.AVAILABLE);
-        } else {
-            service.setStatus(Service.ServiceStatus.valueOf(serviceDTO.getStatus().toUpperCase()));
-        }
 
         Service savedService = serviceRepository.save(service);
         return new ServiceDTO(savedService);
@@ -67,7 +72,7 @@ public class ServiceManager {
                     .orElseThrow(() -> new NotFoundException("Promotion not found")));
         }
         if (serviceDTO.getStatus() != null && !serviceDTO.getStatus().isEmpty()) {
-            service.setStatus(Service.ServiceStatus.valueOf(serviceDTO.getStatus().toUpperCase()));
+            service.setStatus(getServiceStatus(serviceDTO.getStatus()));
         }
 
         Service savedService = serviceRepository.save(service);
