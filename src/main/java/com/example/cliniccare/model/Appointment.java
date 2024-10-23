@@ -3,19 +3,13 @@ package com.example.cliniccare.model;
 import jakarta.persistence.*;
 import lombok.Data;
 
-import java.util.Date;
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Entity
 @Data
 @Table(name = "appointments")
 public class Appointment {
-    public enum AppointmentStatus {
-        PENDING,
-        CONFIRMED,
-        CANCELLED
-    }
-
     @Id
     @Column(name = "appointment_id")
     @GeneratedValue(strategy = GenerationType.UUID)
@@ -32,10 +26,23 @@ public class Appointment {
     private Schedule schedule;
 
     @ManyToOne
-    @JoinColumn(name = "user_id", referencedColumnName = "user_id")
-    private User user;
+    @JoinColumn(name = "patient_id", referencedColumnName = "user_id")
+    private User patient;
 
-    private Date date;
+    private LocalDateTime date;
 
-    private AppointmentStatus status;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "cancel_by", referencedColumnName = "user_id")
+    private User cancelBy;
+
+    @Column(name = "cancel_at")
+    private LocalDateTime cancelAt;
+
+    @Column(name = "cancel_reason")
+    private String cancelReason;
+
+    @PrePersist
+    protected void onCreate() {
+        date = LocalDateTime.now();
+    }
 }
