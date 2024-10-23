@@ -3,7 +3,7 @@ package com.example.cliniccare.model;
 import jakarta.persistence.*;
 import lombok.Data;
 
-import java.util.Date;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
@@ -30,16 +30,16 @@ public class Promotion {
     private PromotionStatus status;
 
     @Column(name = "create_at")
-    private Date createAt;
+    private LocalDateTime createAt;
 
     @Column(name = "expired_at")
-    private Date expireAt;
+    private LocalDateTime expireAt;
 
     @OneToMany(mappedBy = "promotion")
     private List<Service> serviceList;
 
     @PrePersist
     public void onCreate() {
-        createAt = new Date();
+        createAt = LocalDateTime.now();
     }
 }

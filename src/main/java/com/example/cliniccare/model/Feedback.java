@@ -3,7 +3,7 @@ package com.example.cliniccare.model;
 import jakarta.persistence.*;
 import lombok.Data;
 
-import java.util.Date;
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Entity
@@ -30,13 +30,13 @@ public class Feedback {
     private String feedback;
 
     @Column(name = "create_at")
-    private Date createAt;
+    private LocalDateTime createAt;
 
     @Column(name = "delete_at")
-    private Date deleteAt;
+    private LocalDateTime deleteAt;
 
     @PrePersist
     protected void onCreate() {
-        this.createAt = new Date();
+        this.createAt = LocalDateTime.now();
     }
 }

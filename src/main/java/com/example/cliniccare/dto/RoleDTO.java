@@ -2,10 +2,9 @@ package com.example.cliniccare.dto;
 
 import com.example.cliniccare.model.Role;
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 
-import java.util.Date;
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Data
@@ -17,7 +16,7 @@ public class RoleDTO {
 
     private String description;
 
-    private Date createAt;
+    private LocalDateTime createAt;
 
     public RoleDTO() {}
 

@@ -7,7 +7,7 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 
-import java.util.Date;
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Data
@@ -23,7 +23,7 @@ public class ServiceDTO {
     @Min(value = 1, message = "Price must be greater than 0", groups = {ServiceFormGroup.Create.class, ServiceFormGroup.Update.class})
     private Double price;
 
-    private Date createAt;
+    private LocalDateTime createAt;
 
     private String status;
 

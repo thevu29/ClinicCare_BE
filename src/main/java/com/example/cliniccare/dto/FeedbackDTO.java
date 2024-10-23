@@ -8,7 +8,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.util.Date;
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Getter
@@ -24,7 +24,7 @@ public class FeedbackDTO {
 
     private UUID serviceId;
 
-    private Date date;
+    private LocalDateTime date;
 
     @NotBlank(message = "Feedback content is required", groups = {FeedbackFormGroup.Create.class, FeedbackFormGroup.Update.class})
     private String feedback;

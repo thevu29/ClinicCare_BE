@@ -10,7 +10,7 @@ import com.example.cliniccare.model.User;
 import com.example.cliniccare.repository.*;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import java.util.Date;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
@@ -98,7 +98,7 @@ public class FeedbackService {
                 .findByFeedbackIdAndDeleteAtIsNull(id)
                 .orElseThrow(() -> new NotFoundException("Feedback not found"));
 
-        feedback.setDeleteAt(new Date());
+        feedback.setDeleteAt(LocalDateTime.now());
         feedbackRepository.save(feedback);
     }
 }

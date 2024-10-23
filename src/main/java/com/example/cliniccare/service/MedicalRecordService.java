@@ -13,7 +13,7 @@ import com.example.cliniccare.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.Date;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
@@ -106,7 +106,7 @@ public class MedicalRecordService {
         MedicalRecord medicalRecord = medicalRecordRepository.findByMedicalRecordIdAndDeleteAtIsNull(id)
                 .orElseThrow(() -> new NotFoundException("Medical Record not found"));
 
-        medicalRecord.setDeleteAt(new Date());
+        medicalRecord.setDeleteAt(LocalDateTime.now());
         medicalRecordRepository.save(medicalRecord);
     }
 }
