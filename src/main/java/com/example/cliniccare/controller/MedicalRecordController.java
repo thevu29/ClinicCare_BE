@@ -1,10 +1,13 @@
 package com.example.cliniccare.controller;
 
+import com.example.cliniccare.dto.DoctorProfileDTO;
 import com.example.cliniccare.dto.MedicalRecordDTO;
 import com.example.cliniccare.exception.BadRequestException;
 import com.example.cliniccare.exception.NotFoundException;
 import com.example.cliniccare.interfaces.MedicalRecordGroup;
+import com.example.cliniccare.pagination.PaginationQuery;
 import com.example.cliniccare.response.ApiResponse;
+import com.example.cliniccare.response.PaginationResponse;
 import com.example.cliniccare.service.MedicalRecordService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -45,16 +48,20 @@ public class MedicalRecordController {
     }
 
     @GetMapping
-    public ResponseEntity<?> getMedicalRecords() {
+    public ResponseEntity<?> getMedicalRecords(
+            @RequestParam(defaultValue = "1") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "medicalRecordId") String sortBy,
+            @RequestParam(defaultValue = "asc") String order,
+            @RequestParam(defaultValue = "") String search) {
         try {
-            List<MedicalRecordDTO> medicalRecords = medicalRecordService.getMedicalRecord();
-            return ResponseEntity.ok(new ApiResponse<>(
-                    true, "Get all medical records successfully", medicalRecords
-            ));
-        } catch (Exception e) {
-            logger.error("Failed to get all medical records: {}", e.getMessage(), e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new ApiResponse<>(
-                    false, "Failed to get all medical records", null
+            PaginationQuery paginationQuery = new PaginationQuery(page, size, sortBy, order);
+            PaginationResponse<List<MedicalRecordDTO>> response = medicalRecordService.getMedicalRecords(paginationQuery, search);
+            return ResponseEntity.ok(response);
+        }catch (Exception e) {
+            logger.error("Failed to get medical-record: {}", e.getMessage(), e);
+            return ResponseEntity.internalServerError().body(new ApiResponse<>(
+                    false, e.getMessage(), null
             ));
         }
     }

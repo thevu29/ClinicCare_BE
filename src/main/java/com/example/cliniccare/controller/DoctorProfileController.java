@@ -2,10 +2,13 @@ package com.example.cliniccare.controller;
 
 import com.example.cliniccare.dto.DoctorProfileDTO;
 import com.example.cliniccare.dto.DoctorProfileFormDTO;
+import com.example.cliniccare.dto.UserDTO;
 import com.example.cliniccare.exception.BadRequestException;
 import com.example.cliniccare.exception.NotFoundException;
 import com.example.cliniccare.interfaces.DoctorProfileGroup;
+import com.example.cliniccare.pagination.PaginationQuery;
 import com.example.cliniccare.response.ApiResponse;
+import com.example.cliniccare.response.PaginationResponse;
 import com.example.cliniccare.service.DoctorProfileService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -48,14 +51,19 @@ public class DoctorProfileController {
     }
 
     @GetMapping
-    public ResponseEntity<?> getDoctorProfiles() {
+    public ResponseEntity<?> getDoctorProfiles(
+            @RequestParam(defaultValue = "1") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "doctorProfileId") String sortBy,
+            @RequestParam(defaultValue = "asc") String order,
+            @RequestParam(defaultValue = "") String search) {
         try {
-            List<DoctorProfileDTO> doctorProfiles = doctorProfileService.getDoctorProfiles();
-            return ResponseEntity.ok(new ApiResponse<>(
-                    true, "Get doctors successfully", doctorProfiles
-            ));
+            PaginationQuery paginationQuery = new PaginationQuery(page, size, sortBy, order);
+            PaginationResponse<List<DoctorProfileDTO>> response = doctorProfileService.getDoctorProfiles(paginationQuery, search);
+
+            return ResponseEntity.ok(response);
         } catch (Exception e) {
-            logger.error("Failed to get all doctors: {}", e.getMessage(), e);
+            logger.error("Failed to get doctors: {}", e.getMessage(), e);
             return ResponseEntity.internalServerError().body(new ApiResponse<>(
                     false, e.getMessage(), null
             ));

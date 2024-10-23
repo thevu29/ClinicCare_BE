@@ -2,14 +2,20 @@ package com.example.cliniccare.service;
 
 import com.example.cliniccare.dto.DoctorProfileDTO;
 import com.example.cliniccare.dto.DoctorProfileFormDTO;
+import com.example.cliniccare.dto.UserDTO;
 import com.example.cliniccare.exception.BadRequestException;
 import com.example.cliniccare.exception.NotFoundException;
 import com.example.cliniccare.model.DoctorProfile;
 import com.example.cliniccare.model.User;
+import com.example.cliniccare.pagination.PaginationQuery;
+import com.example.cliniccare.pagination.PaginationService;
 import com.example.cliniccare.repository.DoctorProfileRepository;
 import com.example.cliniccare.repository.RoleRepository;
 import com.example.cliniccare.repository.UserRepository;
+import com.example.cliniccare.response.PaginationResponse;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -25,6 +31,7 @@ public class DoctorProfileService {
     private final RoleRepository roleRepository;
     private final FirebaseStorageService firebaseStorageService;
     private final PasswordEncoder passwordEncoder;
+    private final PaginationService paginationService;
 
     @Autowired
     public DoctorProfileService(
@@ -32,6 +39,7 @@ public class DoctorProfileService {
             UserRepository userRepository,
             RoleRepository roleRepository,
             FirebaseStorageService firebaseStorageService,
+            PaginationService paginationService,
             PasswordEncoder passwordEncoder
     ) {
         this.doctorProfileRepository = doctorProfileRepository;
@@ -39,19 +47,34 @@ public class DoctorProfileService {
         this.roleRepository = roleRepository;
         this.firebaseStorageService = firebaseStorageService;
         this.passwordEncoder = passwordEncoder;
+        this.paginationService = paginationService;
+
     }
 
-    public List<DoctorProfileDTO> getDoctorProfiles() {
-        List<DoctorProfile> doctorProfiles = doctorProfileRepository.findByDeleteAtIsNull();
-
-        return doctorProfiles
-                .stream()
-                .map(doctorProfile -> new DoctorProfileDTO(doctorProfile, userRepository
-                        .findByUserIdAndDeleteAtIsNull(doctorProfile.getUser().getUserId())
-                        .orElseThrow(() -> new NotFoundException("User not found"))
-                ))
-                .toList();
+    public PaginationResponse<List<DoctorProfileDTO>> getDoctorProfiles(
+            PaginationQuery paginationQuery,
+            String search
+    ) {
+        Pageable pageable = paginationService.getPageable(paginationQuery);
+        Page<DoctorProfile> doctorProfiles = doctorProfileRepository
+                .findByDeleteAtIsNullAndSpecialtyContaining(search, pageable);
+        int totalPage = paginationService.getTotalPages(doctorProfiles.getTotalElements(), paginationQuery.size);
+        long totalElements = doctorProfiles.getTotalElements();
+        return new PaginationResponse<>(
+                true,
+                "Get doctors successfully",
+                doctorProfiles.map(doctorProfile -> new DoctorProfileDTO(
+                        doctorProfile,
+                        userRepository.findByUserIdAndDeleteAtIsNull(doctorProfile.getUser().getUserId())
+                                .orElseThrow(() -> new NotFoundException("User not found"))
+                )).getContent(),
+                paginationQuery.page,
+                paginationQuery.size,
+                totalPage,
+                totalElements
+        );
     }
+
 
     public DoctorProfileDTO getDoctorProfileById(UUID id) {
         DoctorProfile doctorProfile = doctorProfileRepository.findByDoctorProfileIdAndDeleteAtIsNull(id)
