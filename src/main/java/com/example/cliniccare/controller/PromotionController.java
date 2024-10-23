@@ -74,10 +74,6 @@ public class PromotionController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ApiResponse<>(
                     false, e.getMessage(), null
             ));
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ApiResponse<>(
-                    false, "Status must be one of the following: Active, Inactive, Expired, or End", null
-            ));
         } catch (Exception e) {
             logger.error("Failed to create promotion: {}", e.getMessage(), e);
             return ResponseEntity.internalServerError().body(new ApiResponse<>(
@@ -104,10 +100,6 @@ public class PromotionController {
         } catch (BadRequestException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ApiResponse<>(
                     false, e.getMessage(), null
-            ));
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ApiResponse<>(
-                    false, "Status must be one of the following: Active, Inactive, Expired, or End.", null
             ));
         } catch (Exception e) {
             logger.error("Failed to update promotion: {}", e.getMessage(), e);
