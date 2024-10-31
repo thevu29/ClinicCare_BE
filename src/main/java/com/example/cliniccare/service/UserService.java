@@ -54,7 +54,11 @@ public class UserService {
             String search
     ) {
         Pageable pageable = paginationService.getPageable(paginationQuery);
-        Page<User> users = userRepository.findByDeleteAtIsNullAndNameContainingOrPhoneContaining(search, search, pageable);
+
+        Page<User> users = search.isEmpty()
+                ? userRepository.findByDeleteAtIsNull(pageable)
+                : userRepository.findByDeleteAtIsNullAndNameContainingOrPhoneContaining(search, search, pageable);
+
         int totalPage = paginationService.getTotalPages(users.getTotalElements(), paginationQuery.size);
         long totalElements = users.getTotalElements();
 
