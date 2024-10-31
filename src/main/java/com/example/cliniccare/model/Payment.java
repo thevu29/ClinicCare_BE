@@ -16,6 +16,11 @@ public class Payment {
         CANCELLED
     }
 
+    public enum PaymentMethod {
+        CASH,
+        BANKING
+    }
+
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     @Column(name = "payment_id")
@@ -35,4 +40,12 @@ public class Payment {
     private double totalPrice;
 
     private PaymentStatus status;
+
+    private PaymentMethod method;
+
+    @PrePersist
+    protected void onCreate() {
+        status = PaymentStatus.PENDING;
+        date = LocalDateTime.now();
+    }
 }
