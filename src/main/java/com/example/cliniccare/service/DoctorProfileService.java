@@ -92,6 +92,7 @@ public class DoctorProfileService {
         if (doctorProfileDTO.getImage().isEmpty()) {
             throw new BadRequestException("Image is required");
         }
+        
 
         User user = new User();
         user.setName(doctorProfileDTO.getName());

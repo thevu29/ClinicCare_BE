@@ -21,6 +21,10 @@ public class MedicalRecordDTO {
     @NotNull(message = "Service is required", groups = {MedicalRecordGroup.Create.class})
     private UUID serviceId;
 
+    private String doctorName;
+
+    private String patientName;
+
     private String serviceName;
 
     private String description;
@@ -33,7 +37,9 @@ public class MedicalRecordDTO {
     public MedicalRecordDTO(MedicalRecord medicalRecord) {
         this.medicalRecordId = medicalRecord.getMedicalRecordId();
         this.patientId = medicalRecord.getPatient().getUserId();
+        this.patientName = medicalRecord.getPatient().getName();
         this.doctorProfileId = medicalRecord.getDoctor().getDoctorProfileId();
+        this.doctorName = medicalRecord.getDoctor().getUser().getName();
         this.serviceId = medicalRecord.getService().getServiceId();
         this.serviceName = medicalRecord.getService().getName();
         this.description = medicalRecord.getDescription();
