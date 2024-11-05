@@ -120,7 +120,7 @@ public class UserService {
             user.setPhone(userDTO.getPhone());
         }
         if (userDTO.getImage() != null && !userDTO.getImage().isEmpty()) {
-            user.setImage(firebaseStorageService.uploadImage(userDTO.getImage()));
+            user.setImage(firebaseStorageService.updateImage(userDTO.getImage(), user.getImage()));
         }
 
         User savedUser = userRepository.save(user);
