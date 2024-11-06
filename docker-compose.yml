@@ -9,8 +9,6 @@ services:
       - SPRING_DATASOURCE_URL=jdbc:mysql://db:3306/cliniccare?serverTimezone=Asia/Bangkok&useSSL=false&allowPublicKeyRetrieval=true
       - SPRING_DATASOURCE_USERNAME=thevu
       - SPRING_DATASOURCE_PASSWORD=123
-      - SPRING_MAIL_USERNAME=vugmail
-      - SPRING_MAIL_PASSWORD=vupassword
     depends_on:
       db:
         condition: service_healthy
