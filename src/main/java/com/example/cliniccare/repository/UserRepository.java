@@ -13,7 +13,8 @@ import java.util.UUID;
 @Repository
 public interface UserRepository extends JpaRepository<User, UUID> {
     Page<User> findByDeleteAtIsNull(Pageable pageable);
-    Page<User> findByDeleteAtIsNullAndNameContainingOrPhoneContaining(String name, String phone, Pageable pageable);
+    Page<User> findByDeleteAtIsNullAndNameContainingOrPhoneContainingOrEmailContaining(
+            String name, String phone, String email, Pageable pageable);
     Optional<User> findByUserIdAndDeleteAtIsNull(UUID userId);
     Optional<User> findByEmailAndDeleteAtIsNull(String email);
     Boolean existsByEmailAndDeleteAtIsNull(String email);
