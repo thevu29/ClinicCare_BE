@@ -1,14 +1,17 @@
 package com.example.cliniccare.model;
 
 import jakarta.persistence.*;
-import lombok.Data;
+import lombok.*;
 
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
 @Entity
-@Data
+@Getter
+@Setter
+@ToString
+@RequiredArgsConstructor
 @Table(name = "promotions")
 public class Promotion {
     public enum PromotionStatus {
@@ -36,6 +39,7 @@ public class Promotion {
     private LocalDateTime expireAt;
 
     @OneToMany(mappedBy = "promotion")
+    @ToString.Exclude
     private List<Service> serviceList;
 
     @PrePersist

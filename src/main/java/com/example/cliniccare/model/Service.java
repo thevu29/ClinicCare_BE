@@ -2,14 +2,17 @@ package com.example.cliniccare.model;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
-import lombok.Data;
+import lombok.*;
 
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
 @Entity
-@Data
+@Getter
+@Setter
+@ToString
+@RequiredArgsConstructor
 @Table(name = "services")
 public class Service {
     public enum ServiceStatus {
@@ -37,15 +40,19 @@ public class Service {
     private LocalDateTime deleteAt;
 
     @OneToMany(mappedBy = "service")
+    @ToString.Exclude
     private List<Feedback> feedbackList;
 
     @OneToMany(mappedBy = "service")
+    @ToString.Exclude
     private List<Schedule> scheduleList;
 
     @OneToMany(mappedBy = "service")
+    @ToString.Exclude
     private List<Payment> paymentList;
 
     @OneToMany(mappedBy = "service")
+    @ToString.Exclude
     private List<MedicalRecord> medicalRecordList;
 
     @ManyToOne

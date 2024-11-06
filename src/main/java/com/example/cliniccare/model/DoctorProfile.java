@@ -1,14 +1,17 @@
 package com.example.cliniccare.model;
 
 import jakarta.persistence.*;
-import lombok.Data;
+import lombok.*;
 
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
 @Entity
-@Data
+@Getter
+@Setter
+@ToString
+@RequiredArgsConstructor
 @Table(name = "doctor_profiles")
 public class DoctorProfile {
     @Id
@@ -26,11 +29,14 @@ public class DoctorProfile {
     private LocalDateTime deleteAt;
 
     @OneToMany(mappedBy = "doctor")
+    @ToString.Exclude
     private List<Feedback> feedbackList;
 
     @OneToMany(mappedBy = "doctor")
+    @ToString.Exclude
     private List<Schedule> scheduleList;
 
     @OneToMany(mappedBy = "doctor")
+    @ToString.Exclude
     private List<MedicalRecord> medicalRecordList;
 }
