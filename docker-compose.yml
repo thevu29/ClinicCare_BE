@@ -9,7 +9,8 @@ services:
       - SPRING_DATASOURCE_USERNAME=thevu
       - SPRING_DATASOURCE_PASSWORD=123
     depends_on:
-      - db
+      db:
+        condition: service_healthy
 
   db:
     image: mysql
@@ -20,3 +21,9 @@ services:
       MYSQL_ROOT_PASSWORD: 123
     ports:
       - "3306:3306"
+    healthcheck:
+      test: [ "CMD", "mysqladmin", "ping", "-h", "localhost", "-u$$MYSQL_USER", "-p$$MYSQL_PASSWORD" ]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+      start_period: 30s

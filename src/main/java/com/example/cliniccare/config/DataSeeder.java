@@ -26,8 +26,8 @@ public class DataSeeder implements CommandLineRunner {
 
     @Override
     public void run(String... args) {
-        Role adminRole = new Role();
         if (roleRepository.count() == 0) {
+            Role adminRole = new Role();
             adminRole.setRoleId(UUID.randomUUID());
             adminRole.setName("Admin");
 
@@ -39,20 +39,20 @@ public class DataSeeder implements CommandLineRunner {
             doctorRole.setRoleId(UUID.randomUUID());
             doctorRole.setName("Doctor");
 
-            roleRepository.save(adminRole);
+            adminRole = roleRepository.save(adminRole);
             roleRepository.save(userRole);
             roleRepository.save(doctorRole);
-        }
 
-        if (userRepository.findByEmailAndDeleteAtIsNull("admin@gmail.com").isEmpty()) {
-            User admin = new User();
-            admin.setUserId(UUID.randomUUID());
-            admin.setName("Admin");
-            admin.setEmail("admin@gmail.com");
-            admin.setPassword(passwordEncoder.encode("admin"));
-            admin.setRole(adminRole);
+            if (userRepository.findByEmailAndDeleteAtIsNull("admin@gmail.com").isEmpty()) {
+                User admin = new User();
+                admin.setUserId(UUID.randomUUID());
+                admin.setName("Admin");
+                admin.setEmail("admin@gmail.com");
+                admin.setPassword(passwordEncoder.encode("admin"));
+                admin.setRole(adminRole);
 
-            userRepository.save(admin);
+                userRepository.save(admin);
+            }
         }
     }
 }
