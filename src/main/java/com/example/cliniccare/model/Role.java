@@ -1,14 +1,17 @@
 package com.example.cliniccare.model;
 
 import jakarta.persistence.*;
-import lombok.Data;
+import lombok.*;
 
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
 @Entity
-@Data
+@Getter
+@Setter
+@ToString
+@RequiredArgsConstructor
 @Table(name = "roles")
 public class Role {
     @Id
@@ -24,6 +27,7 @@ public class Role {
     private LocalDateTime createAt;
 
     @OneToMany(mappedBy = "role")
+    @ToString.Exclude
     private List<User> userList;
 
     @PrePersist

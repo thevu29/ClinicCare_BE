@@ -3,6 +3,7 @@ package com.example.cliniccare.dto;
 import com.example.cliniccare.model.User;
 import lombok.Data;
 
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Data
@@ -13,6 +14,7 @@ public class UserDTO {
     private String phone;
     private String image;
     private String role;
+    private LocalDateTime createAt;
 
     public UserDTO() {}
 
@@ -23,5 +25,6 @@ public class UserDTO {
         this.phone = user.getPhone();
         this.image = user.getImage();
         this.role = user.getRole().getName();
+        this.createAt = user.getCreateAt();
     }
 }

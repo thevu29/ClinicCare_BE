@@ -1,14 +1,17 @@
 package com.example.cliniccare.model;
 
 import jakarta.persistence.*;
-import lombok.Data;
+import lombok.*;
 
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
 @Entity
-@Data
+@Getter
+@Setter
+@ToString
+@RequiredArgsConstructor
 @Table(name = "users")
 public class User {
     @Id
@@ -40,18 +43,23 @@ public class User {
     private DoctorProfile doctorProfile;
 
     @OneToMany(mappedBy = "patient")
+    @ToString.Exclude
     private List<Feedback> feedbackList;
 
     @OneToMany(mappedBy = "patient")
+    @ToString.Exclude
     private List<Appointment> appointmentList;
 
     @OneToMany(mappedBy = "patient")
+    @ToString.Exclude
     private List<MedicalRecord> medicalRecordList;
 
     @OneToMany(mappedBy = "user")
+    @ToString.Exclude
     private List<Notification> notificationList;
 
     @OneToMany(mappedBy = "patient")
+    @ToString.Exclude
     private List<Payment> paymentList;
 
     @PrePersist

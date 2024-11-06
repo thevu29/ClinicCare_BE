@@ -1,13 +1,16 @@
 package com.example.cliniccare.model;
 
 import jakarta.persistence.*;
-import lombok.Data;
+import lombok.*;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Entity
-@Data
+@Getter
+@Setter
+@ToString
+@RequiredArgsConstructor
 @Table(name = "appointments")
 public class Appointment {
     @Id
@@ -33,6 +36,7 @@ public class Appointment {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "cancel_by", referencedColumnName = "user_id")
+    @ToString.Exclude
     private User cancelBy;
 
     @Column(name = "cancel_at")

@@ -57,7 +57,8 @@ public class UserService {
 
         Page<User> users = search.isEmpty()
                 ? userRepository.findByDeleteAtIsNull(pageable)
-                : userRepository.findByDeleteAtIsNullAndNameContainingOrPhoneContaining(search, search, pageable);
+                : userRepository.findByDeleteAtIsNullAndNameContainingOrPhoneContainingOrEmailContaining(
+                        search, search, search, pageable);
 
         int totalPage = paginationService.getTotalPages(users.getTotalElements(), paginationQuery.size);
         long totalElements = users.getTotalElements();
@@ -120,7 +121,18 @@ public class UserService {
             user.setPhone(userDTO.getPhone());
         }
         if (userDTO.getImage() != null && !userDTO.getImage().isEmpty()) {
-            user.setImage(firebaseStorageService.uploadImage(userDTO.getImage()));
+            user.setImage(firebaseStorageService.updateImage(userDTO.getImage(), user.getImage()));
+        }
+        if (userDTO.getRoleId() != null) {
+            Role role = roleRepository.findById(userDTO.getRoleId())
+                    .orElseThrow(() -> new NotFoundException("Role not found"));
+
+            if (user.getRole().getName().equalsIgnoreCase("user") &&
+                    !role.getName().equalsIgnoreCase("user")) {
+                throw new BadRequestException("Cannot change role of user");
+            }
+
+            user.setRole(role);
         }
 
         User savedUser = userRepository.save(user);
