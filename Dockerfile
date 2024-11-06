@@ -7,6 +7,9 @@ WORKDIR /app
 # Copy the project files to the container
 COPY . .
 
+# Grant execute permissions for the Maven wrapper
+RUN chmod +x ./mvnw
+
 # Package the application using Maven
 RUN ./mvnw clean package -DskipTests
 

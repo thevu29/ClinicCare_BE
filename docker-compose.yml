@@ -1,5 +1,6 @@
 services:
   backend:
+    container_name: clinic-backend
     build: .
     ports:
       - "8080:8080"
@@ -8,10 +9,13 @@ services:
       - SPRING_DATASOURCE_URL=jdbc:mysql://db:3306/cliniccare?serverTimezone=Asia/Bangkok&useSSL=false&allowPublicKeyRetrieval=true
       - SPRING_DATASOURCE_USERNAME=thevu
       - SPRING_DATASOURCE_PASSWORD=123
+      - SPRING_MAIL_USERNAME=vugmail
+      - SPRING_MAIL_PASSWORD=vupassword
     depends_on:
       - db
 
   db:
+    container_name: clinic-db
     image: mysql
     environment:
       MYSQL_DATABASE: cliniccare
