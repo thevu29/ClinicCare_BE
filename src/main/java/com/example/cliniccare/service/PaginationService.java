@@ -16,8 +16,4 @@ public class PaginationService {
     public int getTotalPages(long totalElements, int size) {
         return (int) Math.ceil((double) totalElements / size);
     }
-
-    public int getOffset(int page, int size) {
-        return (page - 1) * size;
-    }
 }

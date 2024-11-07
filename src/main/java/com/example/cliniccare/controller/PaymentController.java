@@ -1,9 +1,11 @@
 package com.example.cliniccare.controller;
 
+import com.example.cliniccare.dto.PaginationDTO;
 import com.example.cliniccare.dto.PaymentDTO;
 import com.example.cliniccare.exception.BadRequestException;
 import com.example.cliniccare.exception.NotFoundException;
 import com.example.cliniccare.response.ApiResponse;
+import com.example.cliniccare.response.PaginationResponse;
 import com.example.cliniccare.service.PaymentService;
 import com.example.cliniccare.validation.Validation;
 import jakarta.validation.Valid;
@@ -32,12 +34,31 @@ public class PaymentController {
     }
 
     @GetMapping
-    public ResponseEntity<?> getPayments() {
+    public ResponseEntity<?> getPayments(
+            @RequestParam(defaultValue = "1") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "date") String sortBy,
+            @RequestParam(defaultValue = "desc") String order,
+            @RequestParam(required = false) UUID patientId,
+            @RequestParam(required = false) UUID serviceId,
+            @RequestParam(required = false) String status,
+            @RequestParam(required = false) String method,
+            @RequestParam(required = false) String date,
+            @RequestParam(required = false) String price
+    ) {
         try {
-            List<PaymentDTO> payments = paymentService.getPayments();
+            PaginationDTO paginationDTO = new PaginationDTO(page, size, sortBy, order);
+            PaginationResponse<List<PaymentDTO>> response = paymentService
+                    .getPayments(paginationDTO, patientId, serviceId, status, method, date, price);
 
-            return ResponseEntity.ok(new ApiResponse<>(
-                    true, "Payments retrieved successfully", payments
+            return ResponseEntity.ok(response);
+        } catch (NotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ApiResponse<>(
+                    false, e.getMessage(), null
+            ));
+        } catch (BadRequestException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ApiResponse<>(
+                    false, e.getMessage(), null
             ));
         } catch (Exception e) {
             logger.error("Failed to retrieve payments: {}", e.getMessage(), e);

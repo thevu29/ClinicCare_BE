@@ -3,6 +3,7 @@ package com.example.cliniccare.model;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
@@ -36,7 +37,7 @@ public class Promotion {
     private LocalDateTime createAt;
 
     @Column(name = "expired_at")
-    private LocalDateTime expireAt;
+    private LocalDate expireAt;
 
     @OneToMany(mappedBy = "promotion")
     @ToString.Exclude
