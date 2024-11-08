@@ -163,6 +163,12 @@ public class UserService {
             ) {
                 throw new BadRequestException("Cannot change role of user");
             }
+            if (
+                    !user.getRole().getName().equalsIgnoreCase("user") &&
+                    role.getName().equalsIgnoreCase("user")
+            ) {
+                throw new BadRequestException("Cannot change role to user");
+            }
 
             user.setRole(role);
         }
