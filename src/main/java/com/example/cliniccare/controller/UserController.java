@@ -42,7 +42,7 @@ public class UserController {
             @RequestParam(defaultValue = "createAt") String sortBy,
             @RequestParam(defaultValue = "desc") String order,
             @RequestParam(defaultValue = "") String search,
-            @RequestParam(defaultValue = "") String role
+            @RequestParam(required = false) UUID role
     ) {
         try {
             PaginationDTO paginationQuery = new PaginationDTO(page, size, sortBy, order);
@@ -164,6 +164,10 @@ public class UserController {
             ));
         } catch (NotFoundException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ApiResponse<>(
+                    false, e.getMessage(), null
+            ));
+        } catch (BadRequestException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ApiResponse<>(
                     false, e.getMessage(), null
             ));
         } catch (Exception e) {

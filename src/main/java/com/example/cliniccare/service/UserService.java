@@ -54,7 +54,7 @@ public class UserService {
     public PaginationResponse<List<UserDTO>> getUsers(
             PaginationDTO paginationQuery,
             String search,
-            String role
+            UUID role
     ) {
         Pageable pageable = paginationService.getPageable(paginationQuery);
 
@@ -66,8 +66,12 @@ public class UserService {
         }
 
         List<String> roleParams = new ArrayList<>();
-        if (StringUtils.isNotEmpty(role)) {
-            roleParams.add("role_name");
+        if (role != null) {
+            if (!roleRepository.existsById(role)) {
+                throw new NotFoundException("Role not found");
+            }
+
+            roleParams.add("role_id");
         }
 
         Page<User> users = userRepository.findByDeleteAtIsNullAndSearchParamsAndRoleParams(
@@ -101,28 +105,38 @@ public class UserService {
         if (userRepository.existsByEmailAndDeleteAtIsNull(userDTO.getEmail())) {
             throw new BadRequestException("Email already exists");
         }
-        if (userDTO.getPhone() != null &&
-                !userDTO.getPhone().isEmpty() &&
-                userRepository.existsByPhoneAndDeleteAtIsNull(userDTO.getPhone())
-        ) {
-            throw new BadRequestException("Phone already exists");
-        }
+
+        Role role = roleRepository.findById(userDTO.getRoleId())
+                .orElseThrow(() -> new NotFoundException("Role not found"));
 
         User user = new User();
         user.setName(userDTO.getName());
         user.setEmail(userDTO.getEmail());
         user.setPhone(userDTO.getPhone());
         user.setPassword(passwordEncoder.encode(userDTO.getPassword()));
+        user.setRole(role);
 
         if (userDTO.getImage() != null && !userDTO.getImage().isEmpty()) {
             user.setImage(firebaseStorageService.uploadImage(userDTO.getImage()));
         }
 
-        Role role = roleRepository.findById(userDTO.getRoleId())
-                .orElseThrow(() -> new NotFoundException("Role not found"));
-        user.setRole(role);
-
         User savedUser = userRepository.save(user);
+
+        if (role.getName().equalsIgnoreCase("doctor")) {
+            DoctorProfile doctor = new DoctorProfile();
+
+            if (userDTO.getSpecialty() == null || userDTO.getSpecialty().isEmpty()) {
+                throw new BadRequestException("Specialty is required if user is doctor");
+            }
+
+            doctor.setSpecialty(userDTO.getSpecialty());
+            doctor.setUser(user);
+            doctorProfileRepository.save(doctor);
+
+            savedUser.setDoctorProfile(doctor);
+        }
+
+
         return new UserDTO(savedUser);
     }
 
@@ -143,9 +157,17 @@ public class UserService {
             Role role = roleRepository.findById(userDTO.getRoleId())
                     .orElseThrow(() -> new NotFoundException("Role not found"));
 
-            if (user.getRole().getName().equalsIgnoreCase("user") &&
-                    !role.getName().equalsIgnoreCase("user")) {
+            if (
+                    user.getRole().getName().equalsIgnoreCase("user") &&
+                    !role.getName().equalsIgnoreCase("user")
+            ) {
                 throw new BadRequestException("Cannot change role of user");
+            }
+            if (
+                    !user.getRole().getName().equalsIgnoreCase("user") &&
+                    role.getName().equalsIgnoreCase("user")
+            ) {
+                throw new BadRequestException("Cannot change role to user");
             }
 
             user.setRole(role);
