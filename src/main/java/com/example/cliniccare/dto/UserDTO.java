@@ -14,6 +14,7 @@ public class UserDTO {
     private String phone;
     private String image;
     private String role;
+    private String specialty;
     private LocalDateTime createAt;
 
     public UserDTO() {}
@@ -25,6 +26,7 @@ public class UserDTO {
         this.phone = user.getPhone();
         this.image = user.getImage();
         this.role = user.getRole().getName();
+        this.specialty = user.getDoctorProfile() != null ? user.getDoctorProfile().getSpecialty() : null;
         this.createAt = user.getCreateAt();
     }
 }

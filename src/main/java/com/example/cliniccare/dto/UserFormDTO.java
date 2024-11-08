@@ -30,4 +30,6 @@ public class UserFormDTO {
 
     @NotNull(message = "Role is required", groups = {UserFormGroup.Create.class})
     private UUID roleId;
+
+    private String specialty;
 }
