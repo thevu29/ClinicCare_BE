@@ -42,7 +42,7 @@ public class UserController {
             @RequestParam(defaultValue = "createAt") String sortBy,
             @RequestParam(defaultValue = "desc") String order,
             @RequestParam(defaultValue = "") String search,
-            @RequestParam(defaultValue = "") String role
+            @RequestParam(required = false) UUID role
     ) {
         try {
             PaginationDTO paginationQuery = new PaginationDTO(page, size, sortBy, order);

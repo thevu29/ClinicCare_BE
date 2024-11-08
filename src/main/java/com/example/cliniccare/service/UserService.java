@@ -54,7 +54,7 @@ public class UserService {
     public PaginationResponse<List<UserDTO>> getUsers(
             PaginationDTO paginationQuery,
             String search,
-            String role
+            UUID role
     ) {
         Pageable pageable = paginationService.getPageable(paginationQuery);
 
@@ -66,8 +66,12 @@ public class UserService {
         }
 
         List<String> roleParams = new ArrayList<>();
-        if (StringUtils.isNotEmpty(role)) {
-            roleParams.add("role_name");
+        if (role != null) {
+            if (!roleRepository.existsById(role)) {
+                throw new NotFoundException("Role not found");
+            }
+
+            roleParams.add("role_id");
         }
 
         Page<User> users = userRepository.findByDeleteAtIsNullAndSearchParamsAndRoleParams(

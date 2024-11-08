@@ -18,7 +18,7 @@ public interface UserRepository extends JpaRepository<User, UUID>, JpaSpecificat
             List<String> searchParams,
             List<String> roleParams,
             String search,
-            String role,
+            UUID role,
             Pageable pageable
     ) {
         return findAll(
@@ -35,7 +35,7 @@ public interface UserRepository extends JpaRepository<User, UUID>, JpaSpecificat
                     }
 
                     if (!roleParams.isEmpty()) {
-                        predicate = criteriaBuilder.and(predicate, criteriaBuilder.equal(root.get("role").get("name"), role));
+                        predicate = criteriaBuilder.and(predicate, criteriaBuilder.equal(root.get("role").get("roleId"), role));
                     }
 
                     return predicate;
