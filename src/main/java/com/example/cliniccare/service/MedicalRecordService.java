@@ -12,10 +12,11 @@ import com.example.cliniccare.repository.MedicalRecordRepository;
 import com.example.cliniccare.repository.ServiceRepository;
 import com.example.cliniccare.repository.UserRepository;
 import com.example.cliniccare.response.PaginationResponse;
+import com.example.cliniccare.utils.DateQueryParser;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.security.core.parameters.P;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -36,7 +37,7 @@ public class MedicalRecordService {
             UserRepository userRepository,
             DoctorProfileRepository doctorProfileRepository,
             ServiceRepository serviceRepository,
-            PaginationService paginationService, PaginationService paginationService1
+            PaginationService paginationService
     ) {
         this.medicalRecordRepository = medicalRecordRepository;
         this.userRepository = userRepository;
@@ -45,29 +46,59 @@ public class MedicalRecordService {
         this.paginationService = paginationService;
     }
 
-    public PaginationResponse<List<MedicalRecordDTO>> getMedicalRecords(
-            PaginationDTO paginationQuery,
-            String search
+    public PaginationResponse<List<MedicalRecordDTO>> getMedicalRecord(
+            PaginationDTO paginationDTO, String search, String date, UUID patientId, UUID doctorId, UUID serviceId
     ) {
-        Pageable pageable = paginationService.getPageable(paginationQuery);
-        Page<MedicalRecord> medicalRecords = medicalRecordRepository.findByDeleteAtIsNullAndDescriptionContaining(search, pageable);
-        int totalPage = paginationService.getTotalPages(medicalRecords.getTotalElements(), paginationQuery.size);
+        Pageable pageable = paginationService.getPageable(paginationDTO);
+
+        Specification<MedicalRecord> spec = Specification.where((root, query, cb) -> cb.isNull(root.get("deleteAt")));
+
+        if (search != null && !search.isEmpty()) {
+            spec = spec.and((root, query, cb) -> cb.or(
+                    cb.like(root.get("patient").get("name"), "%" + search + "%"),
+                    cb.like(root.get("service").get("name"), "%" + search + "%"),
+                    cb.like(root.get("doctor").get("user").get("name"), "%" + search + "%")
+            ));
+        }
+        if (date != null && !date.isEmpty()) {
+            DateQueryParser<MedicalRecord> dateQueryParser = new DateQueryParser<>(date, "createAt");
+            spec = spec.and(dateQueryParser.createDateSpecification());
+        }
+        if (patientId != null) {
+            User patient = userRepository.findByUserIdAndDeleteAtIsNull(patientId)
+                    .orElseThrow(() -> new NotFoundException("Patient not found"));
+
+            spec = spec.and((root, query, cb) -> cb.equal(root.get("patient").get("userId"), patient.getUserId()));
+        }
+        if (doctorId != null) {
+            DoctorProfile doctor = doctorProfileRepository.findByDoctorProfileIdAndDeleteAtIsNull(doctorId)
+                    .orElseThrow(() -> new NotFoundException("Doctor not found"));
+
+            spec = spec.and((root, query, cb) -> cb.equal(root.get("doctor").get("doctorProfileId"), doctor.getDoctorProfileId()));
+        }
+        if (serviceId != null) {
+            com.example.cliniccare.model.Service service = serviceRepository.findById(serviceId)
+                    .orElseThrow(() -> new NotFoundException("Service not found"));
+
+            spec = spec.and((root, query, cb) -> cb.equal(root.get("service").get("serviceId"), service.getServiceId()));
+        }
+
+        Page<MedicalRecord> medicalRecords = medicalRecordRepository.findAll(spec, pageable);
+
+        int totalPages = medicalRecords.getTotalPages();
         long totalElements = medicalRecords.getTotalElements();
+        int take = medicalRecords.getNumberOfElements();
 
         return new PaginationResponse<>(
                 true,
                 "Get medical records successfully",
-                medicalRecords.map(MedicalRecordDTO::new).getContent(),
-                paginationQuery.size,
-                paginationQuery.size,
-                totalPage,
+                medicalRecords.map(MedicalRecordDTO::new).toList(),
+                paginationDTO.page,
+                paginationDTO.size,
+                take,
+                totalPages,
                 totalElements
         );
-    }
-
-    public List<MedicalRecordDTO> getMedicalRecordByPatientId(UUID patientId) {
-        List<MedicalRecord> medicalRecord = medicalRecordRepository.findAllByPatient_UserId(patientId);
-        return medicalRecord.stream().map(MedicalRecordDTO::new).toList();
     }
 
     public MedicalRecordDTO getMedicalRecordById(UUID id) {

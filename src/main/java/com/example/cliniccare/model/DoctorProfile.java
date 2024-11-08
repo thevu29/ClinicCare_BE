@@ -39,4 +39,11 @@ public class DoctorProfile {
     @OneToMany(mappedBy = "doctor")
     @ToString.Exclude
     private List<MedicalRecord> medicalRecordList;
+
+    private LocalDateTime createAt;
+
+    @PrePersist
+    protected void onCreate() {
+        createAt = LocalDateTime.now();
+    }
 }

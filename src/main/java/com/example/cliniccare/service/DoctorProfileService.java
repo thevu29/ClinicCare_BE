@@ -28,8 +28,8 @@ public class DoctorProfileService {
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
     private final FirebaseStorageService firebaseStorageService;
-    private final PasswordEncoder passwordEncoder;
     private final PaginationService paginationService;
+    private final PasswordEncoder passwordEncoder;
 
     @Autowired
     public DoctorProfileService(
@@ -44,35 +44,46 @@ public class DoctorProfileService {
         this.userRepository = userRepository;
         this.roleRepository = roleRepository;
         this.firebaseStorageService = firebaseStorageService;
-        this.passwordEncoder = passwordEncoder;
         this.paginationService = paginationService;
-
+        this.passwordEncoder = passwordEncoder;
     }
 
-    public PaginationResponse<List<DoctorProfileDTO>> getDoctorProfiles(
-            PaginationDTO paginationQuery,
-            String search
-    ) {
-        Pageable pageable = paginationService.getPageable(paginationQuery);
-        Page<DoctorProfile> doctorProfiles = doctorProfileRepository
-                .findByDeleteAtIsNullAndSpecialtyContaining(search, pageable);
-        int totalPage = paginationService.getTotalPages(doctorProfiles.getTotalElements(), paginationQuery.size);
+    public PaginationResponse<List<DoctorProfileDTO>> getDoctorProfiles(PaginationDTO paginationDTO, String search, String specialty) {
+        Pageable pageable = paginationService.getPageable(paginationDTO);
+        Page<DoctorProfile> doctorProfiles = doctorProfileRepository.findAllByDeleteAtIsNull(pageable);
+
+        if (specialty != null && !specialty.isEmpty()) {
+            doctorProfiles = doctorProfileRepository.findAllBySpecialty(specialty, pageable);
+        }
+
+        if (search != null && !search.isEmpty()) {
+            doctorProfiles = doctorProfileRepository.findAllByUserNameContainingOrUserEmailContainingOrSpecialtyAndDeleteAtIsNull(
+                    search, search, specialty, pageable);
+        }
+
+        int totalPages = doctorProfiles.getTotalPages();
         long totalElements = doctorProfiles.getTotalElements();
+        int take = doctorProfiles.getNumberOfElements();
+
+        List<DoctorProfileDTO>  doctorProfileDTOs = doctorProfiles
+                .stream()
+                .map(doctorProfile -> new DoctorProfileDTO(doctorProfile, userRepository
+                        .findByUserIdAndDeleteAtIsNull(doctorProfile.getUser().getUserId())
+                        .orElseThrow(() -> new NotFoundException("User not found"))
+                ))
+                .toList();
+
         return new PaginationResponse<>(
                 true,
                 "Get doctors successfully",
-                doctorProfiles.map(doctorProfile -> new DoctorProfileDTO(
-                        doctorProfile,
-                        userRepository.findByUserIdAndDeleteAtIsNull(doctorProfile.getUser().getUserId())
-                                .orElseThrow(() -> new NotFoundException("User not found"))
-                )).getContent(),
-                paginationQuery.page,
-                paginationQuery.size,
-                totalPage,
+                doctorProfileDTOs,
+                paginationDTO.page,
+                paginationDTO.size,
+                take,
+                totalPages,
                 totalElements
         );
     }
-
 
     public DoctorProfileDTO getDoctorProfileById(UUID id) {
         DoctorProfile doctorProfile = doctorProfileRepository.findByDoctorProfileIdAndDeleteAtIsNull(id)
@@ -92,7 +103,6 @@ public class DoctorProfileService {
         if (doctorProfileDTO.getImage().isEmpty()) {
             throw new BadRequestException("Image is required");
         }
-        
 
         User user = new User();
         user.setName(doctorProfileDTO.getName());

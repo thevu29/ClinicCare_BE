@@ -1,10 +1,12 @@
 package com.example.cliniccare.controller;
 
 import com.example.cliniccare.dto.FeedbackDTO;
+import com.example.cliniccare.dto.PaginationDTO;
 import com.example.cliniccare.exception.BadRequestException;
 import com.example.cliniccare.exception.NotFoundException;
 import com.example.cliniccare.interfaces.FeedbackFormGroup;
 import com.example.cliniccare.response.ApiResponse;
+import com.example.cliniccare.response.PaginationResponse;
 import com.example.cliniccare.service.FeedbackService;
 import com.example.cliniccare.validation.Validation;
 import org.slf4j.Logger;
@@ -32,31 +34,34 @@ public class FeedbackController {
     }
 
     @GetMapping
-    public ResponseEntity<?> getFeedbacks() {
+    public ResponseEntity<?> getFeedbacks(
+            @RequestParam(defaultValue = "1") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "createAt") String sortBy,
+            @RequestParam(defaultValue = "desc") String order,
+            @RequestParam(defaultValue = "") String date,
+            @RequestParam(required = false) String doctorId,
+            @RequestParam(required = false) String patientId,
+            @RequestParam(required = false) String serviceId
+    ) {
         try {
-            List<FeedbackDTO> feedbacks = feedbackService.getFeedbacks();
-            return ResponseEntity.ok(new ApiResponse<>(
-                    true, "Get feedbacks successfully", feedbacks
+            PaginationDTO paginationDTO = new PaginationDTO(page, size, sortBy, order);
+            PaginationResponse<List<FeedbackDTO>> response = feedbackService
+                    .getFeedbacks(paginationDTO, date, doctorId, patientId, serviceId);
+
+            return ResponseEntity.ok(response);
+        } catch (NotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ApiResponse<>(
+                    false, e.getMessage(), null
+            ));
+        } catch (BadRequestException ex) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ApiResponse<>(
+                    false, ex.getMessage(), null
             ));
         } catch (Exception e) {
             logger.error("Failed to get feedbacks: {}", e.getMessage(), e);
             return ResponseEntity.internalServerError().body(new ApiResponse<>(
-                    false, e.getMessage(), null
-            ));
-        }
-    }
-
-    @GetMapping("/patient/{patientId}")
-    public ResponseEntity<?> getPatientFeedbacks(@PathVariable UUID patientId) {
-        try {
-            List<FeedbackDTO> feedbacks = feedbackService.getPatientFeedbacks(patientId);
-            return ResponseEntity.ok(new ApiResponse<>(
-                    true, "Get patient feedbacks successfully", feedbacks
-            ));
-        } catch (Exception e) {
-            logger.error("Failed to get patient feedbacks: {}", e.getMessage(), e);
-            return ResponseEntity.internalServerError().body(new ApiResponse<>(
-                    false, e.getMessage(), null
+                    false, "Failed to get feedbacks", null
             ));
         }
     }
@@ -69,14 +74,12 @@ public class FeedbackController {
                     true, "Get feedback successfully", feedback
             ));
         } catch (NotFoundException e) {
-            return ResponseEntity
-                    .status(HttpStatus.NOT_FOUND)
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
                     .body(new ApiResponse<>(false, e.getMessage(), null));
         } catch (Exception e) {
             logger.error("Failed to get feedback: {}", e.getMessage(), e);
-            return ResponseEntity
-                    .internalServerError()
-                    .body(new ApiResponse<>(false, e.getMessage(), null));
+            return ResponseEntity.internalServerError()
+                    .body(new ApiResponse<>(false, "Failed to get feedback", null));
         }
     }
 
@@ -103,18 +106,12 @@ public class FeedbackController {
                             false, e.getMessage(), null
                     ));
         } catch (BadRequestException e) {
-            return ResponseEntity
-                    .status(HttpStatus.BAD_REQUEST)
-                    .body(new ApiResponse<>(
-                            false, e.getMessage(), null
-                    ));
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(new ApiResponse<>(false, e.getMessage(), null));
         } catch (Exception e) {
             logger.error("Failed to create feedback: {}", e.getMessage(), e);
-            return ResponseEntity
-                    .status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(new ApiResponse<>(
-                            false, "Failed to create feedback", null
-                    ));
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new ApiResponse<>(false, "Failed to create feedback", null));
         }
     }
 
@@ -142,11 +139,8 @@ public class FeedbackController {
                     ));
         } catch (Exception e) {
             logger.error("Failed to update feedback: {}", e.getMessage(), e);
-            return ResponseEntity
-                    .status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(new ApiResponse<>(
-                            false, "Failed to update feedback", null
-                    ));
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new ApiResponse<>(false, "Failed to update feedback", null));
         }
     }
 
@@ -158,16 +152,12 @@ public class FeedbackController {
                     true, "Delete feedback successfully", null
             ));
         } catch (NotFoundException e) {
-            return ResponseEntity
-                    .status(HttpStatus.NOT_FOUND)
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
                     .body(new ApiResponse<>(false, e.getMessage(), null));
         } catch (Exception e) {
             logger.error("Failed to delete feedback: {}", e.getMessage(), e);
-            return ResponseEntity
-                    .status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(new ApiResponse<>(
-                            false, "Failed to delete feedback", null
-                    ));
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new ApiResponse<>(false, "Failed to delete feedback", null));
         }
     }
 }

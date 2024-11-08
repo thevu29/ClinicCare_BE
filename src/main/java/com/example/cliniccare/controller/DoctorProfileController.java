@@ -3,7 +3,6 @@ package com.example.cliniccare.controller;
 import com.example.cliniccare.dto.DoctorProfileDTO;
 import com.example.cliniccare.dto.DoctorProfileFormDTO;
 import com.example.cliniccare.dto.PaginationDTO;
-import com.example.cliniccare.dto.UserDTO;
 import com.example.cliniccare.exception.BadRequestException;
 import com.example.cliniccare.exception.NotFoundException;
 import com.example.cliniccare.interfaces.DoctorProfileGroup;
@@ -40,18 +39,29 @@ public class DoctorProfileController {
     public ResponseEntity<?> getDoctorProfiles(
             @RequestParam(defaultValue = "1") int page,
             @RequestParam(defaultValue = "10") int size,
-            @RequestParam(defaultValue = "doctorProfileId") String sortBy,
-            @RequestParam(defaultValue = "asc") String order,
-            @RequestParam(defaultValue = "") String search) {
+            @RequestParam(defaultValue = "createAt") String sortBy,
+            @RequestParam(defaultValue = "desc") String order,
+            @RequestParam(defaultValue = "") String search,
+            @RequestParam(defaultValue = "") String specialty
+    ) {
         try {
-            PaginationDTO paginationQuery = new PaginationDTO(page, size, sortBy, order);
-            PaginationResponse<List<DoctorProfileDTO>> response = doctorProfileService.getDoctorProfiles(paginationQuery, search);
+            PaginationDTO paginationDTO = new PaginationDTO(page, size, sortBy, order);
+            PaginationResponse<List<DoctorProfileDTO>> response = doctorProfileService
+                    .getDoctorProfiles(paginationDTO, search, specialty);
 
             return ResponseEntity.ok(response);
-        } catch (Exception e) {
-            logger.error("Failed to get doctors: {}", e.getMessage(), e);
-            return ResponseEntity.internalServerError().body(new ApiResponse<>(
+        } catch (NotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ApiResponse<>(
                     false, e.getMessage(), null
+            ));
+        } catch (BadRequestException ex) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ApiResponse<>(
+                    false, ex.getMessage(), null
+            ));
+        } catch (Exception e) {
+            logger.error("Failed to get all doctors: {}", e.getMessage(), e);
+            return ResponseEntity.internalServerError().body(new ApiResponse<>(
+                    false, "Failed to get doctors", null
             ));
         }
     }
@@ -70,7 +80,7 @@ public class DoctorProfileController {
         } catch (Exception e) {
             logger.error("Failed to get doctor: {}", e.getMessage(), e);
             return ResponseEntity.internalServerError().body(new ApiResponse<>(
-                    false, e.getMessage(), null
+                    false, "Failed to get doctor", null
             ));
         }
     }
@@ -106,7 +116,7 @@ public class DoctorProfileController {
         } catch (Exception e) {
             logger.error("Failed to create user: {}", e.getMessage(), e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new ApiResponse<>(
-                    false, "Failed to create doctorProfile", null
+                    false, "Failed to create doctor", null
             ));
         }
     }
@@ -143,7 +153,7 @@ public class DoctorProfileController {
         } catch (Exception e) {
             logger.error("Failed to update doctorProfile: {}", e.getMessage(), e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new ApiResponse<>(
-                    false, "Failed to update doctorProfile", null
+                    false, "Failed to update doctor", null
             ));
         }
     }
@@ -162,7 +172,7 @@ public class DoctorProfileController {
         } catch (Exception e) {
             logger.error("Failed to delete doctor profile: {}", e.getMessage(), e);
             return ResponseEntity.internalServerError().body(new ApiResponse<>(
-                    false, e.getMessage(), null
+                    false, "Failed to delete doctor", null
             ));
         }
     }

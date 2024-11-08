@@ -20,6 +20,8 @@ public class PaymentDTO {
 
     private LocalDateTime date;
 
+    private double totalPrice;
+
     private String status;
 
     @NotBlank(message = "Method is required")
@@ -32,6 +34,7 @@ public class PaymentDTO {
         this.paymentId = payment.getPaymentId();
         this.patientId = payment.getPatient().getUserId();
         this.serviceId = payment.getService().getServiceId();
+        this.totalPrice = payment.getTotalPrice();
         this.date = payment.getDate();
         this.status = payment.getStatus().name();
         this.method = payment.getMethod().name();

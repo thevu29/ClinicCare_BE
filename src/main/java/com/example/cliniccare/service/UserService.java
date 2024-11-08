@@ -12,6 +12,7 @@ import com.example.cliniccare.repository.DoctorProfileRepository;
 import com.example.cliniccare.repository.RoleRepository;
 import com.example.cliniccare.repository.UserRepository;
 import com.example.cliniccare.response.PaginationResponse;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -20,6 +21,7 @@ import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -51,17 +53,30 @@ public class UserService {
 
     public PaginationResponse<List<UserDTO>> getUsers(
             PaginationDTO paginationQuery,
-            String search
+            String search,
+            String role
     ) {
         Pageable pageable = paginationService.getPageable(paginationQuery);
 
-        Page<User> users = search.isEmpty()
-                ? userRepository.findByDeleteAtIsNull(pageable)
-                : userRepository.findByDeleteAtIsNullAndNameContainingOrPhoneContainingOrEmailContaining(
-                        search, search, search, pageable);
+        List<String> searchParams = new ArrayList<>();
+        if (StringUtils.isNotEmpty(search)) {
+            searchParams.add("name");
+            searchParams.add("phone");
+            searchParams.add("email");
+        }
 
-        int totalPage = paginationService.getTotalPages(users.getTotalElements(), paginationQuery.size);
+        List<String> roleParams = new ArrayList<>();
+        if (StringUtils.isNotEmpty(role)) {
+            roleParams.add("role_name");
+        }
+
+        Page<User> users = userRepository.findByDeleteAtIsNullAndSearchParamsAndRoleParams(
+                searchParams, roleParams, search, role, pageable
+        );
+
+        int totalPages = users.getTotalPages();
         long totalElements = users.getTotalElements();
+        int take = users.getNumberOfElements();
 
         return new PaginationResponse<>(
                 true,
@@ -69,7 +84,8 @@ public class UserService {
                 users.map(UserDTO::new).getContent(),
                 paginationQuery.page,
                 paginationQuery.size,
-                totalPage,
+                take,
+                totalPages,
                 totalElements
         );
     }

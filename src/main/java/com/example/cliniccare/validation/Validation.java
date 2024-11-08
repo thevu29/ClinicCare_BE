@@ -5,6 +5,9 @@ import org.springframework.context.support.DefaultMessageSourceResolvable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
 
+import java.time.LocalDate;
+import java.time.format.DateTimeParseException;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 public class Validation {
@@ -19,5 +22,19 @@ public class Validation {
             ));
         }
         return null;
+    }
+
+    public static boolean isValidDate(String date) {
+        String datePattern = "^\\d{4}-\\d{2}-\\d{2}$";
+        if (!Pattern.matches(datePattern, date)) {
+            return false;
+        }
+
+        try {
+            LocalDate.parse(date);
+            return true;
+        } catch (DateTimeParseException e) {
+            return false;
+        }
     }
 }

@@ -1,5 +1,6 @@
 package com.example.cliniccare.service;
 
+import com.example.cliniccare.dto.PaginationDTO;
 import com.example.cliniccare.dto.ScheduleDTO;
 import com.example.cliniccare.dto.ScheduleFormDTO;
 import com.example.cliniccare.exception.BadRequestException;
@@ -10,8 +11,14 @@ import com.example.cliniccare.model.Service;
 import com.example.cliniccare.repository.DoctorProfileRepository;
 import com.example.cliniccare.repository.ScheduleRepository;
 import com.example.cliniccare.repository.ServiceRepository;
+import com.example.cliniccare.response.PaginationResponse;
+import com.example.cliniccare.utils.DateQueryParser;
 import com.example.cliniccare.utils.Formatter;
+import com.example.cliniccare.utils.TimeQueryParser;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -27,16 +34,19 @@ public class ScheduleService {
     private final ScheduleRepository scheduleRepository;
     private final ServiceRepository serviceRepository;
     private final DoctorProfileRepository doctorProfileRepository;
+    private final PaginationService paginationService;
 
     @Autowired
     public ScheduleService(
             ScheduleRepository scheduleRepository,
             ServiceRepository serviceRepository,
-            DoctorProfileRepository doctorProfileRepository
+            DoctorProfileRepository doctorProfileRepository,
+            PaginationService paginationService
     ) {
         this.scheduleRepository = scheduleRepository;
         this.serviceRepository = serviceRepository;
         this.doctorProfileRepository = doctorProfileRepository;
+        this.paginationService = paginationService;
     }
 
     private Schedule.ScheduleStatus getScheduleStatus(String status) {
@@ -70,50 +80,68 @@ public class ScheduleService {
         return true;
     }
 
-    public List<ScheduleDTO> getSchedules() {
-        List<Schedule> schedules = scheduleRepository.findAllByOrderByDateTimeAsc();
+    public PaginationResponse<List<ScheduleDTO>> getSchedules(
+            PaginationDTO paginationDTO, String search, String date, String time,
+            String status, UUID serviceId, UUID doctorId
+    ) {
+        Pageable pageable = paginationService.getPageable(paginationDTO);
+
+        Specification<Schedule> spec = Specification.where(null);
+
+        if (search != null && !search.isEmpty()) {
+            spec = spec.and((root, query, cb) -> cb.or(
+                    cb.like(root.get("doctor").get("user").get("name"), "%" + search + "%"),
+                    cb.like(root.get("service").get("name"), "%" + search + "%")
+            ));
+        }
+        if (date != null && !date.isEmpty()) {
+            DateQueryParser<Schedule> dateQueryParser = new DateQueryParser<>(date, "dateTime");
+            spec = spec.and(dateQueryParser.createDateSpecification());
+        }
+        if (time != null && !time.isEmpty()) {
+            TimeQueryParser<Schedule> timeQueryParser = new TimeQueryParser<>(time, "dateTime");
+            spec = spec.and(timeQueryParser.createTimeSpecification());
+        }
+        if (status != null && !status.isEmpty()) {
+            spec = spec.and((root, query, cb) -> cb.equal(root.get("status"), getScheduleStatus(status)));
+        }
+        if (serviceId != null) {
+            Service service = serviceRepository.findById(serviceId)
+                    .orElseThrow(() -> new NotFoundException("Service not found"));
+
+            spec = spec.and((root, query, cb) -> cb.equal(root.get("service").get("serviceId"), service.getServiceId()));
+        }
+        if (doctorId != null) {
+            DoctorProfile doctor = doctorProfileRepository.findById(doctorId)
+                    .orElseThrow(() -> new NotFoundException("Doctor not found"));
+
+            spec = spec.and((root, query, cb) -> cb.equal(root.get("doctor").get("doctorProfileId"), doctor.getDoctorProfileId()));
+        }
+
+        Page<Schedule> schedules = scheduleRepository.findAll(spec, pageable);
+
+        int totalPages = schedules.getTotalPages();
+        long totalElements = schedules.getTotalElements();
+        int take = schedules.getNumberOfElements();
 
         Map<String, List<Schedule>> groupedSchedules = schedules.stream()
                 .collect(Collectors.groupingBy(schedule -> schedule.getDoctor().getDoctorProfileId() + "-" +
                         schedule.getService().getServiceId() + "-" + schedule.getDateTime().toLocalDate()));
 
-        return groupedSchedules.values().stream()
+        List<ScheduleDTO> scheduleDTOS = groupedSchedules.values().stream()
                 .map(ScheduleDTO::new)
-                .collect(Collectors.toList());
-    }
+                .toList();
 
-    public List<ScheduleDTO> getDoctorSchedules(UUID doctorProfileId) {
-        DoctorProfile doctor = doctorProfileRepository
-                .findByDoctorProfileIdAndDeleteAtIsNull(doctorProfileId)
-                .orElseThrow(() -> new NotFoundException("Doctor not found"));
-
-        List<Schedule> schedules = scheduleRepository
-                .findAllByDoctor_DoctorProfileIdOrderByDateTimeAsc(doctor.getDoctorProfileId());
-
-        Map<String, List<Schedule>> groupedSchedules = schedules.stream()
-                .collect(Collectors.groupingBy(schedule -> schedule.getService().getServiceId() + "-" +
-                        schedule.getDateTime().toLocalDate()));
-
-        return groupedSchedules.values().stream()
-                .map(ScheduleDTO::new)
-                .collect(Collectors.toList());
-    }
-
-    public List<ScheduleDTO> getServiceSchedules(UUID  serviceId) {
-        Service service = serviceRepository
-                .findByServiceIdAndDeleteAtIsNull(serviceId)
-                .orElseThrow(() -> new NotFoundException("Service not found"));
-
-        List<Schedule> schedules = scheduleRepository
-                .findAllByService_ServiceIdOrderByDateTimeAsc(service.getServiceId());
-
-        Map<String, List<Schedule>> groupedSchedules = schedules.stream()
-                .collect(Collectors.groupingBy(schedule -> schedule.getDoctor().getDoctorProfileId() + "-" +
-                        schedule.getDateTime().toLocalDate()));
-
-        return groupedSchedules.values().stream()
-                .map(ScheduleDTO::new)
-                .collect(Collectors.toList());
+        return new PaginationResponse<>(
+                true,
+                "Get schedules successfully",
+                scheduleDTOS,
+                paginationDTO.page,
+                paginationDTO.size,
+                take,
+                totalPages,
+                totalElements
+        );
     }
 
     public ScheduleDTO createSchedule(ScheduleFormDTO scheduleDTO) {

@@ -18,8 +18,7 @@ public class ScheduleDTO {
     private LocalDate date;
     private List<ScheduleDetailDTO> scheduleDetails;
 
-    public ScheduleDTO() {
-    }
+    public ScheduleDTO() {}
 
     public ScheduleDTO(List<Schedule> schedules) {
         if (!schedules.isEmpty()) {
