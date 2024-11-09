@@ -1,15 +1,18 @@
 package com.example.cliniccare.controller;
 
+import com.example.cliniccare.dto.PaginationDTO;
 import com.example.cliniccare.dto.PromotionDTO;
 import com.example.cliniccare.exception.BadRequestException;
 import com.example.cliniccare.exception.NotFoundException;
 import com.example.cliniccare.interfaces.PromotionFormGroup;
 import com.example.cliniccare.response.ApiResponse;
+import com.example.cliniccare.response.PaginationResponse;
 import com.example.cliniccare.service.PromotionService;
 import jakarta.validation.groups.Default;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.support.DefaultMessageSourceResolvable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
@@ -32,16 +35,38 @@ public class PromotionController {
     }
 
     @GetMapping
-    public ResponseEntity<?> getPromotions() {
+    public ResponseEntity<?> getPromotions(
+            @RequestParam(defaultValue = "1") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "promotionId") String sortBy,
+            @RequestParam(defaultValue = "asc") String order,
+            @RequestParam(defaultValue = "") String search) {
         try{
-            List<PromotionDTO> promotions = promotionService.getAllPromotions();
-            return ResponseEntity.ok(new ApiResponse<>(
-                    true, "Get promotions successfully", promotions
-            ));
+            PaginationDTO paginationQuery = new PaginationDTO(page,size,sortBy, order);
+            PaginationResponse<List<PromotionDTO>> response = promotionService.getPromotions(paginationQuery, search);
+            return ResponseEntity.ok(response);
         } catch (Exception e) {
             logger.error("Failed to get promotions: {}", e.getMessage(), e);
             return ResponseEntity.internalServerError().body(new ApiResponse<>(
                     false, "Failed to get promotions", null
+            ));
+        }
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<?> getPromotionById(@PathVariable UUID id){
+        try {
+            PromotionDTO promotion = promotionService.getPromotionById(id);
+            return ResponseEntity.ok(new ApiResponse<>(true,"Get promotion successfully", promotion));
+        } catch (NotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ApiResponse<>(
+                    false, e.getMessage(), null
+            ));
+        }
+        catch (Exception e) {
+            logger.error("Failed to get promotion: {}", e.getMessage(), e);
+            return ResponseEntity.internalServerError().body(new ApiResponse<>(
+                    false, e.getMessage(), null
             ));
         }
     }
@@ -109,21 +134,4 @@ public class PromotionController {
         }
     }
 
-    @GetMapping("/{id}")
-    public ResponseEntity<?> getPromotionById(@PathVariable UUID id) {
-        try {
-            PromotionDTO promotion = promotionService.getPromotionById(id);
-            return ResponseEntity.ok(new ApiResponse<>(
-                    true, "Get promotion successfully", promotion
-            ));
-        } catch (NotFoundException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ApiResponse<>(
-                    false, e.getMessage(), null
-            ));
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new ApiResponse<>(
-                    false, e.getMessage(), null
-            ));
-        }
-    }
 }
