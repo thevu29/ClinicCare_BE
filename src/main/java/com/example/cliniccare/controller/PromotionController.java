@@ -8,11 +8,10 @@ import com.example.cliniccare.interfaces.PromotionFormGroup;
 import com.example.cliniccare.response.ApiResponse;
 import com.example.cliniccare.response.PaginationResponse;
 import com.example.cliniccare.service.PromotionService;
+import com.example.cliniccare.validation.Validation;
 import jakarta.validation.groups.Default;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.context.support.DefaultMessageSourceResolvable;
-import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
@@ -21,7 +20,6 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 @CrossOrigin("*")
 @RestController
@@ -38,35 +36,28 @@ public class PromotionController {
     public ResponseEntity<?> getPromotions(
             @RequestParam(defaultValue = "1") int page,
             @RequestParam(defaultValue = "10") int size,
-            @RequestParam(defaultValue = "promotionId") String sortBy,
-            @RequestParam(defaultValue = "asc") String order,
-            @RequestParam(defaultValue = "") String search) {
-        try{
-            PaginationDTO paginationQuery = new PaginationDTO(page,size,sortBy, order);
-            PaginationResponse<List<PromotionDTO>> response = promotionService.getPromotions(paginationQuery, search);
-            return ResponseEntity.ok(response);
-        } catch (Exception e) {
-            logger.error("Failed to get promotions: {}", e.getMessage(), e);
-            return ResponseEntity.internalServerError().body(new ApiResponse<>(
-                    false, "Failed to get promotions", null
-            ));
-        }
-    }
-
-    @GetMapping("/{id}")
-    public ResponseEntity<?> getPromotionById(@PathVariable UUID id){
+            @RequestParam(defaultValue = "createAt") String sortBy,
+            @RequestParam(defaultValue = "desc") String order,
+            @RequestParam(required = false) String status,
+            @RequestParam(required = false) String discount
+    ) {
         try {
-            PromotionDTO promotion = promotionService.getPromotionById(id);
-            return ResponseEntity.ok(new ApiResponse<>(true,"Get promotion successfully", promotion));
+            PaginationDTO paginationDTO = new PaginationDTO(page, size, sortBy, order);
+            PaginationResponse<List<PromotionDTO>> response = promotionService.getAllPromotions(paginationDTO, status, discount);
+
+            return ResponseEntity.ok(response);
         } catch (NotFoundException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ApiResponse<>(
                     false, e.getMessage(), null
             ));
-        }
-        catch (Exception e) {
-            logger.error("Failed to get promotion: {}", e.getMessage(), e);
-            return ResponseEntity.internalServerError().body(new ApiResponse<>(
+        } catch (BadRequestException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ApiResponse<>(
                     false, e.getMessage(), null
+            ));
+        } catch (Exception e) {
+            logger.error("Failed to get promotions: {}", e.getMessage(), e);
+            return ResponseEntity.internalServerError().body(new ApiResponse<>(
+                    false, "Failed to get promotions", null
             ));
         }
     }
@@ -77,14 +68,8 @@ public class PromotionController {
             BindingResult bindingResult
     ) {
         try {
-            if (bindingResult.hasErrors()) {
-                String errors = bindingResult.getAllErrors().stream()
-                        .map(DefaultMessageSourceResolvable::getDefaultMessage)
-                        .collect(Collectors.joining(", "));
-
-                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
-                        new ApiResponse<>(false, errors, null)
-                );
+            if (Validation.validateBody(bindingResult) != null) {
+                return Validation.validateBody(bindingResult);
             }
 
             PromotionDTO promotion = promotionService.createPromotion(promotionDTO);
@@ -108,16 +93,11 @@ public class PromotionController {
     }
 
     @PutMapping("/update/{id}")
-    public ResponseEntity<?> updatePromotion(
-            @PathVariable UUID id,
-            @Validated({Default.class, PromotionFormGroup.Update.class}) @RequestBody PromotionDTO promotionDTO
-    ) {
+    public ResponseEntity<?> updatePromotion(@PathVariable UUID id, @RequestBody PromotionDTO promotionDTO) {
         try {
-            promotionDTO.setPromotionId(id);
-            PromotionDTO promotion = promotionService.updatePromotion(promotionDTO);
-            return ResponseEntity.ok(new ApiResponse<>(
-                    true, "Update promotion successfully", promotion
-            ));
+            PromotionDTO promotion = promotionService.updatePromotion(id, promotionDTO);
+
+            return ResponseEntity.ok(new ApiResponse<>(true, "Update promotion successfully", promotion));
         } catch (NotFoundException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ApiResponse<>(
                     false, e.getMessage(), null
@@ -134,4 +114,20 @@ public class PromotionController {
         }
     }
 
+    @GetMapping("/{id}")
+    public ResponseEntity<?> getPromotionById(@PathVariable UUID id) {
+        try {
+            PromotionDTO promotion = promotionService.getPromotionById(id);
+
+            return ResponseEntity.ok(new ApiResponse<>(true, "Get promotion successfully", promotion));
+        } catch (NotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ApiResponse<>(
+                    false, e.getMessage(), null
+            ));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new ApiResponse<>(
+                    false, e.getMessage(), null
+            ));
+        }
+    }
 }

@@ -39,15 +39,24 @@ public class UserController {
     public ResponseEntity<?> getUsers(
             @RequestParam(defaultValue = "1") int page,
             @RequestParam(defaultValue = "10") int size,
-            @RequestParam(defaultValue = "userId") String sortBy,
-            @RequestParam(defaultValue = "asc") String order,
-            @RequestParam(defaultValue = "") String search
+            @RequestParam(defaultValue = "createAt") String sortBy,
+            @RequestParam(defaultValue = "desc") String order,
+            @RequestParam(defaultValue = "") String search,
+            @RequestParam(required = false) UUID role
     ) {
         try {
             PaginationDTO paginationQuery = new PaginationDTO(page, size, sortBy, order);
-            PaginationResponse<List<UserDTO>> response = userService.getUsers(paginationQuery, search);
+            PaginationResponse<List<UserDTO>> response = userService.getUsers(paginationQuery, search, role);
 
             return ResponseEntity.ok(response);
+        } catch (NotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ApiResponse<>(
+                    false, e.getMessage(), null
+            ));
+        } catch (BadRequestException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ApiResponse<>(
+                    false, e.getMessage(), null
+            ));
         } catch (Exception e) {
             logger.error("Failed to get users: {}", e.getMessage(), e);
             return ResponseEntity.internalServerError().body(new ApiResponse<>(
@@ -155,6 +164,10 @@ public class UserController {
             ));
         } catch (NotFoundException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ApiResponse<>(
+                    false, e.getMessage(), null
+            ));
+        } catch (BadRequestException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ApiResponse<>(
                     false, e.getMessage(), null
             ));
         } catch (Exception e) {

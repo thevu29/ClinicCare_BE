@@ -1,16 +1,17 @@
 package com.example.cliniccare.controller;
 
+import com.example.cliniccare.dto.PaginationDTO;
 import com.example.cliniccare.dto.RoleDTO;
 import com.example.cliniccare.exception.BadRequestException;
 import com.example.cliniccare.exception.NotFoundException;
 import com.example.cliniccare.response.ApiResponse;
+import com.example.cliniccare.response.PaginationResponse;
 import com.example.cliniccare.service.RoleService;
 import com.example.cliniccare.validation.Validation;
 import jakarta.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.support.DefaultMessageSourceResolvable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
@@ -18,7 +19,6 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 @CrossOrigin("*")
 @RestController
@@ -33,16 +33,30 @@ public class RoleController {
     }
 
     @GetMapping
-    public ResponseEntity<?> getRoles() {
+    public ResponseEntity<?> getRoles(
+            @RequestParam(defaultValue = "1") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "createAt") String sortBy,
+            @RequestParam(defaultValue = "desc") String order,
+            @RequestParam(defaultValue = "") String name
+    ) {
         try {
-            List<RoleDTO> roles = roleService.getRoles();
-            return ResponseEntity.ok(new ApiResponse<>(
-                    true, "Get roles successfully", roles
+            PaginationDTO paginationQuery = new PaginationDTO(page, size, sortBy, order);
+            PaginationResponse<List<RoleDTO>> response = roleService.getRoles(paginationQuery, name);
+
+            return ResponseEntity.ok(response);
+        } catch (NotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ApiResponse<>(
+                    false, e.getMessage(), null
+            ));
+        } catch (BadRequestException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ApiResponse<>(
+                    false, e.getMessage(), null
             ));
         } catch (Exception e) {
             logger.error("Failed to get roles: {}", e.getMessage(), e);
             return ResponseEntity.internalServerError().body(new ApiResponse<>(
-                    false, e.getMessage(), null
+                    false, "Failed to get roles", null
             ));
         }
     }
@@ -51,9 +65,8 @@ public class RoleController {
     public ResponseEntity<?> getRoleById(@PathVariable UUID id) {
         try {
             RoleDTO role = roleService.getRoleById(id);
-            return ResponseEntity.ok(new ApiResponse<>(
-                    true, "Get role successfully", role
-            ));
+
+            return ResponseEntity.ok(new ApiResponse<>(true, "Get role successfully", role));
         } catch (NotFoundException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ApiResponse<>(
                     false, e.getMessage(), null

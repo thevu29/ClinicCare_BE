@@ -2,15 +2,15 @@ package com.example.cliniccare.service;
 
 import com.example.cliniccare.dto.PaginationDTO;
 import com.example.cliniccare.dto.PromotionDTO;
-import com.example.cliniccare.dto.UserDTO;
 import com.example.cliniccare.exception.NotFoundException;
 import com.example.cliniccare.model.Promotion;
 import com.example.cliniccare.repository.PromotionRepository;
-import com.example.cliniccare.repository.UserRepository;
 import com.example.cliniccare.response.PaginationResponse;
+import com.example.cliniccare.utils.PriceQueryParser;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -20,13 +20,11 @@ import java.util.UUID;
 public class PromotionService {
     private final PromotionRepository promotionRepository;
     private final PaginationService paginationService;
-    private final UserRepository userRepository;
 
     @Autowired
-    public PromotionService(PromotionRepository promotionRepository, PaginationService paginationService, UserRepository userRepository) {
+    public PromotionService(PromotionRepository promotionRepository, PaginationService paginationService) {
         this.promotionRepository = promotionRepository;
         this.paginationService = paginationService;
-        this.userRepository = userRepository;
     }
 
     private Promotion.PromotionStatus getPromotionStatus(String status) {
@@ -39,21 +37,35 @@ public class PromotionService {
         }
     }
 
-    public PaginationResponse<List<PromotionDTO>> getPromotions(PaginationDTO paginationQuery, String search) {
-        Pageable pageable = paginationService.getPageable(paginationQuery);
+    public PaginationResponse<List<PromotionDTO>> getAllPromotions(
+            PaginationDTO paginationDTO, String status, String discount
+    ) {
+        Pageable pageable = paginationService.getPageable(paginationDTO);
 
-        Page<Promotion> promotions = search.isEmpty() ? promotionRepository.findBy(pageable) : promotionRepository.findByDiscountContaining(search, pageable);
+        Specification<Promotion> spec = Specification.where(null);
 
-        int totalPage = paginationService.getTotalPages(promotions.getTotalElements(),paginationQuery.size);
+        if (status != null && !status.isEmpty()) {
+            spec = spec.and((root, query, cb) -> cb.equal(root.get("status"), getPromotionStatus(status)));
+        }
+        if (discount != null && !discount.isEmpty()) {
+            PriceQueryParser<Promotion> priceQueryParser = new PriceQueryParser<>(discount, "discount");
+            spec = spec.and(priceQueryParser.createPriceSpecification());
+        }
+
+        Page<Promotion> promotions = promotionRepository.findAll(spec, pageable);
+
+        int totalPages = promotions.getTotalPages();
         long totalElements = promotions.getTotalElements();
+        int take = promotions.getNumberOfElements();
 
         return new PaginationResponse<>(
                 true,
-                "Get users successfully",
-                promotions.map(PromotionDTO::new).getContent(),
-                paginationQuery.page,
-                paginationQuery.size,
-                totalPage,
+                "Get promotions successfully",
+                promotions.getContent().stream().map(PromotionDTO::new).toList(),
+                paginationDTO.page,
+                paginationDTO.size,
+                take,
+                totalPages,
                 totalElements
         );
     }
@@ -75,8 +87,8 @@ public class PromotionService {
         return new PromotionDTO(savedPromotion);
     }
 
-    public PromotionDTO updatePromotion(PromotionDTO promotionDTO) {
-        Promotion promotion = promotionRepository.findByPromotionId(promotionDTO.getPromotionId())
+    public PromotionDTO updatePromotion(UUID id, PromotionDTO promotionDTO) {
+        Promotion promotion = promotionRepository.findByPromotionId(id)
                 .orElseThrow(() -> new NotFoundException("Promotion not found"));
 
         if (promotionDTO.getDiscount() != null) {

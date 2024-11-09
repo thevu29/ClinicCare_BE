@@ -1,10 +1,12 @@
 package com.example.cliniccare.controller;
 
 import com.example.cliniccare.dto.MedicalRecordDTO;
+import com.example.cliniccare.dto.PaginationDTO;
 import com.example.cliniccare.exception.BadRequestException;
 import com.example.cliniccare.exception.NotFoundException;
 import com.example.cliniccare.interfaces.MedicalRecordGroup;
 import com.example.cliniccare.response.ApiResponse;
+import com.example.cliniccare.response.PaginationResponse;
 import com.example.cliniccare.service.MedicalRecordService;
 import com.example.cliniccare.validation.Validation;
 import org.slf4j.Logger;
@@ -23,7 +25,6 @@ import java.util.UUID;
 @RequestMapping("api/medical-records")
 public class MedicalRecordController {
     private static final Logger logger = LoggerFactory.getLogger(MedicalRecordController.class);
-
     private final MedicalRecordService medicalRecordService;
 
     public MedicalRecordController(MedicalRecordService medicalRecordService) {
@@ -31,35 +32,35 @@ public class MedicalRecordController {
     }
 
     @GetMapping
-    public ResponseEntity<?> getMedicalRecords() {
+    public ResponseEntity<?> getMedicalRecords(
+            @RequestParam(defaultValue = "1") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "createAt") String sortBy,
+            @RequestParam(defaultValue = "desc") String order,
+            @RequestParam(defaultValue = "") String search,
+            @RequestParam(defaultValue = "") String date,
+            @RequestParam(required = false) UUID patientId,
+            @RequestParam(required = false) UUID doctorId,
+            @RequestParam(required = false) UUID serviceId
+    ) {
         try {
-            List<MedicalRecordDTO> medicalRecords = medicalRecordService.getMedicalRecord();
-            return ResponseEntity.ok(new ApiResponse<>(
-                    true, "Get all medical records successfully", medicalRecords
+            PaginationDTO paginationDTO = new PaginationDTO(page, size, sortBy, order);
+            PaginationResponse<List<MedicalRecordDTO>> response = medicalRecordService
+                    .getMedicalRecord(paginationDTO, search, date, patientId, doctorId, serviceId);
+
+            return ResponseEntity.ok(response);
+        } catch (NotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ApiResponse<>(
+                    false, e.getMessage(), null
+            ));
+        } catch (BadRequestException e) {
+            return ResponseEntity.badRequest().body(new ApiResponse<>(
+                    false, e.getMessage(), null
             ));
         } catch (Exception e) {
             logger.error("Failed to get all medical records: {}", e.getMessage(), e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new ApiResponse<>(
                     false, "Failed to get all medical records", null
-            ));
-        }
-    }
-
-    @GetMapping("/patient/{patientId}")
-    public ResponseEntity<?> getMedicalRecordsByPatientId(@PathVariable UUID patientId) {
-        try {
-            List<MedicalRecordDTO> medicalRecords = medicalRecordService.getMedicalRecordByPatientId(patientId);
-            return ResponseEntity.ok(new ApiResponse<>(
-                    true, "Get all medical records by patient id successfully", medicalRecords
-            ));
-        } catch (NotFoundException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ApiResponse<>(
-                    false, e.getMessage(), null
-            ));
-        } catch (Exception e) {
-            logger.error("Failed to get all medical records by patient id: {}", e.getMessage(), e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new ApiResponse<>(
-                    false, "Failed to get all medical records by patient id", null
             ));
         }
     }

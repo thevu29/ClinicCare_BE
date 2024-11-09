@@ -15,8 +15,12 @@ public class MedicalRecordDTO {
     @NotNull(message = "Patient is required", groups = {MedicalRecordGroup.Create.class})
     private UUID patientId;
 
+    private String patientName;
+
     @NotNull(message = "Doctor is required", groups = {MedicalRecordGroup.Create.class})
     private UUID doctorProfileId;
+
+    private String doctorName;
 
     @NotNull(message = "Service is required", groups = {MedicalRecordGroup.Create.class})
     private UUID serviceId;
@@ -25,7 +29,7 @@ public class MedicalRecordDTO {
 
     private String description;
 
-    private LocalDateTime createAt;
+    private LocalDateTime date;
 
     public MedicalRecordDTO() {
     }
@@ -33,10 +37,12 @@ public class MedicalRecordDTO {
     public MedicalRecordDTO(MedicalRecord medicalRecord) {
         this.medicalRecordId = medicalRecord.getMedicalRecordId();
         this.patientId = medicalRecord.getPatient().getUserId();
+        this.patientName = medicalRecord.getPatient().getName();
         this.doctorProfileId = medicalRecord.getDoctor().getDoctorProfileId();
+        this.doctorName = medicalRecord.getDoctor().getUser().getName();
         this.serviceId = medicalRecord.getService().getServiceId();
         this.serviceName = medicalRecord.getService().getName();
         this.description = medicalRecord.getDescription();
-        this.createAt = medicalRecord.getCreateAt();
+        this.date = medicalRecord.getCreateAt();
     }
 }

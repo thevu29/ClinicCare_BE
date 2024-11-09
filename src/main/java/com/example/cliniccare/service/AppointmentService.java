@@ -1,11 +1,17 @@
 package com.example.cliniccare.service;
 
 import com.example.cliniccare.dto.AppointmentDTO;
+import com.example.cliniccare.dto.PaginationDTO;
 import com.example.cliniccare.exception.BadRequestException;
 import com.example.cliniccare.exception.NotFoundException;
 import com.example.cliniccare.model.*;
 import com.example.cliniccare.repository.*;
+import com.example.cliniccare.response.PaginationResponse;
+import com.example.cliniccare.utils.DateQueryParser;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -19,6 +25,7 @@ public class AppointmentService {
     private final UserRepository userRepository;
     private final NotificationRepository notificationRepository;
     private final DoctorProfileRepository doctorProfileRepository;
+    private final PaginationService paginationService;
 
     @Autowired
     public AppointmentService(
@@ -26,13 +33,15 @@ public class AppointmentService {
             ScheduleRepository scheduleRepository,
             UserRepository userRepository,
             NotificationRepository notificationRepository,
-            DoctorProfileRepository doctorProfileRepository
+            DoctorProfileRepository doctorProfileRepository,
+            PaginationService paginationService
     ) {
         this.appointmentRepository = appointmentRepository;
         this.scheduleRepository = scheduleRepository;
         this.userRepository = userRepository;
         this.notificationRepository = notificationRepository;
         this.doctorProfileRepository = doctorProfileRepository;
+        this.paginationService = paginationService;
     }
 
     private void createNotification(String message, User user) {
@@ -60,26 +69,49 @@ public class AppointmentService {
         }
     }
 
-    public List<AppointmentDTO> getAppointments() {
-        List<Appointment> appointments = appointmentRepository.findAll();
-        return appointments.stream().map(AppointmentDTO::new).toList();
-    }
+    public PaginationResponse<List<AppointmentDTO>> getAppointments(
+            PaginationDTO paginationDTO, String date, UUID patientId, UUID doctorId) {
+        Pageable pageable = paginationService.getPageable(paginationDTO);
 
-    public List<AppointmentDTO> getPatientAppointments(UUID patientId) {
-        User patient = userRepository.findByUserIdAndDeleteAtIsNull(patientId)
-                .orElseThrow(() -> new NotFoundException("Patient not found"));
+        Specification<Appointment> spec = Specification.where(null);
 
-        List<Appointment> appointments = appointmentRepository.findByPatientUserId(patient.getUserId());
-        return appointments.stream().map(AppointmentDTO::new).toList();
-    }
+        if (patientId != null) {
+            User patient = userRepository.findByUserIdAndDeleteAtIsNull(patientId)
+                    .orElseThrow(() -> new NotFoundException("Patient not found"));
 
-    public List<AppointmentDTO> getDoctorAppointments(UUID doctorId) {
-        DoctorProfile doctor = doctorProfileRepository.findByDoctorProfileIdAndDeleteAtIsNull(doctorId)
-                .orElseThrow(() -> new NotFoundException("Doctor not found"));
+            spec = spec.and((root, query, cb) -> cb.equal(root.get("patient").get("userId"), patient.getUserId()));
+        }
 
-        List<Appointment> appointments = appointmentRepository
-                .findByScheduleDoctorDoctorProfileId(doctor.getDoctorProfileId());
-        return appointments.stream().map(AppointmentDTO::new).toList();
+        if (doctorId != null) {
+            DoctorProfile doctor = doctorProfileRepository.findByDoctorProfileIdAndDeleteAtIsNull(doctorId)
+                    .orElseThrow(() -> new NotFoundException("Doctor not found"));
+
+            spec = spec.and((root, query, cb) ->
+                    cb.equal(root.get("schedule").get("doctor").get("doctorProfileId"), doctor.getDoctorProfileId()));
+        }
+
+        if (date != null && !date.trim().isEmpty()) {
+            DateQueryParser<Appointment> dateParser = new DateQueryParser<>(date, "date");
+            Specification<Appointment> dateSpec = dateParser.createDateSpecification();
+            spec = spec.and(dateSpec);
+        }
+
+        Page<Appointment> appointments = appointmentRepository.findAll(spec, pageable);
+
+        int totalPages = paginationService.getTotalPages(appointments.getTotalElements(), paginationDTO.size);
+        long totalElements = appointments.getTotalElements();
+        int take = appointments.getNumberOfElements();
+
+        return new PaginationResponse<>(
+                true,
+                "Get appointments successfully",
+                appointments.map(AppointmentDTO::new).getContent(),
+                paginationDTO.page,
+                paginationDTO.size,
+                take,
+                totalPages,
+                totalElements
+        );
     }
 
     public AppointmentDTO createAppointment(AppointmentDTO appointmentDTO) {

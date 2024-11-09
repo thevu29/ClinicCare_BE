@@ -12,6 +12,7 @@ import com.example.cliniccare.repository.DoctorProfileRepository;
 import com.example.cliniccare.repository.RoleRepository;
 import com.example.cliniccare.repository.UserRepository;
 import com.example.cliniccare.response.PaginationResponse;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -20,6 +21,7 @@ import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -51,16 +53,34 @@ public class UserService {
 
     public PaginationResponse<List<UserDTO>> getUsers(
             PaginationDTO paginationQuery,
-            String search
+            String search,
+            UUID role
     ) {
         Pageable pageable = paginationService.getPageable(paginationQuery);
 
-        Page<User> users = search.isEmpty()
-                ? userRepository.findByDeleteAtIsNull(pageable)
-                : userRepository.findByDeleteAtIsNullAndNameContainingOrPhoneContaining(search, search, pageable);
+        List<String> searchParams = new ArrayList<>();
+        if (StringUtils.isNotEmpty(search)) {
+            searchParams.add("name");
+            searchParams.add("phone");
+            searchParams.add("email");
+        }
 
-        int totalPage = paginationService.getTotalPages(users.getTotalElements(), paginationQuery.size);
+        List<String> roleParams = new ArrayList<>();
+        if (role != null) {
+            if (!roleRepository.existsById(role)) {
+                throw new NotFoundException("Role not found");
+            }
+
+            roleParams.add("role_id");
+        }
+
+        Page<User> users = userRepository.findByDeleteAtIsNullAndSearchParamsAndRoleParams(
+                searchParams, roleParams, search, role, pageable
+        );
+
+        int totalPages = users.getTotalPages();
         long totalElements = users.getTotalElements();
+        int take = users.getNumberOfElements();
 
         return new PaginationResponse<>(
                 true,
@@ -68,7 +88,8 @@ public class UserService {
                 users.map(UserDTO::new).getContent(),
                 paginationQuery.page,
                 paginationQuery.size,
-                totalPage,
+                take,
+                totalPages,
                 totalElements
         );
     }
@@ -84,28 +105,38 @@ public class UserService {
         if (userRepository.existsByEmailAndDeleteAtIsNull(userDTO.getEmail())) {
             throw new BadRequestException("Email already exists");
         }
-        if (userDTO.getPhone() != null &&
-                !userDTO.getPhone().isEmpty() &&
-                userRepository.existsByPhoneAndDeleteAtIsNull(userDTO.getPhone())
-        ) {
-            throw new BadRequestException("Phone already exists");
-        }
+
+        Role role = roleRepository.findById(userDTO.getRoleId())
+                .orElseThrow(() -> new NotFoundException("Role not found"));
 
         User user = new User();
         user.setName(userDTO.getName());
         user.setEmail(userDTO.getEmail());
         user.setPhone(userDTO.getPhone());
         user.setPassword(passwordEncoder.encode(userDTO.getPassword()));
+        user.setRole(role);
 
         if (userDTO.getImage() != null && !userDTO.getImage().isEmpty()) {
             user.setImage(firebaseStorageService.uploadImage(userDTO.getImage()));
         }
 
-        Role role = roleRepository.findById(userDTO.getRoleId())
-                .orElseThrow(() -> new NotFoundException("Role not found"));
-        user.setRole(role);
-
         User savedUser = userRepository.save(user);
+
+        if (role.getName().equalsIgnoreCase("doctor")) {
+            DoctorProfile doctor = new DoctorProfile();
+
+            if (userDTO.getSpecialty() == null || userDTO.getSpecialty().isEmpty()) {
+                throw new BadRequestException("Specialty is required if user is doctor");
+            }
+
+            doctor.setSpecialty(userDTO.getSpecialty());
+            doctor.setUser(user);
+            doctorProfileRepository.save(doctor);
+
+            savedUser.setDoctorProfile(doctor);
+        }
+
+
         return new UserDTO(savedUser);
     }
 
@@ -120,7 +151,26 @@ public class UserService {
             user.setPhone(userDTO.getPhone());
         }
         if (userDTO.getImage() != null && !userDTO.getImage().isEmpty()) {
-            user.setImage(firebaseStorageService.uploadImage(userDTO.getImage()));
+            user.setImage(firebaseStorageService.updateImage(userDTO.getImage(), user.getImage()));
+        }
+        if (userDTO.getRoleId() != null) {
+            Role role = roleRepository.findById(userDTO.getRoleId())
+                    .orElseThrow(() -> new NotFoundException("Role not found"));
+
+            if (
+                    user.getRole().getName().equalsIgnoreCase("user") &&
+                    !role.getName().equalsIgnoreCase("user")
+            ) {
+                throw new BadRequestException("Cannot change role of user");
+            }
+            if (
+                    !user.getRole().getName().equalsIgnoreCase("user") &&
+                    role.getName().equalsIgnoreCase("user")
+            ) {
+                throw new BadRequestException("Cannot change role to user");
+            }
+
+            user.setRole(role);
         }
 
         User savedUser = userRepository.save(user);
