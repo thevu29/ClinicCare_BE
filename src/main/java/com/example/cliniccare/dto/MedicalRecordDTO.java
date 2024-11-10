@@ -25,10 +25,6 @@ public class MedicalRecordDTO {
     @NotNull(message = "Service is required", groups = {MedicalRecordGroup.Create.class})
     private UUID serviceId;
 
-    private String doctorName;
-
-    private String patientName;
-
     private String serviceName;
 
     private String description;

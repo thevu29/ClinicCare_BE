@@ -46,4 +46,5 @@ public interface UserRepository extends JpaRepository<User, UUID>, JpaSpecificat
     Optional<User> findByUserIdAndDeleteAtIsNull(UUID userId);
     Optional<User> findByEmailAndDeleteAtIsNull(String email);
     Boolean existsByEmailAndDeleteAtIsNull(String email);
+    List<User> findByRoleNameAndDeleteAtIsNull(String role);
 }

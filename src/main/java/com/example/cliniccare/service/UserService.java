@@ -101,6 +101,15 @@ public class UserService {
         return new UserDTO(user);
     }
 
+    public List<UserDTO> getUserByRole(String role) {
+        List<User> users = userRepository.findByRoleNameAndDeleteAtIsNull(role);
+        List<UserDTO> userDTOS = new ArrayList<>();
+        for (User user : users) {
+            userDTOS.add(new UserDTO(user));
+        }
+        return userDTOS;
+    }
+
     public UserDTO createUser(UserFormDTO userDTO) throws IOException {
         if (userRepository.existsByEmailAndDeleteAtIsNull(userDTO.getEmail())) {
             throw new BadRequestException("Email already exists");

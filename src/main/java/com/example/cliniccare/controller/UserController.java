@@ -84,6 +84,26 @@ public class UserController {
         }
     }
 
+    @GetMapping("/role/{roleName}")
+    public ResponseEntity<?> getUserByRole(@PathVariable String roleName) {
+        try {
+            List<UserDTO> users = userService.getUserByRole(roleName);
+            return ResponseEntity.ok(new ApiResponse<>(
+                    true, "Get user by role successfully", users
+            ));
+        } catch (NotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ApiResponse<>(
+                    false, e.getMessage(), null
+            ));
+        } catch (Exception e) {
+            logger.error("Failed to get user by role: {}", e.getMessage(), e);
+            return ResponseEntity.internalServerError().body(new ApiResponse<>(
+                    false, e.getMessage(), null
+            ));
+        }
+    }
+
+
     @PostMapping
     public ResponseEntity<?> createUser(
             @Validated(UserFormGroup.Create.class) @ModelAttribute UserFormDTO userDTO,
