@@ -14,7 +14,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 @CrossOrigin("*")
@@ -29,10 +29,17 @@ public class NotificationController {
         this.notificationService = notificationService;
     }
 
+//    Get Notification by User Id with Cursor Pagination
     @GetMapping
-    public ResponseEntity<?> getNotifications() {
+    public ResponseEntity<?> getNotifications(
+            @RequestParam(defaultValue = "") String cursor,
+            @RequestParam(defaultValue = "5") int size,
+            @RequestParam UUID userId
+    ) {
         try {
-            List<NotificationDTO> notifications = notificationService.getNotifications();
+            Map<String, Object> notifications = notificationService
+                    .getNotifications(cursor, userId, size);
+
             return ResponseEntity.ok(new ApiResponse<>(
                     true, "Get notifications successfully", notifications
             ));
