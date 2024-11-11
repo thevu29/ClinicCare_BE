@@ -41,13 +41,12 @@ public class DoctorProfileController {
             @RequestParam(defaultValue = "10") int size,
             @RequestParam(defaultValue = "createAt") String sortBy,
             @RequestParam(defaultValue = "desc") String order,
-            @RequestParam(defaultValue = "") String search,
-            @RequestParam(defaultValue = "") String specialty
+            @RequestParam(defaultValue = "") String search
     ) {
         try {
             PaginationDTO paginationDTO = new PaginationDTO(page, size, sortBy, order);
             PaginationResponse<List<DoctorProfileDTO>> response = doctorProfileService
-                    .getDoctorProfiles(paginationDTO, search, specialty);
+                    .getDoctorProfiles(paginationDTO, search);
 
             return ResponseEntity.ok(response);
         } catch (NotFoundException e) {

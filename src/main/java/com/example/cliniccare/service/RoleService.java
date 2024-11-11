@@ -28,12 +28,12 @@ public class RoleService {
         this.paginationService = paginationService;
     }
 
-    public PaginationResponse<List<RoleDTO>> getRoles(PaginationDTO paginationQuery, String name) {
+    public PaginationResponse<List<RoleDTO>> getRoles(PaginationDTO paginationQuery, String search) {
         Pageable pageable = paginationService.getPageable(paginationQuery);
 
-        Page<Role> roles = name.isEmpty()
+        Page<Role> roles = search.isEmpty()
                 ? roleRepository.findAll(pageable)
-                : roleRepository.findAllByNameContaining(name, pageable);
+                : roleRepository.findAllByNameContaining(search, pageable);
 
         int totalPages = roles.getTotalPages();
         long totalElements = roles.getTotalElements();
