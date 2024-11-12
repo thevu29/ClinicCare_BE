@@ -32,6 +32,18 @@ public class PromotionController {
         this.promotionService = promotionService;
     }
 
+    @GetMapping("/all")
+    public ResponseEntity<?> getAllPromotions() {
+        try {
+            List<PromotionDTO> promotions = promotionService.getAllPromotions();
+            return ResponseEntity.ok(new ApiResponse<>(true, "Get all promotions successfully", promotions));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new ApiResponse<>(
+                    false, e.getMessage(), null
+            ));
+        }
+    }
+
     @GetMapping
     public ResponseEntity<?> getPromotions(
             @RequestParam(defaultValue = "1") int page,
@@ -43,7 +55,7 @@ public class PromotionController {
     ) {
         try {
             PaginationDTO paginationDTO = new PaginationDTO(page, size, sortBy, order);
-            PaginationResponse<List<PromotionDTO>> response = promotionService.getAllPromotions(paginationDTO, status, discount);
+            PaginationResponse<List<PromotionDTO>> response = promotionService.getPromotions(paginationDTO, status, discount);
 
             return ResponseEntity.ok(response);
         } catch (NotFoundException e) {

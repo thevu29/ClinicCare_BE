@@ -37,7 +37,11 @@ public class PromotionService {
         }
     }
 
-    public PaginationResponse<List<PromotionDTO>> getAllPromotions(
+    public List<PromotionDTO> getAllPromotions() {
+        return promotionRepository.findAll().stream().map(PromotionDTO::new).toList();
+    }
+
+    public PaginationResponse<List<PromotionDTO>> getPromotions(
             PaginationDTO paginationDTO, String status, String discount
     ) {
         Pageable pageable = paginationService.getPageable(paginationDTO);
