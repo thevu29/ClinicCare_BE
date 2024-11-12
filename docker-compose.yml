@@ -1,6 +1,12 @@
 services:
   backend:
-    build: .
+    build:
+      context: .
+      dockerfile: Dockerfile
+      cache_from:
+        - openjdk:21-jdk-slim
+    volumes:
+      - ~/.m2:/root/.m2
     ports:
       - "8080:8080"
     environment:
