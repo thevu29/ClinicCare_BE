@@ -32,6 +32,19 @@ public class RoleController {
         this.roleService = roleService;
     }
 
+    @GetMapping("/all")
+    public ResponseEntity<?> getAllRoles() {
+        try {
+            List<RoleDTO> roles = roleService.getAllRoles();
+            return ResponseEntity.ok(new ApiResponse<>(true, "Get all roles successfully", roles));
+        } catch (Exception e) {
+            logger.error("Failed to get all roles: {}", e.getMessage(), e);
+            return ResponseEntity.internalServerError().body(new ApiResponse<>(
+                    false, "Failed to get all roles", null
+            ));
+        }
+    }
+
     @GetMapping
     public ResponseEntity<?> getRoles(
             @RequestParam(defaultValue = "1") int page,
