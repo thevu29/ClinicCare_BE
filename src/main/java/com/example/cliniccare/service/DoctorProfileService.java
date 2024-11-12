@@ -48,17 +48,12 @@ public class DoctorProfileService {
         this.passwordEncoder = passwordEncoder;
     }
 
-    public PaginationResponse<List<DoctorProfileDTO>> getDoctorProfiles(PaginationDTO paginationDTO, String search, String specialty) {
-        Pageable pageable = paginationService.getPageable(paginationDTO);
+    public PaginationResponse<List<DoctorProfileDTO>> getDoctorProfiles(PaginationDTO paginationDTO, String search) {
+        Pageable pageable = paginationService.getDoctorProfilePageable(paginationDTO);
         Page<DoctorProfile> doctorProfiles = doctorProfileRepository.findAllByDeleteAtIsNull(pageable);
 
-        if (specialty != null && !specialty.isEmpty()) {
-            doctorProfiles = doctorProfileRepository.findAllBySpecialty(specialty, pageable);
-        }
-
         if (search != null && !search.isEmpty()) {
-            doctorProfiles = doctorProfileRepository.findAllByUserNameContainingOrUserEmailContainingOrSpecialtyAndDeleteAtIsNull(
-                    search, search, specialty, pageable);
+            doctorProfiles = doctorProfileRepository.findAllDoctorProfiles(search, pageable);
         }
 
         int totalPages = doctorProfiles.getTotalPages();
@@ -163,6 +158,7 @@ public class DoctorProfileService {
         doctorProfile.setDeleteAt(LocalDateTime.now());
         doctorProfileRepository.save(doctorProfile);
 
+        user.setEmail(null);
         user.setDeleteAt(LocalDateTime.now());
         userRepository.save(user);
     }

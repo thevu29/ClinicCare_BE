@@ -13,6 +13,17 @@ public class PaginationService {
         return PageRequest.of(paginationQuery.page - 1, paginationQuery.size, sort);
     }
 
+    public Pageable getDoctorProfilePageable(PaginationDTO paginationQuery) {
+        String sortBy = paginationQuery.sortBy;
+        if ("name".equals(sortBy) || "email".equals(sortBy)) {
+            sortBy = "user." + sortBy;
+        }
+
+        Sort sort = Sort.by(Sort.Direction.fromString(paginationQuery.order), sortBy);
+
+        return PageRequest.of(paginationQuery.page - 1, paginationQuery.size, sort);
+    }
+
     public int getTotalPages(long totalElements, int size) {
         return (int) Math.ceil((double) totalElements / size);
     }

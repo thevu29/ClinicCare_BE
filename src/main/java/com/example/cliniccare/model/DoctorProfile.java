@@ -25,9 +25,6 @@ public class DoctorProfile {
 
     private String specialty;
 
-    @Column(name = "delete_at")
-    private LocalDateTime deleteAt;
-
     @OneToMany(mappedBy = "doctor")
     @ToString.Exclude
     private List<Feedback> feedbackList;
@@ -40,7 +37,11 @@ public class DoctorProfile {
     @ToString.Exclude
     private List<MedicalRecord> medicalRecordList;
 
+    @Column(name = "create_at")
     private LocalDateTime createAt;
+
+    @Column(name = "delete_at")
+    private LocalDateTime deleteAt;
 
     @PrePersist
     protected void onCreate() {

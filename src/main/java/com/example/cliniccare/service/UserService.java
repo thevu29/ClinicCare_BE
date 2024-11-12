@@ -193,6 +193,7 @@ public class UserService {
             doctorProfileRepository.save(doctor);
         }
 
+        user.setEmail(null);
         user.setDeleteAt(LocalDateTime.now());
         userRepository.save(user);
     }

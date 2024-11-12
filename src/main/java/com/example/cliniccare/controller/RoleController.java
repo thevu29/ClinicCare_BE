@@ -38,11 +38,11 @@ public class RoleController {
             @RequestParam(defaultValue = "10") int size,
             @RequestParam(defaultValue = "createAt") String sortBy,
             @RequestParam(defaultValue = "desc") String order,
-            @RequestParam(defaultValue = "") String name
+            @RequestParam(defaultValue = "") String search
     ) {
         try {
             PaginationDTO paginationQuery = new PaginationDTO(page, size, sortBy, order);
-            PaginationResponse<List<RoleDTO>> response = roleService.getRoles(paginationQuery, name);
+            PaginationResponse<List<RoleDTO>> response = roleService.getRoles(paginationQuery, search);
 
             return ResponseEntity.ok(response);
         } catch (NotFoundException e) {

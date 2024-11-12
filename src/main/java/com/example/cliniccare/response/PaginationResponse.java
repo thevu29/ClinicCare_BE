@@ -15,11 +15,11 @@ public class PaginationResponse<T> extends ApiResponse<T> {
             int page,
             int size,
             int take,
-            int totalPage,
+            int totalPages,
             long totalElements
     ) {
         super(success, message, data);
-        this.meta = new Meta(page, size, take, totalPage, totalElements);
+        this.meta = new Meta(page, size, take, totalPages, totalElements);
     }
 
     @Setter
@@ -28,14 +28,14 @@ public class PaginationResponse<T> extends ApiResponse<T> {
         private int page;
         private int size;
         private int take;
-        private int totalPage;
+        private int totalPages;
         private long totalElements;
 
-        public Meta(int page, int size, int take, int totalPage, long totalElements) {
+        public Meta(int page, int size, int take, int totalPages, long totalElements) {
             this.page = page;
             this.size = size;
             this.take = take;
-            this.totalPage = totalPage;
+            this.totalPages = totalPages;
             this.totalElements = totalElements;
         }
     }
