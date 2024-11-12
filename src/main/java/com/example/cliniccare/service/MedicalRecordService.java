@@ -49,7 +49,7 @@ public class MedicalRecordService {
     public PaginationResponse<List<MedicalRecordDTO>> getMedicalRecord(
             PaginationDTO paginationDTO, String search, String date, UUID patientId, UUID doctorId, UUID serviceId
     ) {
-        Pageable pageable = paginationService.getPageable(paginationDTO);
+        Pageable pageable = paginationService.getMedicalRecordPageable(paginationDTO);
 
         Specification<MedicalRecord> spec = Specification.where((root, query, cb) -> cb.isNull(root.get("deleteAt")));
 
