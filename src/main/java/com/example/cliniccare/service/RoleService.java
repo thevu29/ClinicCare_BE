@@ -2,11 +2,9 @@ package com.example.cliniccare.service;
 
 import com.example.cliniccare.dto.PaginationDTO;
 import com.example.cliniccare.dto.RoleDTO;
-import com.example.cliniccare.dto.UserDTO;
 import com.example.cliniccare.exception.BadRequestException;
 import com.example.cliniccare.exception.NotFoundException;
 import com.example.cliniccare.model.Role;
-import com.example.cliniccare.model.User;
 import com.example.cliniccare.repository.RoleRepository;
 import com.example.cliniccare.response.PaginationResponse;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,6 +24,12 @@ public class RoleService {
     public RoleService(RoleRepository roleRepository, PaginationService paginationService) {
         this.roleRepository = roleRepository;
         this.paginationService = paginationService;
+    }
+
+    public List<RoleDTO> getAllRoles() {
+        return roleRepository.findAll().stream()
+                .map(RoleDTO::new)
+                .toList();
     }
 
     public PaginationResponse<List<RoleDTO>> getRoles(PaginationDTO paginationQuery, String search) {
