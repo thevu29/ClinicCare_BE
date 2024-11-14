@@ -51,12 +51,14 @@ public class PromotionController {
             @RequestParam(defaultValue = "10") int size,
             @RequestParam(defaultValue = "createAt") String sortBy,
             @RequestParam(defaultValue = "desc") String order,
+            @RequestParam(defaultValue = "") String search,
             @RequestParam(required = false) String status,
             @RequestParam(required = false) String discount
     ) {
         try {
             PaginationDTO paginationDTO = new PaginationDTO(page, size, sortBy, order);
-            PaginationResponse<List<PromotionDTO>> response = promotionService.getPromotions(paginationDTO, status, discount);
+            PaginationResponse<List<PromotionDTO>> response = promotionService
+                    .getPromotions(paginationDTO, search, status, discount);
 
             return ResponseEntity.ok(response);
         } catch (NotFoundException e) {

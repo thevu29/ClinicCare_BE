@@ -43,6 +43,7 @@ public class PromotionService {
 
     public PaginationResponse<List<PromotionDTO>> getPromotions(
             PaginationDTO paginationDTO,
+            String search,
             String status,
             String discount
     ) {
@@ -50,6 +51,10 @@ public class PromotionService {
 
         Specification<Promotion> spec = Specification.where(null);
 
+        if (search != null && !search.isEmpty()) {
+            spec = spec.and((root, query, cb) ->
+                    cb.like(cb.lower(root.get("description")), "%" + search.toLowerCase() + "%"));
+        }
         if (status != null && !status.isEmpty()) {
             spec = spec.and((root, query, cb) ->
                     cb.equal(root.get("status"), getPromotionStatus(status)));
