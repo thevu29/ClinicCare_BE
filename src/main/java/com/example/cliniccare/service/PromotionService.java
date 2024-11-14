@@ -42,14 +42,17 @@ public class PromotionService {
     }
 
     public PaginationResponse<List<PromotionDTO>> getPromotions(
-            PaginationDTO paginationDTO, String status, String discount
+            PaginationDTO paginationDTO,
+            String status,
+            String discount
     ) {
         Pageable pageable = paginationService.getPageable(paginationDTO);
 
         Specification<Promotion> spec = Specification.where(null);
 
         if (status != null && !status.isEmpty()) {
-            spec = spec.and((root, query, cb) -> cb.equal(root.get("status"), getPromotionStatus(status)));
+            spec = spec.and((root, query, cb) ->
+                    cb.equal(root.get("status"), getPromotionStatus(status)));
         }
         if (discount != null && !discount.isEmpty()) {
             PriceQueryParser<Promotion> priceQueryParser = new PriceQueryParser<>(discount, "discount");

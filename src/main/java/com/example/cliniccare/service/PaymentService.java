@@ -75,19 +75,23 @@ public class PaymentService {
             User patient = patientRepository.findByUserIdAndDeleteAtIsNull(patientId)
                     .orElseThrow(() -> new NotFoundException("Patient not found"));
 
-            spec = spec.and((root, query, cb) -> cb.equal(root.get("patient").get("userId"), patient.getUserId()));
+            spec = spec.and((root, query, cb) ->
+                    cb.equal(root.get("patient").get("userId"), patient.getUserId()));
         }
         if (serviceId != null) {
             Service service = serviceRepository.findById(serviceId)
                     .orElseThrow(() -> new NotFoundException("Service not found"));
 
-            spec = spec.and((root, query, cb) -> cb.equal(root.get("service").get("serviceId"), service.getServiceId()));
+            spec = spec.and((root, query, cb) ->
+                    cb.equal(root.get("service").get("serviceId"), service.getServiceId()));
         }
         if (status != null && !status.isEmpty()) {
-            spec = spec.and((root, query, cb) -> cb.equal(root.get("status"), getPaymentStatus(status)));
+            spec = spec.and((root, query, cb) ->
+                    cb.equal(root.get("status"), getPaymentStatus(status)));
         }
         if (method != null && !method.isEmpty()) {
-            spec = spec.and((root, query, cb) -> cb.equal(root.get("method"), getPaymentMethod(method)));
+            spec = spec.and((root, query, cb) ->
+                    cb.equal(root.get("method"), getPaymentMethod(method)));
         }
         if (date != null && !date.isEmpty()) {
             DateQueryParser<Payment> dateQueryParser = new DateQueryParser<>(date, "date");

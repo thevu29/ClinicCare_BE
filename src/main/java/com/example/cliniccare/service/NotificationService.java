@@ -18,8 +18,7 @@ public class NotificationService {
     private final UserRepository userRepository;
 
     @Autowired
-    public NotificationService(NotificationRepository notificationRepository,
-                               UserRepository userRepository) {
+    public NotificationService(NotificationRepository notificationRepository, UserRepository userRepository) {
         this.notificationRepository = notificationRepository;
         this.userRepository = userRepository;
     }
@@ -37,7 +36,6 @@ public class NotificationService {
     }
 
     public NotificationDTO createNotification(NotificationDTO notificationDTO) {
-//        Find exist user
         User user = userRepository
                 .findByUserIdAndDeleteAtIsNull(notificationDTO.getUserId())
                 .orElseThrow(() -> new NotFoundException("User not found"));

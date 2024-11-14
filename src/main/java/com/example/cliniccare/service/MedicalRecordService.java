@@ -51,7 +51,8 @@ public class MedicalRecordService {
     ) {
         Pageable pageable = paginationService.getPageable(paginationDTO);
 
-        Specification<MedicalRecord> spec = Specification.where((root, query, cb) -> cb.isNull(root.get("deleteAt")));
+        Specification<MedicalRecord> spec = Specification.where((root, query, cb) ->
+                cb.isNull(root.get("deleteAt")));
 
         if (search != null && !search.isEmpty()) {
             spec = spec.and((root, query, cb) -> cb.or(
@@ -68,19 +69,22 @@ public class MedicalRecordService {
             User patient = userRepository.findByUserIdAndDeleteAtIsNull(patientId)
                     .orElseThrow(() -> new NotFoundException("Patient not found"));
 
-            spec = spec.and((root, query, cb) -> cb.equal(root.get("patient").get("userId"), patient.getUserId()));
+            spec = spec.and((root, query, cb) ->
+                    cb.equal(root.get("patient").get("userId"), patient.getUserId()));
         }
         if (doctorId != null) {
             DoctorProfile doctor = doctorProfileRepository.findByDoctorProfileIdAndDeleteAtIsNull(doctorId)
                     .orElseThrow(() -> new NotFoundException("Doctor not found"));
 
-            spec = spec.and((root, query, cb) -> cb.equal(root.get("doctor").get("doctorProfileId"), doctor.getDoctorProfileId()));
+            spec = spec.and((root, query, cb) ->
+                    cb.equal(root.get("doctor").get("doctorProfileId"), doctor.getDoctorProfileId()));
         }
         if (serviceId != null) {
             com.example.cliniccare.model.Service service = serviceRepository.findById(serviceId)
                     .orElseThrow(() -> new NotFoundException("Service not found"));
 
-            spec = spec.and((root, query, cb) -> cb.equal(root.get("service").get("serviceId"), service.getServiceId()));
+            spec = spec.and((root, query, cb) ->
+                    cb.equal(root.get("service").get("serviceId"), service.getServiceId()));
         }
 
         Page<MedicalRecord> medicalRecords = medicalRecordRepository.findAll(spec, pageable);
