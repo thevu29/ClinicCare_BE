@@ -147,6 +147,17 @@ public class MedicalRecordService {
         if (medicalRecordDTO.getDescription() != null) {
             medicalRecord.setDescription(medicalRecordDTO.getDescription());
         }
+
+        if(medicalRecordDTO.getPatientId() != null){
+            medicalRecord.setPatient(userRepository.findById(medicalRecordDTO.getPatientId())
+                    .orElseThrow(() -> new NotFoundException("Patient not found")));
+        }
+
+        if (medicalRecordDTO.getDoctorProfileId() != null) {
+            medicalRecord.setDoctor(doctorProfileRepository.findById(medicalRecordDTO.getDoctorProfileId())
+                    .orElseThrow(() -> new NotFoundException("Doctor not found")));
+        }
+
         if (medicalRecordDTO.getServiceId() != null) {
             medicalRecord.setService(serviceRepository.findById(medicalRecordDTO.getServiceId())
                     .orElseThrow(() -> new NotFoundException("Service not found")));
