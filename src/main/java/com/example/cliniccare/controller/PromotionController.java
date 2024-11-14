@@ -9,6 +9,7 @@ import com.example.cliniccare.response.ApiResponse;
 import com.example.cliniccare.response.PaginationResponse;
 import com.example.cliniccare.service.PromotionService;
 import com.example.cliniccare.validation.Validation;
+import jakarta.validation.Valid;
 import jakarta.validation.groups.Default;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -62,6 +63,20 @@ public class PromotionController {
         }
     }
 
+    @GetMapping("/all")
+    public ResponseEntity<?> getAllPromotions() {
+        try {
+            List<PromotionDTO> promotions = promotionService.getAllPromotions();
+
+            return ResponseEntity.ok(new ApiResponse<>(true, "Get all promotions successfully", promotions));
+        } catch (Exception e) {
+            logger.error("Failed to get all promotions: {}", e.getMessage(), e);
+            return ResponseEntity.internalServerError().body(new ApiResponse<>(
+                    false, "Failed to get all promotions", null
+            ));
+        }
+    }
+
     @PostMapping
     public ResponseEntity<?> createPromotion(
             @Validated({Default.class, PromotionFormGroup.Create.class}) @RequestBody PromotionDTO promotionDTO,
@@ -93,8 +108,12 @@ public class PromotionController {
     }
 
     @PutMapping("/update/{id}")
-    public ResponseEntity<?> updatePromotion(@PathVariable UUID id, @RequestBody PromotionDTO promotionDTO) {
+    public ResponseEntity<?> updatePromotion(@PathVariable UUID id,@Valid @RequestBody PromotionDTO promotionDTO, BindingResult bindingResult) {
         try {
+            if (Validation.validateBody(bindingResult) != null) {
+                return Validation.validateBody(bindingResult);
+            }
+
             PromotionDTO promotion = promotionService.updatePromotion(id, promotionDTO);
 
             return ResponseEntity.ok(new ApiResponse<>(true, "Update promotion successfully", promotion));

@@ -70,6 +70,10 @@ public class PromotionService {
         );
     }
 
+    public List<PromotionDTO> getAllPromotions() {
+        return promotionRepository.findAll().stream().map(PromotionDTO::new).toList();
+    }
+
     public PromotionDTO getPromotionById(UUID id) {
         Promotion promotion = promotionRepository.findByPromotionId(id)
                 .orElseThrow(() -> new NotFoundException("Promotion not found"));

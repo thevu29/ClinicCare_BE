@@ -39,13 +39,13 @@ public class ServiceController {
             @RequestParam(defaultValue = "10") int size,
             @RequestParam(defaultValue = "createAt") String sortBy,
             @RequestParam(defaultValue = "desc") String order,
-            @RequestParam(defaultValue = "") String name,
+            @RequestParam(defaultValue = "") String search,
             @RequestParam(defaultValue = "") String price,
             @RequestParam(defaultValue = "") String status
     ) {
         try {
             PaginationDTO paginationDTO = new PaginationDTO(page, size, sortBy, order);
-            PaginationResponse<List<ServiceDTO>> response = serviceManager.getServices(paginationDTO, name, price, status);
+            PaginationResponse<List<ServiceDTO>> response = serviceManager.getServices(paginationDTO, search, price, status);
 
             return ResponseEntity.ok(response);
         } catch (NotFoundException e) {
