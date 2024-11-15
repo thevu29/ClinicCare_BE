@@ -12,7 +12,7 @@ import com.example.cliniccare.repository.ServiceRepository;
 import com.example.cliniccare.repository.UserRepository;
 import com.example.cliniccare.response.PaginationResponse;
 import com.example.cliniccare.utils.DateQueryParser;
-import com.example.cliniccare.utils.PriceQueryParser;
+import com.example.cliniccare.utils.NumberQueryParser;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -21,7 +21,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 
 @org.springframework.stereotype.Service
@@ -98,8 +97,8 @@ public class PaymentService {
             spec = spec.and(dateQueryParser.createDateSpecification());
         }
         if (price != null && !price.isEmpty()) {
-            PriceQueryParser<Payment> priceQueryParser = new PriceQueryParser<>(price, "totalPrice");
-            spec = spec.and(priceQueryParser.createPriceSpecification());
+            NumberQueryParser<Payment> numberQueryParser = new NumberQueryParser<>(price, "totalPrice");
+            spec = spec.and(numberQueryParser.createPriceSpecification());
         }
 
         Page<Payment> payments = paymentRepository.findAll(spec, pageable);

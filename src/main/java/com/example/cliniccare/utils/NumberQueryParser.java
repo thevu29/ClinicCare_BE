@@ -7,13 +7,13 @@ import jakarta.persistence.criteria.Predicate;
 import jakarta.persistence.criteria.Root;
 import org.springframework.data.jpa.domain.Specification;
 
-public class PriceQueryParser<T> {
+public class NumberQueryParser<T> {
     private final String query;
     private final String priceFieldName;
     private static final String PRICE_ERROR = "Price must be a number or range (e.g. 1000, >1000, <1000 or 1000to2000)";
     private static final String PRICE_SEPARATOR = "to";
 
-    public PriceQueryParser(String query, String priceFieldName) {
+    public NumberQueryParser(String query, String priceFieldName) {
         this.query = query != null ? query.trim() : "";
         this.priceFieldName = priceFieldName;
     }
