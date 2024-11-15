@@ -9,6 +9,7 @@ import com.example.cliniccare.response.ApiResponse;
 import com.example.cliniccare.response.PaginationResponse;
 import com.example.cliniccare.service.PromotionService;
 import com.example.cliniccare.validation.Validation;
+import jakarta.validation.Valid;
 import jakarta.validation.groups.Default;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -50,12 +51,14 @@ public class PromotionController {
             @RequestParam(defaultValue = "10") int size,
             @RequestParam(defaultValue = "createAt") String sortBy,
             @RequestParam(defaultValue = "desc") String order,
+            @RequestParam(defaultValue = "") String search,
             @RequestParam(required = false) String status,
             @RequestParam(required = false) String discount
     ) {
         try {
             PaginationDTO paginationDTO = new PaginationDTO(page, size, sortBy, order);
-            PaginationResponse<List<PromotionDTO>> response = promotionService.getPromotions(paginationDTO, status, discount);
+            PaginationResponse<List<PromotionDTO>> response = promotionService
+                    .getPromotions(paginationDTO, search, status, discount);
 
             return ResponseEntity.ok(response);
         } catch (NotFoundException e) {
@@ -105,8 +108,16 @@ public class PromotionController {
     }
 
     @PutMapping("/update/{id}")
-    public ResponseEntity<?> updatePromotion(@PathVariable UUID id, @RequestBody PromotionDTO promotionDTO) {
+    public ResponseEntity<?> updatePromotion(
+            @PathVariable UUID id,
+            @Valid @RequestBody PromotionDTO promotionDTO,
+            BindingResult bindingResult
+    ) {
         try {
+            if (Validation.validateBody(bindingResult) != null) {
+                return Validation.validateBody(bindingResult);
+            }
+
             PromotionDTO promotion = promotionService.updatePromotion(id, promotionDTO);
 
             return ResponseEntity.ok(new ApiResponse<>(true, "Update promotion successfully", promotion));

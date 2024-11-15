@@ -41,18 +41,24 @@ public class FeedbackService {
     }
 
     public PaginationResponse<List<FeedbackDTO>> getFeedbacks(
-            PaginationDTO paginationDTO, String date, String doctorId, String patientId, String serviceId
+            PaginationDTO paginationDTO,
+            String date,
+            String doctorId,
+            String patientId,
+            String serviceId
     ) {
         Pageable pageable = paginationService.getPageable(paginationDTO);
 
-        Specification<Feedback> spec = Specification.where((root, query, cb) -> cb.isNull(root.get("deleteAt")));
+        Specification<Feedback> spec = Specification.where((root, query, cb) ->
+                cb.isNull(root.get("deleteAt")));
 
         if (patientId != null) {
             User patient = userRepository
                     .findByUserIdAndDeleteAtIsNull(UUID.fromString(patientId))
                     .orElseThrow(() -> new NotFoundException("Patient not found"));
 
-            spec = spec.and((root, query, cb) -> cb.equal(root.get("patient").get("userId"), patient.getUserId()));
+            spec = spec.and((root, query, cb) ->
+                    cb.equal(root.get("patient").get("userId"), patient.getUserId()));
         }
 
         if (doctorId != null) {
@@ -69,7 +75,8 @@ public class FeedbackService {
                     .findById(UUID.fromString(serviceId))
                     .orElseThrow(() -> new NotFoundException("Service not found"));
 
-            spec = spec.and((root, query, cb) -> cb.equal(root.get("service").get("serviceId"), service.getServiceId()));
+            spec = spec.and((root, query, cb) ->
+                    cb.equal(root.get("service").get("serviceId"), service.getServiceId()));
         }
 
         if (date != null && !date.trim().isEmpty()) {
