@@ -60,7 +60,7 @@ public class PriceQueryParser<T> {
     private Predicate handleGreaterThanPriceSpecification(Root<T> root, CriteriaBuilder cb) {
         try {
             int price = Integer.parseInt(this.query.substring(1));
-            return cb.greaterThanOrEqualTo(root.get(priceFieldName), price);
+            return cb.greaterThan(root.get(priceFieldName), price);
         } catch (NumberFormatException e) {
             throw new BadRequestException(PRICE_ERROR);
         }
@@ -69,7 +69,7 @@ public class PriceQueryParser<T> {
     private Predicate handleLessThanPriceSpecification(Root<T> root, CriteriaBuilder cb) {
         try {
             int price = Integer.parseInt(this.query.substring(1));
-            return cb.lessThanOrEqualTo(root.get(priceFieldName), price);
+            return cb.lessThan(root.get(priceFieldName), price);
         } catch (NumberFormatException e) {
             throw new BadRequestException(PRICE_ERROR);
         }
