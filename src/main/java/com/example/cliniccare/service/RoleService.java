@@ -27,9 +27,7 @@ public class RoleService {
     }
 
     public List<RoleDTO> getAllRoles() {
-        return roleRepository.findAll().stream()
-                .map(RoleDTO::new)
-                .toList();
+        return roleRepository.findAll().stream().map(RoleDTO::new).toList();
     }
 
     public PaginationResponse<List<RoleDTO>> getRoles(PaginationDTO paginationQuery, String search) {
@@ -56,7 +54,8 @@ public class RoleService {
     }
 
     public RoleDTO getRoleById(UUID id) throws NotFoundException {
-        Role role = roleRepository.findById(id)
+        Role role = roleRepository
+                .findById(id)
                 .orElseThrow(() -> new NotFoundException("Role not found"));
 
         return new RoleDTO(role);
@@ -76,7 +75,8 @@ public class RoleService {
     }
 
     public RoleDTO updateRole(UUID id, RoleDTO roleDTO) {
-        Role role = roleRepository.findById(id)
+        Role role = roleRepository
+                .findById(id)
                 .orElseThrow(() -> new NotFoundException("Role not found"));
 
         if (roleDTO.getName() != null && !roleDTO.getName().isEmpty()) {

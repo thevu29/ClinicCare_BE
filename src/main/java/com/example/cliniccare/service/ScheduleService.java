@@ -103,19 +103,22 @@ public class ScheduleService {
             spec = spec.and(timeQueryParser.createTimeSpecification());
         }
         if (status != null && !status.isEmpty()) {
-            spec = spec.and((root, query, cb) -> cb.equal(root.get("status"), getScheduleStatus(status)));
+            spec = spec.and((root, query, cb) ->
+                    cb.equal(root.get("status"), getScheduleStatus(status)));
         }
         if (serviceId != null) {
             Service service = serviceRepository.findById(serviceId)
                     .orElseThrow(() -> new NotFoundException("Service not found"));
 
-            spec = spec.and((root, query, cb) -> cb.equal(root.get("service").get("serviceId"), service.getServiceId()));
+            spec = spec.and((root, query, cb) ->
+                    cb.equal(root.get("service").get("serviceId"), service.getServiceId()));
         }
         if (doctorId != null) {
             DoctorProfile doctor = doctorProfileRepository.findById(doctorId)
                     .orElseThrow(() -> new NotFoundException("Doctor not found"));
 
-            spec = spec.and((root, query, cb) -> cb.equal(root.get("doctor").get("doctorProfileId"), doctor.getDoctorProfileId()));
+            spec = spec.and((root, query, cb) ->
+                    cb.equal(root.get("doctor").get("doctorProfileId"), doctor.getDoctorProfileId()));
         }
 
         Page<Schedule> schedules = scheduleRepository.findAll(spec, pageable);

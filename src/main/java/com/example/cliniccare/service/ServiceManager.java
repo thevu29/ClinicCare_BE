@@ -46,21 +46,24 @@ public class ServiceManager {
     }
 
     public PaginationResponse<List<ServiceDTO>> getServices(
-            PaginationDTO paginationDTO, String name, String price, String status
+            PaginationDTO paginationDTO, String search, String price, String status
     ) {
         Pageable pageable = paginationService.getPageable(paginationDTO);
 
-        Specification<Service> spec = Specification.where((root, query, cb) -> cb.isNull(root.get("deleteAt")));
+        Specification<Service> spec = Specification
+                .where((root, query, cb) -> cb.isNull(root.get("deleteAt")));
 
-        if (name != null && !name.isEmpty()) {
-            spec = spec.and((root, query, cb) -> cb.like(root.get("name"), "%" + name + "%"));
+        if (search != null && !search.isEmpty()) {
+            spec = spec.and((root, query, cb) ->
+                    cb.like(root.get("name"), "%" + search + "%"));
         }
         if (price != null && !price.isEmpty()) {
             PriceQueryParser<Service> priceQueryParser = new PriceQueryParser<>(price, "price");
             spec = spec.and(priceQueryParser.createPriceSpecification());
         }
         if (status != null && !status.isEmpty()) {
-            spec = spec.and((root, query, cb) -> cb.equal(root.get("status"), getServiceStatus(status)));
+            spec = spec.and((root, query, cb) ->
+                    cb.equal(root.get("status"), getServiceStatus(status)));
         }
 
         Page<Service> services = serviceRepository.findAll(spec, pageable);

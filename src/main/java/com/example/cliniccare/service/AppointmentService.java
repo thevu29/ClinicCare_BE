@@ -79,15 +79,16 @@ public class AppointmentService {
             User patient = userRepository.findByUserIdAndDeleteAtIsNull(patientId)
                     .orElseThrow(() -> new NotFoundException("Patient not found"));
 
-            spec = spec.and((root, query, cb) -> cb.equal(root.get("patient").get("userId"), patient.getUserId()));
+            spec = spec.and((root, query, cb) ->
+                    cb.equal(root.get("patient").get("userId"), patient.getUserId()));
         }
 
         if (doctorId != null) {
             DoctorProfile doctor = doctorProfileRepository.findByDoctorProfileIdAndDeleteAtIsNull(doctorId)
                     .orElseThrow(() -> new NotFoundException("Doctor not found"));
 
-            spec = spec.and((root, query, cb) ->
-                    cb.equal(root.get("schedule").get("doctor").get("doctorProfileId"), doctor.getDoctorProfileId()));
+            spec = spec.and((root, query, cb)
+                    -> cb.equal(root.get("schedule").get("doctor").get("doctorProfileId"), doctor.getDoctorProfileId()));
         }
 
         if (date != null && !date.trim().isEmpty()) {
