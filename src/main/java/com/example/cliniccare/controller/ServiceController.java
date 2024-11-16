@@ -33,6 +33,21 @@ public class ServiceController {
         this.serviceManager = serviceManager;
     }
 
+    @GetMapping("/all")
+    public ResponseEntity<?> getAllServices() {
+        try {
+            List<ServiceDTO> services = serviceManager.getAllServices();
+            return ResponseEntity.ok(new ApiResponse<>(
+                    true, "Get all services successfully", services
+            ));
+        } catch (Exception e) {
+            logger.error("Failed to get all services: {}", e.getMessage(), e);
+            return ResponseEntity.internalServerError().body(new ApiResponse<>(
+                    false, "Failed to get services", null
+            ));
+        }
+    }
+
     @GetMapping
     public ResponseEntity<?> getServices(
             @RequestParam(defaultValue = "1") int page,
@@ -45,7 +60,8 @@ public class ServiceController {
     ) {
         try {
             PaginationDTO paginationDTO = new PaginationDTO(page, size, sortBy, order);
-            PaginationResponse<List<ServiceDTO>> response = serviceManager.getServices(paginationDTO, search, price, status);
+            PaginationResponse<List<ServiceDTO>> response = serviceManager
+                    .getServices(paginationDTO, search, price, status);
 
             return ResponseEntity.ok(response);
         } catch (NotFoundException e) {
@@ -72,7 +88,8 @@ public class ServiceController {
                     true, "Get service successfully", service
             ));
         } catch (NotFoundException e){
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ApiResponse<>(false, e.getMessage(), null));
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(new ApiResponse<>(false, e.getMessage(), null));
         } catch (Exception e) {
             logger.error("Failed to get service: {}", e.getMessage(), e);
             return ResponseEntity.internalServerError().body(new ApiResponse<>(

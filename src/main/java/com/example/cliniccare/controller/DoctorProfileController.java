@@ -35,6 +35,25 @@ public class DoctorProfileController {
         this.doctorProfileService = doctorProfileService;
     }
 
+    @GetMapping("/all")
+    public ResponseEntity<?> getAllDoctorProfiles() {
+        try {
+            List<DoctorProfileDTO> doctorProfiles = doctorProfileService.getAllDoctorProfiles();
+            return ResponseEntity.ok(new ApiResponse<>(
+                    true, "Get all doctors successfully", doctorProfiles
+            ));
+        } catch (NotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ApiResponse<>(
+                    false, e.getMessage(), null
+            ));
+        } catch (Exception e) {
+            logger.error("Failed to get all doctors: {}", e.getMessage(), e);
+            return ResponseEntity.internalServerError().body(new ApiResponse<>(
+                    false, "Failed to get doctors", null
+            ));
+        }
+    }
+
     @GetMapping
     public ResponseEntity<?> getDoctorProfiles(
             @RequestParam(defaultValue = "1") int page,

@@ -45,6 +45,10 @@ public class ServiceManager {
         }
     }
 
+    public List<ServiceDTO> getAllServices() {
+        return serviceRepository.findAll().stream().map(ServiceDTO::new).toList();
+    }
+
     public PaginationResponse<List<ServiceDTO>> getServices(
             PaginationDTO paginationDTO, String search, String price, String status
     ) {
