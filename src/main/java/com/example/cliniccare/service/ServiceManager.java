@@ -8,7 +8,7 @@ import com.example.cliniccare.model.Service;
 import com.example.cliniccare.repository.PromotionRepository;
 import com.example.cliniccare.repository.ServiceRepository;
 import com.example.cliniccare.response.PaginationResponse;
-import com.example.cliniccare.utils.PriceQueryParser;
+import com.example.cliniccare.utils.NumberQueryParser;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -58,8 +58,8 @@ public class ServiceManager {
                     cb.like(root.get("name"), "%" + search + "%"));
         }
         if (price != null && !price.isEmpty()) {
-            PriceQueryParser<Service> priceQueryParser = new PriceQueryParser<>(price, "price");
-            spec = spec.and(priceQueryParser.createPriceSpecification());
+            NumberQueryParser<Service> numberQueryParser = new NumberQueryParser<>(price, "price");
+            spec = spec.and(numberQueryParser.createPriceSpecification());
         }
         if (status != null && !status.isEmpty()) {
             spec = spec.and((root, query, cb) ->
