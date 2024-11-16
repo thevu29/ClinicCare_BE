@@ -30,6 +30,8 @@ public class ServiceDTO {
     @NotNull(message = "Promotion is required", groups = {ServiceFormGroup.ApplyPromotion.class})
     private UUID promotionId;
 
+    private int promotionDiscount;
+
     public ServiceDTO() {
     }
 
@@ -41,5 +43,6 @@ public class ServiceDTO {
         this.status = service.getStatus().name();
         this.createAt = service.getCreateAt();
         this.promotionId = service.getPromotion() == null ? null : service.getPromotion().getPromotionId();
+        this.promotionDiscount = service.getPromotion() == null ? 0 : service.getPromotion().getDiscount();
     }
 }

@@ -8,6 +8,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -21,6 +22,7 @@ public interface DoctorProfileRepository extends JpaRepository<DoctorProfile, UU
             "OR dp.specialty LIKE %:search%)")
     Page<DoctorProfile> findAllDoctorProfiles(@Param("search") String search, Pageable pageable);
     Page<DoctorProfile> findAllByDeleteAtIsNull(Pageable pageable);
+    List<DoctorProfile> findAllByDeleteAtIsNull();
     Optional<DoctorProfile> findByDoctorProfileIdAndDeleteAtIsNull(UUID doctorProfileId);
     Optional<DoctorProfile> findByUser_UserIdAndDeleteAtIsNull(UUID userId);
 }

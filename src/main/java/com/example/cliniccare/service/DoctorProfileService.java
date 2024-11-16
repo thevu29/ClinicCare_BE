@@ -48,6 +48,18 @@ public class DoctorProfileService {
         this.passwordEncoder = passwordEncoder;
     }
 
+    public List<DoctorProfileDTO> getAllDoctorProfiles() {
+        List<DoctorProfile> doctorProfiles = doctorProfileRepository.findAllByDeleteAtIsNull();
+
+        return doctorProfiles
+                .stream()
+                .map(doctorProfile -> new DoctorProfileDTO(doctorProfile, userRepository
+                        .findByUserIdAndDeleteAtIsNull(doctorProfile.getUser().getUserId())
+                        .orElseThrow(() -> new NotFoundException("User not found"))
+                ))
+                .toList();
+    }
+
     public PaginationResponse<List<DoctorProfileDTO>> getDoctorProfiles(PaginationDTO paginationDTO, String search) {
         Pageable pageable = paginationService.getDoctorProfilePageable(paginationDTO);
         Page<DoctorProfile> doctorProfiles = doctorProfileRepository.findAllByDeleteAtIsNull(pageable);

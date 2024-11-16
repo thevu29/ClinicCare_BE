@@ -24,6 +24,21 @@ public class PaginationService {
         return PageRequest.of(paginationQuery.page - 1, paginationQuery.size, sort);
     }
 
+    public Pageable getMedicalRecordPageable (PaginationDTO paginationQuery) {
+        String sortBy = paginationQuery.sortBy;
+        if ("doctorName".equals(sortBy)) {
+            sortBy = "doctor.user.name";
+        } else if ("serviceName".equals(sortBy)) {
+            sortBy = "service.name";
+        } else if ("patientName".equals(sortBy)) {
+            sortBy = "patient.name";
+        }
+
+        Sort sort = Sort.by(Sort.Direction.fromString(paginationQuery.order), sortBy);
+
+        return PageRequest.of(paginationQuery.page - 1, paginationQuery.size, sort);
+    }
+
     public int getTotalPages(long totalElements, int size) {
         return (int) Math.ceil((double) totalElements / size);
     }

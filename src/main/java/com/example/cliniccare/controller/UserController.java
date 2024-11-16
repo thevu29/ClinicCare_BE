@@ -35,6 +35,21 @@ public class UserController {
         this.userService = userService;
     }
 
+    @GetMapping("/patients/all")
+    public ResponseEntity<?> getAllPatients() {
+        try {
+            List<UserDTO> patients = userService.getAllPatient();
+            return ResponseEntity.ok(new ApiResponse<>(
+                    true, "Get all patients successfully", patients
+            ));
+        }  catch (Exception e) {
+            logger.error("Failed to get all patients: {}", e.getMessage(), e);
+            return ResponseEntity.internalServerError().body(new ApiResponse<>(
+                    false, e.getMessage(), null
+            ));
+        }
+    }
+
     @GetMapping
     public ResponseEntity<?> getUsers(
             @RequestParam(defaultValue = "1") int page,
