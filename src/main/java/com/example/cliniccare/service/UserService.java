@@ -51,6 +51,11 @@ public class UserService {
         this.paginationService = paginationService;
     }
 
+    public List<UserDTO> getAllPatient() {
+        List<User> patients = userRepository.findAllByDeleteAtIsNullAndRole_Name("User");
+        return patients.stream().map(UserDTO::new).toList();
+    }
+
     public PaginationResponse<List<UserDTO>> getUsers(
             PaginationDTO paginationQuery,
             String search,
