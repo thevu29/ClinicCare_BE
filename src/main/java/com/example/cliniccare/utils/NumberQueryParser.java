@@ -7,13 +7,13 @@ import jakarta.persistence.criteria.Predicate;
 import jakarta.persistence.criteria.Root;
 import org.springframework.data.jpa.domain.Specification;
 
-public class PriceQueryParser<T> {
+public class NumberQueryParser<T> {
     private final String query;
     private final String priceFieldName;
     private static final String PRICE_ERROR = "Price must be a number or range (e.g. 1000, >1000, <1000 or 1000to2000)";
     private static final String PRICE_SEPARATOR = "to";
 
-    public PriceQueryParser(String query, String priceFieldName) {
+    public NumberQueryParser(String query, String priceFieldName) {
         this.query = query != null ? query.trim() : "";
         this.priceFieldName = priceFieldName;
     }
@@ -60,7 +60,7 @@ public class PriceQueryParser<T> {
     private Predicate handleGreaterThanPriceSpecification(Root<T> root, CriteriaBuilder cb) {
         try {
             int price = Integer.parseInt(this.query.substring(1));
-            return cb.greaterThanOrEqualTo(root.get(priceFieldName), price);
+            return cb.greaterThan(root.get(priceFieldName), price);
         } catch (NumberFormatException e) {
             throw new BadRequestException(PRICE_ERROR);
         }
@@ -69,7 +69,7 @@ public class PriceQueryParser<T> {
     private Predicate handleLessThanPriceSpecification(Root<T> root, CriteriaBuilder cb) {
         try {
             int price = Integer.parseInt(this.query.substring(1));
-            return cb.lessThanOrEqualTo(root.get(priceFieldName), price);
+            return cb.lessThan(root.get(priceFieldName), price);
         } catch (NumberFormatException e) {
             throw new BadRequestException(PRICE_ERROR);
         }

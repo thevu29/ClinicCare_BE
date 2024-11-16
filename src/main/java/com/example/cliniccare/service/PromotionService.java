@@ -6,7 +6,7 @@ import com.example.cliniccare.exception.NotFoundException;
 import com.example.cliniccare.model.Promotion;
 import com.example.cliniccare.repository.PromotionRepository;
 import com.example.cliniccare.response.PaginationResponse;
-import com.example.cliniccare.utils.PriceQueryParser;
+import com.example.cliniccare.utils.NumberQueryParser;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -60,8 +60,8 @@ public class PromotionService {
                     cb.equal(root.get("status"), getPromotionStatus(status)));
         }
         if (discount != null && !discount.isEmpty()) {
-            PriceQueryParser<Promotion> priceQueryParser = new PriceQueryParser<>(discount, "discount");
-            spec = spec.and(priceQueryParser.createPriceSpecification());
+            NumberQueryParser<Promotion> numberQueryParser = new NumberQueryParser<>(discount, "discount");
+            spec = spec.and(numberQueryParser.createPriceSpecification());
         }
 
         Page<Promotion> promotions = promotionRepository.findAll(spec, pageable);
