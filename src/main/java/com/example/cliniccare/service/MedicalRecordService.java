@@ -49,7 +49,7 @@ public class MedicalRecordService {
     public PaginationResponse<List<MedicalRecordDTO>> getMedicalRecord(
             PaginationDTO paginationDTO, String search, String date, UUID patientId, UUID doctorId, UUID serviceId
     ) {
-        Pageable pageable = paginationService.getPageable(paginationDTO);
+        Pageable pageable = paginationService.getMedicalRecordPageable(paginationDTO);
 
         Specification<MedicalRecord> spec = Specification.where((root, query, cb) ->
                 cb.isNull(root.get("deleteAt")));
@@ -143,12 +143,11 @@ public class MedicalRecordService {
     }
 
     public MedicalRecordDTO updateMedicalRecord(UUID id, MedicalRecordDTO medicalRecordDTO) {
-        System.out.println(medicalRecordDTO.getDescription());
         MedicalRecord medicalRecord = medicalRecordRepository
                 .findByMedicalRecordIdAndDeleteAtIsNull(id)
                 .orElseThrow(() -> new NotFoundException("Medical Record not found"));
 
-        if (medicalRecordDTO.getDescription() != null) {
+        if (medicalRecordDTO.getDescription() != null && !medicalRecordDTO.getDescription().isEmpty()) {
             medicalRecord.setDescription(medicalRecordDTO.getDescription());
         }
         if (medicalRecordDTO.getServiceId() != null) {
