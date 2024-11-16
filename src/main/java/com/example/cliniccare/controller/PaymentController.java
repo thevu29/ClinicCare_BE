@@ -8,6 +8,7 @@ import com.example.cliniccare.response.ApiResponse;
 import com.example.cliniccare.response.PaginationResponse;
 import com.example.cliniccare.service.PaymentService;
 import com.example.cliniccare.validation.Validation;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -91,14 +92,15 @@ public class PaymentController {
     @PostMapping
     public ResponseEntity<?> createPayment(
             @Valid @RequestBody PaymentDTO paymentDTO,
-            BindingResult bindingResult
+            BindingResult bindingResult,
+            HttpServletRequest req
     ) {
         try {
             if (Validation.validateBody(bindingResult) != null) {
                 return Validation.validateBody(bindingResult);
             }
 
-            PaymentDTO payment = paymentService.createPayment(paymentDTO);
+            PaymentDTO payment = paymentService.createPayment(paymentDTO, req);
 
             return ResponseEntity.status(HttpStatus.CREATED).body(new ApiResponse<>(
                     true, "Payment created successfully", payment
