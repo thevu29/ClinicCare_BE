@@ -143,12 +143,11 @@ public class MedicalRecordService {
     }
 
     public MedicalRecordDTO updateMedicalRecord(UUID id, MedicalRecordDTO medicalRecordDTO) {
-        System.out.println(medicalRecordDTO.getDescription());
         MedicalRecord medicalRecord = medicalRecordRepository
                 .findByMedicalRecordIdAndDeleteAtIsNull(id)
                 .orElseThrow(() -> new NotFoundException("Medical Record not found"));
 
-        if (medicalRecordDTO.getDescription() != null) {
+        if (medicalRecordDTO.getDescription() != null && !medicalRecordDTO.getDescription().isEmpty()) {
             medicalRecord.setDescription(medicalRecordDTO.getDescription());
         }
 

@@ -28,14 +28,17 @@ public interface UserRepository extends JpaRepository<User, UUID>, JpaSpecificat
                     if (!searchParams.isEmpty()) {
                         Predicate searchPredicate = criteriaBuilder.or(
                                 searchParams.stream()
-                                        .map(param -> criteriaBuilder.like(root.get(param), "%" + search + "%"))
+                                        .map(param ->
+                                                criteriaBuilder.like(root.get(param), "%" + search + "%"))
                                         .toArray(Predicate[]::new)
                         );
                         predicate = criteriaBuilder.and(predicate, searchPredicate);
                     }
 
                     if (!roleParams.isEmpty()) {
-                        predicate = criteriaBuilder.and(predicate, criteriaBuilder.equal(root.get("role").get("roleId"), role));
+                        predicate = criteriaBuilder.and(
+                                predicate,
+                                criteriaBuilder.equal(root.get("role").get("roleId"), role));
                     }
 
                     return predicate;
@@ -43,6 +46,7 @@ public interface UserRepository extends JpaRepository<User, UUID>, JpaSpecificat
                 pageable
         );
     }
+    List<User> findAllByDeleteAtIsNullAndRole_Name(String roleName);
     Optional<User> findByUserIdAndDeleteAtIsNull(UUID userId);
     Optional<User> findByEmailAndDeleteAtIsNull(String email);
     Boolean existsByEmailAndDeleteAtIsNull(String email);
