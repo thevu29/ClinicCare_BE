@@ -2,21 +2,29 @@ package com.example.cliniccare.controller;
 
 import com.example.cliniccare.dto.MedicalRecordDTO;
 import com.example.cliniccare.dto.PaginationDTO;
+import com.example.cliniccare.dto.PromotionDTO;
 import com.example.cliniccare.exception.BadRequestException;
 import com.example.cliniccare.exception.NotFoundException;
 import com.example.cliniccare.interfaces.MedicalRecordGroup;
 import com.example.cliniccare.response.ApiResponse;
 import com.example.cliniccare.response.PaginationResponse;
 import com.example.cliniccare.service.MedicalRecordService;
+import com.example.cliniccare.utils.ExcelGenerator;
 import com.example.cliniccare.validation.Validation;
+import jakarta.servlet.http.HttpServletResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.util.FileCopyUtils;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.List;
 import java.util.UUID;
 
@@ -29,6 +37,18 @@ public class MedicalRecordController {
 
     public MedicalRecordController(MedicalRecordService medicalRecordService) {
         this.medicalRecordService = medicalRecordService;
+    }
+
+    @GetMapping("/all")
+    public ResponseEntity<?> getAllPromotions() {
+        try {
+            List<MedicalRecordDTO> medicalRecords = medicalRecordService.getAllMedicalRecord();
+            return ResponseEntity.ok(new ApiResponse<>(true, "Get all medical record successfully", medicalRecords));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new ApiResponse<>(
+                    false, e.getMessage(), null
+            ));
+        }
     }
 
     @GetMapping
@@ -83,6 +103,26 @@ public class MedicalRecordController {
             ));
         }
     }
+
+    @GetMapping("/export")
+    public void exportMedicalRecords(HttpServletResponse response) throws IOException {
+        response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+        response.setHeader("Access-Control-Expose-Headers", "content-disposition");
+
+        DateFormat dateFormatter = new SimpleDateFormat("yyyy-MM-dd_HH:mm:ss");
+        String currentDateTime = dateFormatter.format(System.currentTimeMillis());
+
+        String headerKey = "Content-Disposition";
+        String headerValue = "attachment; filename=medical_records_" + currentDateTime + ".xlsx";
+        response.setHeader(headerKey, headerValue);
+
+        List<MedicalRecordDTO> medicalRecordList = medicalRecordService.getAllMedicalRecord();
+        ExcelGenerator excelGenerator = new ExcelGenerator(medicalRecordList);
+
+        ByteArrayInputStream bis = excelGenerator.generateExcelFile();
+        FileCopyUtils.copy(bis, response.getOutputStream());
+    }
+
 
     @PostMapping
     public ResponseEntity<?> createMedicalRecord(

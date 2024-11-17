@@ -12,4 +12,5 @@ import java.util.UUID;
 @Repository
 public interface MedicalRecordRepository extends JpaRepository<MedicalRecord, UUID>, JpaSpecificationExecutor<MedicalRecord> {
     Optional<MedicalRecord> findByMedicalRecordIdAndDeleteAtIsNull(UUID medicalRecordId);
+
 }

@@ -2,6 +2,7 @@ package com.example.cliniccare.service;
 
 import com.example.cliniccare.dto.MedicalRecordDTO;
 import com.example.cliniccare.dto.PaginationDTO;
+import com.example.cliniccare.dto.PromotionDTO;
 import com.example.cliniccare.exception.BadRequestException;
 import com.example.cliniccare.exception.NotFoundException;
 import com.example.cliniccare.model.DoctorProfile;
@@ -45,6 +46,11 @@ public class MedicalRecordService {
         this.serviceRepository = serviceRepository;
         this.paginationService = paginationService;
     }
+
+    public List<MedicalRecordDTO> getAllMedicalRecord() {
+        return medicalRecordRepository.findAll().stream().map(MedicalRecordDTO::new).toList();
+    }
+
 
     public PaginationResponse<List<MedicalRecordDTO>> getMedicalRecord(
             PaginationDTO paginationDTO, String search, String date, UUID patientId, UUID doctorId, UUID serviceId
