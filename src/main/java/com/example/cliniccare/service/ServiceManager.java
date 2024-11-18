@@ -50,7 +50,10 @@ public class ServiceManager {
     }
 
     public PaginationResponse<List<ServiceDTO>> getServices(
-            PaginationDTO paginationDTO, String search, String price, String status
+            PaginationDTO paginationDTO,
+            String search,
+            String price,
+            String status
     ) {
         Pageable pageable = paginationService.getPageable(paginationDTO);
 

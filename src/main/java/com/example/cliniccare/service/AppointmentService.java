@@ -70,7 +70,11 @@ public class AppointmentService {
     }
 
     public PaginationResponse<List<AppointmentDTO>> getAppointments(
-            PaginationDTO paginationDTO, String date, UUID patientId, UUID doctorId) {
+            PaginationDTO paginationDTO,
+            String date,
+            UUID patientId,
+            UUID doctorId
+    ) {
         Pageable pageable = paginationService.getPageable(paginationDTO);
 
         Specification<Appointment> spec = Specification.where(null);
