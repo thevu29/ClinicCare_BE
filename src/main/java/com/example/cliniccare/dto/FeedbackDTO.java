@@ -29,6 +29,11 @@ public class FeedbackDTO {
     @NotBlank(message = "Feedback content is required", groups = {FeedbackFormGroup.Create.class, FeedbackFormGroup.Update.class})
     private String feedback;
 
+    private String patientName;
+    private String patientPhone;
+    private String doctorName;
+    private String serviceName;
+
     public FeedbackDTO(Feedback feedback) {
         this.feedbackId = feedback.getFeedbackId();
         this.patientId = feedback.getPatient().getUserId();
@@ -36,5 +41,10 @@ public class FeedbackDTO {
         this.serviceId = feedback.getService() == null ? null : feedback.getService().getServiceId();
         this.date = feedback.getCreateAt();
         this.feedback = feedback.getFeedback();
+
+        this.patientName = feedback.getPatient().getName();
+        this.patientPhone = feedback.getPatient().getPhone();
+        this.doctorName = feedback.getDoctor() == null ? null : feedback.getDoctor().getUser().getName();
+        this.serviceName = feedback.getService() == null ? null : feedback.getService().getName();
     }
 }

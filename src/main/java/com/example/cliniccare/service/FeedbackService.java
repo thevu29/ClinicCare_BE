@@ -8,6 +8,8 @@ import com.example.cliniccare.model.*;
 import com.example.cliniccare.repository.*;
 import com.example.cliniccare.response.PaginationResponse;
 import com.example.cliniccare.utils.DateQueryParser;
+import jakarta.persistence.criteria.Join;
+import jakarta.persistence.criteria.JoinType;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -45,7 +47,8 @@ public class FeedbackService {
             String date,
             String doctorId,
             String patientId,
-            String serviceId
+            String serviceId,
+            String search
     ) {
         Pageable pageable = paginationService.getPageable(paginationDTO);
 
@@ -83,6 +86,32 @@ public class FeedbackService {
             DateQueryParser<Feedback> dateParser = new DateQueryParser<>(date, "createAt");
             Specification<Feedback> dateSpec = dateParser.createDateSpecification();
             spec = spec.and(dateSpec);
+        }
+
+        if (search != null && !search.trim().isEmpty()) {
+            String searchLower = "%" + search.toLowerCase() + "%";
+
+            spec = spec.and((root, query, cb) -> {
+                // LEFT JOIN User (patient)
+                Join<Feedback, User> patientJoin = root.join("patient", JoinType.LEFT);
+
+                // LEFT JOIN DoctorProfile (doctor)
+                Join<Feedback, DoctorProfile> doctorJoin = root.join("doctor", JoinType.LEFT);
+
+                // LEFT JOIN User through DoctorProfile
+                Join<DoctorProfile, User> doctorUserJoin = doctorJoin.join("user", JoinType.LEFT);
+
+                // LEFT JOIN Service
+                Join<Feedback, Service> serviceJoin = root.join("service", JoinType.LEFT);
+
+                return cb.or(
+                        cb.like(cb.lower(patientJoin.get("name")), searchLower),
+                        cb.like(cb.lower(patientJoin.get("phone")), searchLower),
+                        cb.like(cb.lower(doctorUserJoin.get("name")), searchLower),
+                        cb.like(cb.lower(serviceJoin.get("name")), searchLower),
+                        cb.like(cb.lower(root.get("feedback")), searchLower)
+                );
+            });
         }
 
         Page<Feedback> feedbacks = feedbackRepository.findAll(spec, pageable);
@@ -161,5 +190,18 @@ public class FeedbackService {
 
         feedback.setDeleteAt(LocalDateTime.now());
         feedbackRepository.save(feedback);
+    }
+
+    public void deleteFeedbacks(List<UUID> ids) {
+        List<Feedback> feedbacks = feedbackRepository
+                .findAllByFeedbackIdInAndDeleteAtIsNull(ids);
+
+        if (feedbacks.isEmpty()) {
+            throw new NotFoundException("No feedbacks found for the provided IDs");
+        }
+
+        feedbacks.forEach(feedback -> feedback.setDeleteAt(LocalDateTime.now()));
+
+        feedbackRepository.saveAll(feedbacks);
     }
 }
