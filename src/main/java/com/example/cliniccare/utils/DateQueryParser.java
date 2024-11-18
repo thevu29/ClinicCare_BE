@@ -70,7 +70,13 @@ public class DateQueryParser<T> {
             throw new BadRequestException("Start date must be before end date");
         }
 
-        return cb.between(root.get(dateFieldName), startDate, endDate);
+        if (root.get(dateFieldName).getJavaType() == LocalDateTime.class) {
+            LocalDateTime startDateTime = startDate.atStartOfDay();
+            LocalDateTime endDateTime = endDate.plusDays(1).atStartOfDay();
+            return cb.between(root.get(dateFieldName), startDateTime, endDateTime);
+        } else {
+            return cb.between(root.get(dateFieldName), startDate, endDate);
+        }
     }
 
     private Predicate handleBeforeDateSpecification(Root<T> root, CriteriaBuilder cb) {
