@@ -8,6 +8,8 @@ import com.example.cliniccare.model.*;
 import com.example.cliniccare.repository.*;
 import com.example.cliniccare.response.PaginationResponse;
 import com.example.cliniccare.utils.DateQueryParser;
+import jakarta.persistence.criteria.Join;
+import jakarta.persistence.criteria.JoinType;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -42,15 +44,42 @@ public class FeedbackService {
 
     public PaginationResponse<List<FeedbackDTO>> getFeedbacks(
             PaginationDTO paginationDTO,
+            String search,
             String date,
             String doctorId,
             String patientId,
             String serviceId
     ) {
-        Pageable pageable = paginationService.getPageable(paginationDTO);
+        Pageable pageable = paginationService.getFeedbackPageable(paginationDTO);
 
-        Specification<Feedback> spec = Specification.where((root, query, cb) ->
-                cb.isNull(root.get("deleteAt")));
+        Specification<Feedback> spec = Specification.where((root, query, cb) -> {
+            if (query != null && query.getResultType().equals(Feedback.class)) {
+                root.fetch("patient", JoinType.LEFT);
+                root.fetch("doctor", JoinType.LEFT).fetch("user", JoinType.LEFT);
+                root.fetch("service", JoinType.LEFT);
+            }
+            return cb.isNull(root.get("deleteAt"));
+        });
+
+        if (search != null && !search.trim().isEmpty()) {
+            String searchLower = search.toLowerCase();
+
+            spec = spec.and((root, query, cb) -> {
+                if (query != null)  query.distinct(true);
+
+                Join<Feedback, User> patientJoin = root.join("patient", JoinType.LEFT);
+                Join<Feedback, DoctorProfile> doctorJoin = root.join("doctor", JoinType.LEFT);
+                Join<DoctorProfile, User> userJoin = doctorJoin.join("user", JoinType.LEFT);
+                Join<Feedback, Service> serviceJoin = root.join("service", JoinType.LEFT);
+
+                return cb.or(
+                        cb.like(cb.lower(root.get("feedback")), "%" + searchLower + "%"),
+                        cb.like(cb.lower(patientJoin.get("name")), "%" + searchLower + "%"),
+                        cb.like(cb.lower(userJoin.get("name")), "%" + searchLower + "%"),
+                        cb.like(cb.lower(serviceJoin.get("name")), "%" + searchLower + "%")
+                );
+            });
+        }
 
         if (patientId != null) {
             User patient = userRepository
@@ -128,6 +157,7 @@ public class FeedbackService {
             DoctorProfile doctor = doctorProfileRepository
                     .findById(feedbackDTO.getDoctorId())
                     .orElseThrow(() -> new NotFoundException("Doctor not found"));
+
             feedback.setDoctor(doctor);
         }
 
@@ -135,6 +165,7 @@ public class FeedbackService {
             Service service = serviceRepository
                     .findById(feedbackDTO.getServiceId())
                     .orElseThrow(() -> new NotFoundException("Service not found"));
+
             feedback.setService(service);
         }
 

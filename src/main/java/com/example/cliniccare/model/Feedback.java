@@ -18,17 +18,17 @@ public class Feedback {
     @Column(name = "feedback_id")
     private UUID feedbackId;
 
-    @ManyToOne
-    @JoinColumn(name = "patient_id", referencedColumnName = "user_id")
-    private User patient;
-
-    @ManyToOne
-    @JoinColumn(name = "doctor_profile_id", referencedColumnName = "doctor_profile_id")
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "doctor_profile_id")
     private DoctorProfile doctor;
 
-    @ManyToOne
-    @JoinColumn(name = "service_id", referencedColumnName = "service_id")
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "service_id")
     private Service service;
+
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "patient_id")
+    private User patient;
 
     private String feedback;
 
