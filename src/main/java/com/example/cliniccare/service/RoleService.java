@@ -33,7 +33,7 @@ public class RoleService {
     public PaginationResponse<List<RoleDTO>> getRoles(PaginationDTO paginationQuery, String search) {
         Pageable pageable = paginationService.getPageable(paginationQuery);
 
-        Page<Role> roles = search.isEmpty()
+        Page<Role> roles = search == null || search.isEmpty()
                 ? roleRepository.findAll(pageable)
                 : roleRepository.findAllByNameContaining(search, pageable);
 

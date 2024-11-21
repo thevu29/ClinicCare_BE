@@ -20,9 +20,15 @@ public class FeedbackDTO {
     @NotNull(message = "Patient is required", groups = {FeedbackFormGroup.Create.class})
     private UUID patientId;
 
+    private String patientName;
+
     private UUID doctorId;
 
+    private String doctorName;
+
     private UUID serviceId;
+
+    private String serviceName;
 
     private LocalDateTime date;
 
@@ -37,8 +43,11 @@ public class FeedbackDTO {
     public FeedbackDTO(Feedback feedback) {
         this.feedbackId = feedback.getFeedbackId();
         this.patientId = feedback.getPatient().getUserId();
+        this.patientName = feedback.getPatient().getName();
         this.doctorId = feedback.getDoctor() == null ? null : feedback.getDoctor().getDoctorProfileId();
+        this.doctorName = feedback.getDoctor() == null ? null : feedback.getDoctor().getUser().getName();
         this.serviceId = feedback.getService() == null ? null : feedback.getService().getServiceId();
+        this.serviceName = feedback.getService() == null ? null : feedback.getService().getName();
         this.date = feedback.getCreateAt();
         this.feedback = feedback.getFeedback();
 

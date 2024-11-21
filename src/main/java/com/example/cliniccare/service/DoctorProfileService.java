@@ -62,17 +62,19 @@ public class DoctorProfileService {
 
     public PaginationResponse<List<DoctorProfileDTO>> getDoctorProfiles(PaginationDTO paginationDTO, String search) {
         Pageable pageable = paginationService.getDoctorProfilePageable(paginationDTO);
-        Page<DoctorProfile> doctorProfiles = doctorProfileRepository.findAllByDeleteAtIsNull(pageable);
+        Page<DoctorProfile> doctorProfiles;
 
         if (search != null && !search.isEmpty()) {
             doctorProfiles = doctorProfileRepository.findAllDoctorProfiles(search, pageable);
+        } else {
+            doctorProfiles = doctorProfileRepository.findAllByDeleteAtIsNull(pageable);
         }
 
         int totalPages = doctorProfiles.getTotalPages();
         long totalElements = doctorProfiles.getTotalElements();
         int take = doctorProfiles.getNumberOfElements();
 
-        List<DoctorProfileDTO>  doctorProfileDTOs = doctorProfiles
+        List<DoctorProfileDTO> doctorProfileDTOs = doctorProfiles
                 .stream()
                 .map(doctorProfile -> new DoctorProfileDTO(doctorProfile, userRepository
                         .findByUserIdAndDeleteAtIsNull(doctorProfile.getUser().getUserId())
