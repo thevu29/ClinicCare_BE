@@ -43,8 +43,7 @@ public class FeedbackController {
             @RequestParam(defaultValue = "") String date,
             @RequestParam(required = false) String doctorId,
             @RequestParam(required = false) String patientId,
-            @RequestParam(required = false) String serviceId,
-            @RequestParam(defaultValue = "") String search
+            @RequestParam(required = false) String serviceId
     ) {
         try {
             PaginationDTO paginationDTO = new PaginationDTO(page, size, sortBy, order);
