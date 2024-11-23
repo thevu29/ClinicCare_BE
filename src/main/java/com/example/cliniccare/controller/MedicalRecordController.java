@@ -109,18 +109,18 @@ public class MedicalRecordController {
         response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
         response.setHeader("Access-Control-Expose-Headers", "content-disposition");
 
-        DateFormat dateFormatter = new SimpleDateFormat("yyyy-MM-dd_HH:mm:ss");
+        DateFormat dateFormatter = new SimpleDateFormat("yyyy-MM-dd_HH-mm-ss");
         String currentDateTime = dateFormatter.format(System.currentTimeMillis());
-
-        String headerKey = "Content-Disposition";
         String headerValue = "attachment; filename=medical_records_" + currentDateTime + ".xlsx";
-        response.setHeader(headerKey, headerValue);
+        response.setHeader("Content-Disposition", headerValue);
 
-        List<MedicalRecordDTO> medicalRecordList = medicalRecordService.getAllMedicalRecord();
+        List<MedicalRecordDTO> medicalRecordList = medicalRecordService.getFilteredMedicalRecords();
+
         ExcelGenerator excelGenerator = new ExcelGenerator(medicalRecordList);
-
         ByteArrayInputStream bis = excelGenerator.generateExcelFile();
+
         FileCopyUtils.copy(bis, response.getOutputStream());
+        response.flushBuffer();
     }
 
 

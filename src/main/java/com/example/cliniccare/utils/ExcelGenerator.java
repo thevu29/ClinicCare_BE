@@ -1,7 +1,9 @@
 package com.example.cliniccare.utils;
 
 import com.example.cliniccare.dto.MedicalRecordDTO;
+import com.example.cliniccare.model.MedicalRecord;
 import org.apache.poi.ss.usermodel.*;
+import org.apache.poi.ss.util.CellRangeAddress;
 import org.apache.poi.xssf.usermodel.*;
 
 import java.io.ByteArrayInputStream;
@@ -15,13 +17,42 @@ public class ExcelGenerator {
     private XSSFSheet sheet;
 
     private static final String[] HEADERS = {
-            "Patient Name", "Doctor", "Service", "Date",
+            "Patient", "Doctor", "Service", "Date",
             "Description"
     };
 
     public ExcelGenerator(List<MedicalRecordDTO> medicalRecordList) {
         this.medicalRecordList = medicalRecordList;
         this.workbook = new XSSFWorkbook();
+    }
+
+    private XSSFCellStyle createTitleStyle() {
+        XSSFCellStyle style = workbook.createCellStyle();
+        XSSFFont font = workbook.createFont();
+
+        font.setBold(true);
+        font.setFontHeight(16);
+        font.setColor(IndexedColors.BLACK.getIndex());
+
+        style.setFont(font);
+        style.setAlignment(HorizontalAlignment.CENTER);
+        style.setVerticalAlignment(VerticalAlignment.CENTER);
+        style.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+        return style;
+    }
+
+    private void writeTitleRow() {
+        sheet = workbook.createSheet("Medical Records");
+        XSSFRow titleRow = sheet.createRow(0);
+        XSSFCell titleCell = titleRow.createCell(0);
+        XSSFCellStyle titleStyle = createTitleStyle();
+
+        titleCell.setCellStyle(titleStyle);
+        titleCell.setCellValue("Medical Records Report");
+
+        sheet.addMergedRegion(new CellRangeAddress(0, 0, 0, HEADERS.length - 1));
+
+        titleRow.setHeight((short) 600);
     }
 
     private XSSFCellStyle createHeaderStyle() {
@@ -33,7 +64,7 @@ public class ExcelGenerator {
         font.setColor(IndexedColors.WHITE.getIndex());
 
         style.setFont(font);
-        style.setFillForegroundColor(IndexedColors.LIGHT_BLUE.getIndex());
+        style.setFillForegroundColor(IndexedColors.SEA_GREEN.getIndex());
         style.setFillPattern(FillPatternType.SOLID_FOREGROUND);
 
         style.setBorderTop(BorderStyle.THIN);
@@ -44,9 +75,9 @@ public class ExcelGenerator {
         return style;
     }
 
+
     private void writeHeaderRow() {
-        sheet = workbook.createSheet("Medical Records");
-        XSSFRow row = sheet.createRow(0);
+        XSSFRow row = sheet.createRow(1); // Adjusted to row 1 (after title row)
         XSSFCellStyle headerStyle = createHeaderStyle();
 
         for (int i = 0; i < HEADERS.length; i++) {
@@ -58,6 +89,7 @@ public class ExcelGenerator {
 
         row.setHeight((short) 500);
     }
+
 
     private XSSFCellStyle createDataStyle() {
         XSSFCellStyle style = workbook.createCellStyle();
@@ -71,9 +103,25 @@ public class ExcelGenerator {
         return style;
     }
 
+    private XSSFCellStyle createDateStyle() {
+        XSSFCellStyle style = workbook.createCellStyle();
+        style.setBorderTop(BorderStyle.THIN);
+        style.setBorderBottom(BorderStyle.THIN);
+        style.setBorderLeft(BorderStyle.THIN);
+        style.setBorderRight(BorderStyle.THIN);
+        style.setAlignment(HorizontalAlignment.CENTER);
+        style.setVerticalAlignment(VerticalAlignment.CENTER);
+
+        CreationHelper creationHelper = workbook.getCreationHelper();
+        style.setDataFormat(creationHelper.createDataFormat().getFormat("dd-MM-yyyy HH:mm:ss"));
+
+        return style;
+    }
+
     private void writeDataRows() {
         XSSFCellStyle dataStyle = createDataStyle();
-        int rowNum = 1;
+        XSSFCellStyle dateStyle = createDateStyle();
+        int rowNum = 2;
 
         for (MedicalRecordDTO record : medicalRecordList) {
             XSSFRow row = sheet.createRow(rowNum++);
@@ -81,11 +129,17 @@ public class ExcelGenerator {
             row.createCell(0).setCellValue(record.getPatientName());
             row.createCell(1).setCellValue(record.getDoctorName());
             row.createCell(2).setCellValue(record.getServiceName());
-            row.createCell(3).setCellValue(record.getDate().toString());
+
+            XSSFCell dateCell = row.createCell(3);
+            dateCell.setCellValue(record.getDate());
+            dateCell.setCellStyle(dateStyle);
+
             row.createCell(4).setCellValue(record.getDescription());
 
             for (int i = 0; i < HEADERS.length; i++) {
-                row.getCell(i).setCellStyle(dataStyle);
+                if (i != 3) {
+                    row.getCell(i).setCellStyle(dataStyle);
+                }
             }
         }
 
@@ -95,6 +149,7 @@ public class ExcelGenerator {
     }
 
     public ByteArrayInputStream generateExcelFile() throws IOException {
+        writeTitleRow();
         writeHeaderRow();
         writeDataRows();
 

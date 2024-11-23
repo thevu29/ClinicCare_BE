@@ -125,6 +125,11 @@ public class MedicalRecordService {
         return new MedicalRecordDTO(medicalRecord);
     }
 
+    public List<MedicalRecordDTO> getFilteredMedicalRecords() {
+        List<MedicalRecord> records = medicalRecordRepository.findAllByDeleteAtIsNullOrderByCreateAtDesc();
+        return records.stream().map(MedicalRecordDTO::new).toList();
+    }
+
     public MedicalRecordDTO createMedicalRecord(MedicalRecordDTO medicalRecordDTO) {
         User user = userRepository.findByUserIdAndDeleteAtIsNull(medicalRecordDTO.getPatientId())
                 .orElseThrow(() -> new NotFoundException("Patient not found"));
