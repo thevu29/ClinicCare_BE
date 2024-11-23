@@ -209,7 +209,7 @@ public class PaymentService {
         String vnp_Command = "pay";
         String orderType = "other";
         long amount = (long) (price * 100L);
-        String bankCode = "NCB";
+//        String bankCode = "NCB";
 
         String vnp_TxnRef = paymentId.toString();
         String vnp_IpAddr = VNPayUtils.getIpAddress(req);
@@ -221,7 +221,7 @@ public class PaymentService {
         vnp_Params.put("vnp_Amount", String.valueOf(amount));
         vnp_Params.put("vnp_CurrCode", "VND");
 
-        vnp_Params.put("vnp_BankCode", bankCode);
+//        vnp_Params.put("vnp_BankCode", bankCode);
         vnp_Params.put("vnp_TxnRef", vnp_TxnRef);
         vnp_Params.put("vnp_OrderInfo", "Thanh toan don hang:" + vnp_TxnRef);
         vnp_Params.put("vnp_OrderType", orderType);
@@ -267,5 +267,38 @@ public class PaymentService {
         queryUrl += "&vnp_SecureHash=" + vnp_SecureHash;
 
         return vnp_PayUrl + "?" + queryUrl;
+    }
+
+    public Map<String, Object> checkVNPayResponse(Map<String, String> params) {
+        Map<String, String> fields = new HashMap<>();
+        Map<String, Object> response = new HashMap<>();
+
+        for (Map.Entry<String, String> entry : params.entrySet()) {
+            String fieldName = URLEncoder.encode(entry.getKey(), StandardCharsets.US_ASCII);
+            String fieldValue = URLEncoder.encode(entry.getValue(), StandardCharsets.US_ASCII);
+            if ((fieldValue != null) && (!fieldValue.isEmpty())) {
+                fields.put(fieldName, fieldValue);
+            }
+        }
+
+        String vnp_SecureHash = params.get("vnp_SecureHash");
+        fields.remove("vnp_SecureHashType");
+        fields.remove("vnp_SecureHash");
+        String signValue = VNPayUtils.hashAllFields(fields, secretKey);
+
+        if (signValue.equals(vnp_SecureHash)) {
+            if ("00".equals(params.get("vnp_TransactionStatus"))) {
+                response.put("message", "Payment Successful!");
+                response.put("success", true);
+            } else {
+                response.put("message", "Payment Failed!");
+                response.put("success", false);
+            }
+
+        } else {
+            response.put("message", "Invalid signature!");
+            response.put("success", false);
+        }
+        return response;
     }
 }

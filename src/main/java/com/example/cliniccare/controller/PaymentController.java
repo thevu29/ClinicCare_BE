@@ -117,6 +117,28 @@ public class PaymentController {
         }
     }
 
+    @GetMapping("/check-response")
+    public ResponseEntity<?> checkVNPayResponse(
+            @RequestParam Map<String, String> params
+    ) {
+        try {
+            Map<String, Object> response = paymentService.checkVNPayResponse(params);
+            if ((Boolean) response.get("success")) {
+                return ResponseEntity.ok(new ApiResponse<>(
+                        true, (String) response.get("message"), null
+                ));
+            }
+            return ResponseEntity.ok(new ApiResponse<>(
+                    false, (String) response.get("message"), null
+            ));
+        } catch (Exception e) {
+            logger.error("Failed to check VNPay response: {}", e.getMessage(), e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new ApiResponse<>(
+                    false, "Failed to check VNPay response", null
+            ));
+        }
+    }
+
     @PutMapping("/change-status/{paymentId}")
     public ResponseEntity<?> changePaymentStatus(
             @PathVariable UUID paymentId,
