@@ -12,16 +12,32 @@ import com.example.cliniccare.repository.ServiceRepository;
 import com.example.cliniccare.repository.UserRepository;
 import com.example.cliniccare.response.PaginationResponse;
 import com.example.cliniccare.utils.DateQueryParser;
+import com.example.cliniccare.utils.NumberToWords;
 import com.example.cliniccare.utils.PriceQueryParser;
+
+import com.itextpdf.barcodes.Barcode128;
+import com.itextpdf.io.font.PdfEncodings;
+
+import com.itextpdf.kernel.font.PdfFont;
+import com.itextpdf.kernel.font.PdfFontFactory;
+import com.itextpdf.kernel.pdf.PdfDocument;
+import com.itextpdf.kernel.pdf.PdfWriter;
+import com.itextpdf.layout.Document;
+import com.itextpdf.layout.element.Image;
+import com.itextpdf.layout.element.Paragraph;
+import com.itextpdf.layout.properties.HorizontalAlignment;
+import com.itextpdf.layout.properties.TextAlignment;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.transaction.annotation.Transactional;
 
+
+import java.io.File;
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 
 @org.springframework.stereotype.Service
@@ -163,5 +179,115 @@ public class PaymentService {
         Payment updatedPayment = paymentRepository.save(payment);
 
         return new PaymentDTO(updatedPayment);
+    }
+
+    @Transactional
+    public PaymentDTO exportPDFPayment(UUID paymentId, String url) {
+        // Find payment
+        Payment payment = paymentRepository.findById(paymentId)
+                .orElseThrow(() -> new NotFoundException("Payment not found"));
+
+        // Find service
+        Service service = payment.getService();
+
+        // Find patient
+        User patient = payment.getPatient();
+
+        // Destination file
+        String dest = url != null && !url.isEmpty() ? url : "MedicalInvoice.pdf";
+
+        // check location
+        if (!dest.endsWith(".pdf")) {
+            throw new BadRequestException("Invalid file format");
+        }
+        try {
+            File file = new File(dest);
+
+            // Check if file exists
+            if (file.exists()) {
+                throw new BadRequestException("File already exists");
+            }
+
+
+
+            // Create PDF
+            PdfWriter writer = new PdfWriter(file);
+            PdfDocument pdf = new PdfDocument(writer);
+            Document document = new Document(pdf);
+
+            PdfFont font = PdfFontFactory.createFont("C:/Windows/Fonts/times.ttf", PdfEncodings.IDENTITY_H);
+            document.setFont(font);
+
+            // Title
+            Paragraph title = new Paragraph("HÓA ĐƠN KHÁM BỆNH")
+                    .setTextAlignment(TextAlignment.CENTER)
+                    .setBold()
+                    .setFontSize(16);
+            document.add(title);
+
+            // Clinic Information
+            Paragraph clinicInfo = new Paragraph("PHÒNG KHÁM TƯ NHÂN\n" +
+                    "Địa chỉ: An Dương Vương, Quận 5, TPHCM\n" +
+                    "Điện thoại:0123456789 \nWebsite:ciniccare.com")
+                    .setTextAlignment(TextAlignment.CENTER)
+                    .setFontSize(12);
+            document.add(clinicInfo);
+
+
+
+            // Invoice Table
+            Paragraph titlePayment = new Paragraph("HÓA ĐƠN THANH TOÁN")
+                    .setTextAlignment(TextAlignment.CENTER)
+                    .setBold()
+                    .setFontSize(16);
+            document.add(titlePayment);
+
+            // Customer Information
+            Paragraph customerInfo = new Paragraph("""
+                    Tên khách hàng: %s\n
+                    Số điện thoại: %s\n""".formatted(patient.getName(), patient.getPhone()))
+                    .setMarginTop(20)
+                    .setFontSize(12);
+            document.add(customerInfo);
+
+            // Name of Service and method of payment and price
+            Paragraph serviceName = new Paragraph("""
+                    Dịch vụ: %s\n
+                    Phương thức thanh toán: %s\n
+                    Thành tiền: %s vnđ (%s)\n
+                    Đã thanh toán.\n""".formatted(service.getName(), payment.getMethod(), payment.getTotalPrice(), NumberToWords.convert(payment.getTotalPrice())))
+                    .setMarginTop(20)
+                    .setFontSize(12);
+            document.add(serviceName);
+
+            // Format date
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("'Ngày' d 'tháng' M 'năm' yyyy");
+            String formattedDate = payment.getDate().format(formatter);
+
+            // Footer
+            Paragraph footer = new Paragraph("Thành phố Hồ Chí Minh, "+ formattedDate +"\n\n" +
+                    "Bệnh nhân                          Nhân viên thu tiền                    Bác sĩ điều trị\n" +
+                    "(Ký, họ tên)                        (Ký, họ tên)                                  (Ký, họ tên)\n\n\n\n\n\n\n")
+                    .setTextAlignment(TextAlignment.CENTER)
+                    .setMarginTop(30)
+                    .setFontSize(12);
+            document.add(footer);
+
+            // Generate 1D Barcode (Code 128)
+            Barcode128 barcode = new Barcode128(pdf);
+            barcode.setCode(payment.getPaymentId().toString());
+            Image barcodeImage = new Image(barcode.createFormXObject(pdf));
+            barcodeImage.setHorizontalAlignment(HorizontalAlignment.RIGHT);
+            document.add(barcodeImage);
+
+            // Close document
+            document.close();
+            return new PaymentDTO(payment);
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new BadRequestException("Error creating PDF Invoice");
+        }
+
+
     }
 }

@@ -142,4 +142,26 @@ public class PaymentController {
             ));
         }
     }
+
+    @PutMapping("/export-pdf/{paymentId}")
+    public ResponseEntity<?> exportPDF(@PathVariable UUID paymentId, @RequestBody Map<String, String> url) {
+        try {
+            String dest = url.get("url");
+
+            PaymentDTO payment = paymentService.exportPDFPayment(paymentId, dest);
+
+            return ResponseEntity.ok(new ApiResponse<>(
+                    true, "PDF exported successfully", payment
+            ));
+        } catch (NotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ApiResponse<>(
+                    false, e.getMessage(), null
+            ));
+        } catch (Exception e) {
+            logger.error("Failed to export PDF: {}", e.getMessage(), e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new ApiResponse<>(
+                    false, "Failed to export PDF", null
+            ));
+        }
+    }
 }
