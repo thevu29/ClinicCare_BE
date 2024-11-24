@@ -17,7 +17,7 @@ public class ExcelGenerator {
     private XSSFSheet sheet;
 
     private static final String[] HEADERS = {
-            "Patient", "Doctor", "Service", "Date",
+           "Id", "Patient", "Doctor", "Service", "Date",
             "Description"
     };
 
@@ -37,7 +37,7 @@ public class ExcelGenerator {
         style.setFont(font);
         style.setAlignment(HorizontalAlignment.CENTER);
         style.setVerticalAlignment(VerticalAlignment.CENTER);
-        style.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+
         return style;
     }
 
@@ -123,28 +123,40 @@ public class ExcelGenerator {
         XSSFCellStyle dateStyle = createDateStyle();
         int rowNum = 2;
 
-        for (MedicalRecordDTO record : medicalRecordList) {
+        for (int i = 0; i < medicalRecordList.size(); i++) {
+            MedicalRecordDTO record = medicalRecordList.get(i);
             XSSFRow row = sheet.createRow(rowNum++);
 
-            row.createCell(0).setCellValue(record.getPatientName());
-            row.createCell(1).setCellValue(record.getDoctorName());
-            row.createCell(2).setCellValue(record.getServiceName());
+            row.setHeight((short) 500);
 
-            XSSFCell dateCell = row.createCell(3);
+            XSSFCell sttCell = row.createCell(0);
+            sttCell.setCellValue(i + 1);
+            sttCell.setCellStyle(dataStyle);
+
+            XSSFCell patientCell = row.createCell(1);
+            patientCell.setCellValue(record.getPatientName());
+            patientCell.setCellStyle(dataStyle);
+
+            XSSFCell doctorCell = row.createCell(2);
+            doctorCell.setCellValue(record.getDoctorName());
+            doctorCell.setCellStyle(dataStyle);
+
+            XSSFCell serviceCell = row.createCell(3);
+            serviceCell.setCellValue(record.getServiceName());
+            serviceCell.setCellStyle(dataStyle);
+
+            XSSFCell dateCell = row.createCell(4);
             dateCell.setCellValue(record.getDate());
             dateCell.setCellStyle(dateStyle);
 
-            row.createCell(4).setCellValue(record.getDescription());
-
-            for (int i = 0; i < HEADERS.length; i++) {
-                if (i != 3) {
-                    row.getCell(i).setCellStyle(dataStyle);
-                }
-            }
+            XSSFCell descriptionCell = row.createCell(5);
+            descriptionCell.setCellValue(record.getDescription());
+            descriptionCell.setCellStyle(dataStyle);
         }
 
         for (int i = 0; i < HEADERS.length; i++) {
             sheet.autoSizeColumn(i);
+            sheet.setColumnWidth(i, sheet.getColumnWidth(i) + 1000);
         }
     }
 
