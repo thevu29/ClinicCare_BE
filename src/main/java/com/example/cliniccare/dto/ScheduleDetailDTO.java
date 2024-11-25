@@ -11,6 +11,8 @@ public class ScheduleDetailDTO {
     private int duration;
     private String status;
 
+    public ScheduleDetailDTO() {}
+
     public ScheduleDetailDTO(UUID scheduleId, String time, int duration, String status) {
         this.scheduleId = scheduleId;
         this.time = time;

@@ -3,6 +3,7 @@ package com.example.cliniccare.controller;
 import com.example.cliniccare.dto.PaginationDTO;
 import com.example.cliniccare.dto.ScheduleDTO;
 import com.example.cliniccare.dto.ScheduleFormDTO;
+import com.example.cliniccare.dto.SchedulesDTO;
 import com.example.cliniccare.exception.BadRequestException;
 import com.example.cliniccare.exception.NotFoundException;
 import com.example.cliniccare.interfaces.ScheduleFormGroup;
@@ -35,6 +36,22 @@ public class ScheduleController {
         this.scheduleService = scheduleService;
     }
 
+    @GetMapping("/all")
+    public ResponseEntity<?> getAllSchedules() {
+        try {
+            List<ScheduleDTO> schedules = scheduleService.getAllSchedules();
+
+            return ResponseEntity.ok(new ApiResponse<>(
+                    true, "Get all schedules successfully", schedules
+            ));
+        } catch (Exception e) {
+            logger.error("Failed to get all schedules: {}", e.getMessage(), e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new ApiResponse<>(
+                    false, "Failed to get all schedules", null
+            ));
+        }
+    }
+
     @GetMapping
     public ResponseEntity<?> getSchedules(
             @RequestParam(defaultValue = "1") int page,
@@ -50,7 +67,7 @@ public class ScheduleController {
     ) {
         try {
             PaginationDTO paginationDTO = new PaginationDTO(page, size, sortBy, order);
-            PaginationResponse<List<ScheduleDTO>> response = scheduleService
+            PaginationResponse<List<SchedulesDTO>> response = scheduleService
                     .getSchedules(paginationDTO, search, date, time, status, serviceId, doctorId);
 
             return ResponseEntity.ok(response);
@@ -66,6 +83,37 @@ public class ScheduleController {
             logger.error("Failed to get schedules: {}", e.getMessage(), e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new ApiResponse<>(
                     false, "Failed to get schedules", null
+            ));
+        }
+    }
+
+    @PostMapping("/auto-create")
+    public ResponseEntity<?> autoCreateSchedules(
+            @Validated(ScheduleFormGroup.AutoCreate.class) @RequestBody ScheduleFormDTO scheduleDTO,
+            BindingResult bindingResult
+    ) {
+        try {
+            if (Validation.validateBody(bindingResult) != null) {
+                return Validation.validateBody(bindingResult);
+            }
+
+            List<SchedulesDTO> newSchedules = scheduleService.autoCreateSchedules(scheduleDTO);
+
+            return ResponseEntity.status(HttpStatus.CREATED).body(new ApiResponse<>(
+                    true, "Auto create schedules successfully", newSchedules
+            ));
+        } catch (NotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ApiResponse<>(
+                    false, e.getMessage(), null
+            ));
+        } catch (BadRequestException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ApiResponse<>(
+                    false, e.getMessage(), null
+            ));
+        } catch (Exception e) {
+            logger.error("Failed to auto create schedules: {}", e.getMessage(), e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new ApiResponse<>(
+                    false, "Failed to auto create schedules", null
             ));
         }
     }
