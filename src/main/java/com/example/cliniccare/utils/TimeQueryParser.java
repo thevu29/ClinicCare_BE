@@ -55,8 +55,6 @@ public class TimeQueryParser<T> {
         Expression<Integer> hourExpression = cb.function("HOUR", Integer.class, root.get(this.timeFieldName));
         Expression<Integer> minuteExpression = cb.function("MINUTE", Integer.class, root.get(this.timeFieldName));
 
-        Predicate hourPredicate = cb.between(hourExpression, start.getHour(), end.getHour());
-
         Predicate startTimePredicate = cb.or(
                 cb.greaterThan(hourExpression, start.getHour()),
                 cb.and(

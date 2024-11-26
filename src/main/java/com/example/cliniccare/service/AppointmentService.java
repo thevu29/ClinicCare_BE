@@ -71,6 +71,7 @@ public class AppointmentService {
 
     public PaginationResponse<List<AppointmentDTO>> getAppointments(
             PaginationDTO paginationDTO,
+            String search,
             String date,
             UUID patientId,
             UUID doctorId
@@ -79,6 +80,16 @@ public class AppointmentService {
 
         Specification<Appointment> spec = Specification.where(null);
 
+        if (search != null && !search.trim().isEmpty()) {
+            spec = spec.and((root, query, cb) ->
+                    cb.or(
+                            cb.like(root.get("patient").get("name"), "%" + search + "%"),
+                            cb.like(root.get("patient").get("phone"), "%" + search + "%"),
+                            cb.like(root.get("schedule").get("service").get("name"), "%" + search + "%"),
+                            cb.like(root.get("cancelReason"), "%" + search + "%")
+                    )
+            );
+        }
         if (patientId != null) {
             User patient = userRepository.findByUserIdAndDeleteAtIsNull(patientId)
                     .orElseThrow(() -> new NotFoundException("Patient not found"));
@@ -86,7 +97,6 @@ public class AppointmentService {
             spec = spec.and((root, query, cb) ->
                     cb.equal(root.get("patient").get("userId"), patient.getUserId()));
         }
-
         if (doctorId != null) {
             DoctorProfile doctor = doctorProfileRepository.findByDoctorProfileIdAndDeleteAtIsNull(doctorId)
                     .orElseThrow(() -> new NotFoundException("Doctor not found"));
@@ -94,7 +104,6 @@ public class AppointmentService {
             spec = spec.and((root, query, cb)
                     -> cb.equal(root.get("schedule").get("doctor").get("doctorProfileId"), doctor.getDoctorProfileId()));
         }
-
         if (date != null && !date.trim().isEmpty()) {
             DateQueryParser<Appointment> dateParser = new DateQueryParser<>(date, "date");
             Specification<Appointment> dateSpec = dateParser.createDateSpecification();
