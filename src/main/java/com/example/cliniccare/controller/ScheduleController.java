@@ -3,7 +3,6 @@ package com.example.cliniccare.controller;
 import com.example.cliniccare.dto.PaginationDTO;
 import com.example.cliniccare.dto.ScheduleDTO;
 import com.example.cliniccare.dto.ScheduleFormDTO;
-import com.example.cliniccare.dto.SchedulesDTO;
 import com.example.cliniccare.exception.BadRequestException;
 import com.example.cliniccare.exception.NotFoundException;
 import com.example.cliniccare.interfaces.ScheduleFormGroup;
@@ -67,7 +66,7 @@ public class ScheduleController {
     ) {
         try {
             PaginationDTO paginationDTO = new PaginationDTO(page, size, sortBy, order);
-            PaginationResponse<List<SchedulesDTO>> response = scheduleService
+            PaginationResponse<List<ScheduleDTO>> response = scheduleService
                     .getSchedules(paginationDTO, search, date, time, status, serviceId, doctorId);
 
             return ResponseEntity.ok(response);
@@ -97,7 +96,7 @@ public class ScheduleController {
                 return Validation.validateBody(bindingResult);
             }
 
-            List<SchedulesDTO> newSchedules = scheduleService.autoCreateSchedules(scheduleDTO);
+            List<ScheduleDTO> newSchedules = scheduleService.autoCreateSchedules(scheduleDTO);
 
             return ResponseEntity.status(HttpStatus.CREATED).body(new ApiResponse<>(
                     true, "Auto create schedules successfully", newSchedules

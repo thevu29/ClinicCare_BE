@@ -81,12 +81,11 @@ public class ScheduleService {
         return schedules.stream().map(ScheduleDTO::new).collect(Collectors.toList());
     }
 
-    public PaginationResponse<List<SchedulesDTO>> getSchedules(
+    public PaginationResponse<List<ScheduleDTO>> getSchedules(
             PaginationDTO paginationDTO, String search, String date, String time,
             String status, UUID serviceId, UUID doctorId
     ) {
         Pageable pageable = paginationService.getPageable(paginationDTO);
-
         Specification<Schedule> spec = Specification.where(null);
 
         if (search != null && !search.isEmpty()) {
@@ -128,32 +127,10 @@ public class ScheduleService {
         long totalElements = schedules.getTotalElements();
         int take = schedules.getNumberOfElements();
 
-        Map<String, List<Schedule>> groupedSchedules = schedules.stream()
-                .collect(Collectors.groupingBy(schedule -> schedule.getDoctor().getDoctorProfileId() + "-" +
-                        schedule.getService().getServiceId() + "-" + schedule.getDateTime().toLocalDate()));
-
-        List<SchedulesDTO> scheduleDTOS = groupedSchedules.values().stream()
-                .map(scheduleList -> {
-                    List<Schedule> sortedSchedules = scheduleList.stream()
-                            .sorted(Comparator.comparing(Schedule::getDateTime))
-                            .collect(Collectors.toList());
-                    return new SchedulesDTO(sortedSchedules);
-                })
-                .sorted((dto1, dto2) -> {
-                    LocalDate date1 = dto1.getDate();
-                    LocalDate date2 = dto2.getDate();
-
-                    if (date1.equals(date2) && !dto1.getScheduleDetails().isEmpty() && !dto2.getScheduleDetails().isEmpty()) {
-                        LocalTime time1 = LocalTime.parse(dto1.getScheduleDetails().getFirst().getTime());
-                        LocalTime time2 = LocalTime.parse(dto2.getScheduleDetails().getFirst().getTime());
-                        return paginationDTO.order.equalsIgnoreCase("desc") ?
-                                time2.compareTo(time1) : time1.compareTo(time2);
-                    }
-
-                    return paginationDTO.order.equalsIgnoreCase("desc") ?
-                            date2.compareTo(date1) : date1.compareTo(date2);
-                })
-                .toList();
+        List<ScheduleDTO> scheduleDTOS = schedules
+                .stream()
+                .map(ScheduleDTO::new)
+                .collect(Collectors.toList());
 
         return new PaginationResponse<>(
                 true,
@@ -196,38 +173,30 @@ public class ScheduleService {
         return new ScheduleDTO(schedule);
     }
 
-    public List<SchedulesDTO> autoCreateSchedules(ScheduleFormDTO scheduleDTO) {
-        if (scheduleDTO.getDates().length == 0) {
+    public List<ScheduleDTO> autoCreateSchedules(ScheduleFormDTO scheduleRequest) {
+        if (scheduleRequest.getDates().length == 0) {
             throw new BadRequestException("Dates are required");
         }
 
-        Arrays.stream(scheduleDTO.getDates()).forEach(date -> {
+        Arrays.stream(scheduleRequest.getDates()).forEach(date -> {
             if (!Validation.isValidDate(String.valueOf(date))) {
                 throw new BadRequestException("The date must be in format yyyy-MM-dd (e.g., 2024-12-31)");
             }
         });
 
-        Service service = serviceRepository.findById(scheduleDTO.getServiceId())
+        Service service = serviceRepository.findById(scheduleRequest.getServiceId())
                 .orElseThrow(() -> new NotFoundException("Service not found"));
 
-        DoctorProfile doctorProfile = doctorProfileRepository.findById(scheduleDTO.getDoctorProfileId())
+        DoctorProfile doctorProfile = doctorProfileRepository.findById(scheduleRequest.getDoctorProfileId())
                 .orElseThrow(() -> new NotFoundException("Doctor not found"));
 
-        List<SchedulesDTO> result = new ArrayList<>();
+        List<ScheduleDTO> result = new ArrayList<>();
         LocalTime workingStart = LocalTime.of(8, 0);
         LocalTime workingEnd = LocalTime.of(23, 0);
-        int schedulesPerDay = (int) Math.ceil((double) scheduleDTO.getAmount() / scheduleDTO.getDates().length);
-        int remainingSchedules = scheduleDTO.getAmount();
+        int schedulesPerDay = (int) Math.ceil((double) scheduleRequest.getAmount() / scheduleRequest.getDates().length);
+        int remainingSchedules = scheduleRequest.getAmount();
 
-        for (LocalDate date : scheduleDTO.getDates()) {
-            SchedulesDTO dateSchedulesDto = new SchedulesDTO();
-            dateSchedulesDto.setDate(date);
-            dateSchedulesDto.setServiceId(service.getServiceId());
-            dateSchedulesDto.setServiceName(service.getName());
-            dateSchedulesDto.setDoctorProfileId(doctorProfile.getDoctorProfileId());
-            dateSchedulesDto.setDoctorName(doctorProfile.getUser().getName());
-            dateSchedulesDto.setScheduleDetails(new ArrayList<>());
-
+        for (LocalDate date : scheduleRequest.getDates()) {
             List<Schedule> existingSchedules = scheduleRepository
                     .findByDateTimeBetween(date.atStartOfDay(), date.plusDays(1).atStartOfDay());
 
@@ -244,7 +213,7 @@ public class ScheduleService {
                     workingStart,
                     workingEnd,
                     busySlots,
-                    scheduleDTO.getDuration(),
+                    scheduleRequest.getDuration(),
                     schedulesToCreate
             );
 
@@ -260,22 +229,16 @@ public class ScheduleService {
                 schedule.setService(service);
                 schedule.setDoctor(doctorProfile);
                 schedule.setDateTime(scheduleDate);
-                schedule.setDuration(scheduleDTO.getDuration());
-                schedule.setStatus(Schedule.ScheduleStatus.valueOf(scheduleDTO.getStatus().toUpperCase()));
+                schedule.setDuration(scheduleRequest.getDuration());
+                schedule.setStatus(Schedule.ScheduleStatus.valueOf(scheduleRequest.getStatus().toUpperCase()));
 
                 Schedule createdSchedule = scheduleRepository.save(schedule);
 
-                ScheduleDetailDTO scheduleDetailDto = new ScheduleDetailDTO();
-                scheduleDetailDto.setScheduleId(createdSchedule.getScheduleId());
-                scheduleDetailDto.setTime(Formatter.formatTime(createdSchedule.getDateTime()));
-                scheduleDetailDto.setDuration(createdSchedule.getDuration());
-                scheduleDetailDto.setStatus(createdSchedule.getStatus().name());
-
-                dateSchedulesDto.getScheduleDetails().add(scheduleDetailDto);
+                ScheduleDTO scheduleDTO = new ScheduleDTO(createdSchedule);
+                result.add(scheduleDTO);
             }
 
-            result.add(dateSchedulesDto);
-            remainingSchedules -= dateSchedulesDto.getScheduleDetails().size();
+            remainingSchedules -= schedulesToCreate;
         }
 
         return result;
