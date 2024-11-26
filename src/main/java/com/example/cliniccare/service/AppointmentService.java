@@ -83,10 +83,10 @@ public class AppointmentService {
         if (search != null && !search.trim().isEmpty()) {
             spec = spec.and((root, query, cb) ->
                     cb.or(
-                            cb.like(root.get("patient").get("name"), "%" + search + "%"),
-                            cb.like(root.get("patient").get("phone"), "%" + search + "%"),
-                            cb.like(root.get("schedule").get("service").get("name"), "%" + search + "%"),
-                            cb.like(root.get("cancelReason"), "%" + search + "%")
+                            cb.like(root.get("patientName"), "%" + search + "%"),
+                            cb.like(root.get("patientPhone"), "%" + search + "%"),
+                            cb.like(root.get("cancelReason"), "%" + search + "%"),
+                            cb.like(root.get("schedule").get("service").get("name"), "%" + search + "%")
                     )
             );
         }
