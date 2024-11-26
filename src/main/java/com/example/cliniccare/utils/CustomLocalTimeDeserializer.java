@@ -9,10 +9,15 @@ import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 public class CustomLocalTimeDeserializer extends StdDeserializer<LocalTime> {
     private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("HH:mm");
-    private static final Set<Integer> VALID_MINUTES = Set.of(0, 5, 15, 30);
+    private static final Set<Integer> VALID_MINUTES = IntStream.rangeClosed(0, 55)
+            .filter(i -> i % 5 == 0)
+            .boxed()
+            .collect(Collectors.toSet());
 
     public CustomLocalTimeDeserializer() {
         super(LocalTime.class);
