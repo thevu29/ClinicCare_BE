@@ -121,7 +121,9 @@ public class ScheduleService {
                     cb.equal(root.get("doctor").get("doctorProfileId"), doctor.getDoctorProfileId()));
         }
 
-        Page<Schedule> schedules = scheduleRepository.findAll(spec, pageable);
+        Page<Schedule> schedules = paginationDTO.sortBy.equals("dateTime")
+                ? scheduleRepository.findAllSorted(pageable)
+                : scheduleRepository.findAll(spec, pageable);
 
         int totalPages = schedules.getTotalPages();
         long totalElements = schedules.getTotalElements();
