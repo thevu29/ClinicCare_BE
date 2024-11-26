@@ -144,8 +144,19 @@ public class ScheduleService {
         );
     }
 
+    public ScheduleDTO getScheduleById(UUID id) {
+        Schedule schedule = scheduleRepository
+                .findById(id)
+                .orElseThrow(() -> new NotFoundException("Schedule not found"));
+
+        return new ScheduleDTO(schedule);
+    }
+
     public ScheduleDTO createSchedule(ScheduleFormDTO scheduleDTO) {
-        if (!validateConflict(scheduleDTO.getDate(), scheduleDTO.getTime(), scheduleDTO.getDuration())) {
+        LocalDate date = scheduleDTO.getDateTime().toLocalDate();
+        LocalTime time = scheduleDTO.getDateTime().toLocalTime();
+
+        if (!validateConflict(date, time, scheduleDTO.getDuration())) {
             return null;
         }
 
@@ -164,7 +175,7 @@ public class ScheduleService {
         Schedule schedule = new Schedule();
         schedule.setService(service);
         schedule.setDoctor(doctorProfile);
-        schedule.setDateTime(scheduleDTO.getDate().atTime(scheduleDTO.getTime()));
+        schedule.setDateTime(scheduleDTO.getDateTime());
         schedule.setDuration(scheduleDTO.getDuration());
         schedule.setStatus(getScheduleStatus(scheduleDTO.getStatus()));
 
@@ -290,15 +301,9 @@ public class ScheduleService {
             schedule.setDuration(scheduleDTO.getDuration());
         }
 
-        LocalDate date = scheduleDTO.getDate() != null && !String.valueOf(scheduleDTO.getDate()).isEmpty()
-                ? scheduleDTO.getDate()
-                : schedule.getDateTime().toLocalDate();
-
-        LocalTime time = scheduleDTO.getTime() != null && !String.valueOf(scheduleDTO.getTime()).isEmpty()
-                ? scheduleDTO.getTime()
-                : schedule.getDateTime().toLocalTime();
-
-        LocalDateTime dateTime = date.atTime(time);
+        LocalDateTime dateTime = scheduleDTO.getDateTime();
+        LocalDate date = dateTime.toLocalDate();
+        LocalTime time = dateTime.toLocalTime();
 
         if (!schedule.getDateTime().equals(dateTime)) {
             if (!validateConflict(date, time, schedule.getDuration())) {
