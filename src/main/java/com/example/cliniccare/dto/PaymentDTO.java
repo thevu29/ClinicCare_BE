@@ -15,8 +15,12 @@ public class PaymentDTO {
     @NotNull(message = "Patient ID is required")
     private UUID patientId;
 
+    private String patientName;
+
     @NotNull(message = "Service ID is required")
     private UUID serviceId;
+
+    private String serviceName;
 
     private LocalDateTime date;
 
@@ -33,7 +37,9 @@ public class PaymentDTO {
     public PaymentDTO(Payment payment) {
         this.paymentId = payment.getPaymentId();
         this.patientId = payment.getPatient().getUserId();
+        this.patientName = payment.getPatient().getName();
         this.serviceId = payment.getService().getServiceId();
+        this.serviceName = payment.getService().getName();
         this.totalPrice = payment.getTotalPrice();
         this.date = payment.getDate();
         this.status = payment.getStatus().name();
