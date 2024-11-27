@@ -1,8 +1,6 @@
 package com.example.cliniccare.service;
 
-import com.example.cliniccare.dto.PaginationDTO;
-import com.example.cliniccare.dto.ScheduleDTO;
-import com.example.cliniccare.dto.ScheduleFormDTO;
+import com.example.cliniccare.dto.*;
 import com.example.cliniccare.exception.BadRequestException;
 import com.example.cliniccare.exception.NotFoundException;
 import com.example.cliniccare.model.DoctorProfile;
@@ -15,6 +13,7 @@ import com.example.cliniccare.response.PaginationResponse;
 import com.example.cliniccare.utils.DateQueryParser;
 import com.example.cliniccare.utils.Formatter;
 import com.example.cliniccare.utils.TimeQueryParser;
+import com.example.cliniccare.validation.Validation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -23,11 +22,8 @@ import org.springframework.data.jpa.domain.Specification;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 
 @org.springframework.stereotype.Service
 public class ScheduleService {
@@ -80,12 +76,16 @@ public class ScheduleService {
         return true;
     }
 
+    public List<ScheduleDTO> getAllSchedules() {
+        List<Schedule> schedules = scheduleRepository.findAllByOrderByDateTimeDesc();
+        return schedules.stream().map(ScheduleDTO::new).collect(Collectors.toList());
+    }
+
     public PaginationResponse<List<ScheduleDTO>> getSchedules(
             PaginationDTO paginationDTO, String search, String date, String time,
             String status, UUID serviceId, UUID doctorId
     ) {
         Pageable pageable = paginationService.getPageable(paginationDTO);
-
         Specification<Schedule> spec = Specification.where(null);
 
         if (search != null && !search.isEmpty()) {
@@ -127,13 +127,10 @@ public class ScheduleService {
         long totalElements = schedules.getTotalElements();
         int take = schedules.getNumberOfElements();
 
-        Map<String, List<Schedule>> groupedSchedules = schedules.stream()
-                .collect(Collectors.groupingBy(schedule -> schedule.getDoctor().getDoctorProfileId() + "-" +
-                        schedule.getService().getServiceId() + "-" + schedule.getDateTime().toLocalDate()));
-
-        List<ScheduleDTO> scheduleDTOS = groupedSchedules.values().stream()
+        List<ScheduleDTO> scheduleDTOS = schedules
+                .stream()
                 .map(ScheduleDTO::new)
-                .toList();
+                .collect(Collectors.toList());
 
         return new PaginationResponse<>(
                 true,
@@ -147,15 +144,20 @@ public class ScheduleService {
         );
     }
 
+    public ScheduleDTO getScheduleById(UUID id) {
+        Schedule schedule = scheduleRepository
+                .findById(id)
+                .orElseThrow(() -> new NotFoundException("Schedule not found"));
+
+        return new ScheduleDTO(schedule);
+    }
+
     public ScheduleDTO createSchedule(ScheduleFormDTO scheduleDTO) {
-        if (scheduleDTO.getTimes().length == 0) {
-            throw new BadRequestException("Times array cannot be empty");
-        }
-        if (scheduleDTO.getDurations().length == 0) {
-            throw new BadRequestException("Durations array cannot be empty");
-        }
-        if (scheduleDTO.getTimes().length != scheduleDTO.getDurations().length) {
-            throw new BadRequestException("Times and durations arrays must have the same length");
+        LocalDate date = scheduleDTO.getDateTime().toLocalDate();
+        LocalTime time = scheduleDTO.getDateTime().toLocalTime();
+
+        if (!validateConflict(date, time, scheduleDTO.getDuration())) {
+            return null;
         }
 
         Service service = serviceRepository
@@ -170,28 +172,120 @@ public class ScheduleService {
                 .findById(scheduleDTO.getDoctorProfileId())
                 .orElseThrow(() -> new NotFoundException("Doctor not found"));
 
-        List<Schedule> schedules = IntStream.range(0, scheduleDTO.getTimes().length)
-                .mapToObj(i -> {
-                    LocalTime parsedTime = Formatter.parseTime(scheduleDTO.getTimes()[i]);
+        Schedule schedule = new Schedule();
+        schedule.setService(service);
+        schedule.setDoctor(doctorProfile);
+        schedule.setDateTime(scheduleDTO.getDateTime());
+        schedule.setDuration(scheduleDTO.getDuration());
+        schedule.setStatus(getScheduleStatus(scheduleDTO.getStatus()));
 
-                    if (!validateConflict(scheduleDTO.getDate(), parsedTime, scheduleDTO.getDurations()[i])) {
-                        return null;
-                    }
+        scheduleRepository.save(schedule);
 
-                    Schedule schedule = new Schedule();
-                    schedule.setService(service);
-                    schedule.setDoctor(doctorProfile);
-                    schedule.setDateTime(scheduleDTO.getDate().atTime(parsedTime));
-                    schedule.setDuration(scheduleDTO.getDurations()[i]);
-                    schedule.setStatus(getScheduleStatus(scheduleDTO.getStatus()));
+        return new ScheduleDTO(schedule);
+    }
 
-                    return schedule;
-                })
-                .collect(Collectors.toList());
+    public List<ScheduleDTO> autoCreateSchedules(ScheduleFormDTO scheduleRequest) {
+        if (scheduleRequest.getDates().length == 0) {
+            throw new BadRequestException("Dates are required");
+        }
 
-        scheduleRepository.saveAll(schedules);
+        Arrays.stream(scheduleRequest.getDates()).forEach(date -> {
+            if (!Validation.isValidDate(String.valueOf(date))) {
+                throw new BadRequestException("The date must be in format yyyy-MM-dd (e.g., 2024-12-31)");
+            }
+        });
 
-        return new ScheduleDTO(schedules);
+        Service service = serviceRepository.findById(scheduleRequest.getServiceId())
+                .orElseThrow(() -> new NotFoundException("Service not found"));
+
+        DoctorProfile doctorProfile = doctorProfileRepository.findById(scheduleRequest.getDoctorProfileId())
+                .orElseThrow(() -> new NotFoundException("Doctor not found"));
+
+        List<ScheduleDTO> result = new ArrayList<>();
+        LocalTime workingStart = LocalTime.of(8, 0);
+        LocalTime workingEnd = LocalTime.of(23, 0);
+        int schedulesPerDay = (int) Math.ceil((double) scheduleRequest.getAmount() / scheduleRequest.getDates().length);
+        int remainingSchedules = scheduleRequest.getAmount();
+
+        for (LocalDate date : scheduleRequest.getDates()) {
+            List<Schedule> existingSchedules = scheduleRepository
+                    .findByDateTimeBetween(date.atStartOfDay(), date.plusDays(1).atStartOfDay());
+
+            List<TimeSlotDTO> busySlots = existingSchedules.stream()
+                    .map(s -> new TimeSlotDTO(
+                            LocalTime.from(s.getDateTime()),
+                            LocalTime.from(s.getDateTime().plusMinutes(s.getDuration()))
+                    ))
+                    .collect(Collectors.toList());
+
+            int schedulesToCreate = Math.min(schedulesPerDay, remainingSchedules);
+
+            List<TimeSlotDTO> availableSlots = getOptimalTimeSlots(
+                    workingStart,
+                    workingEnd,
+                    busySlots,
+                    scheduleRequest.getDuration(),
+                    schedulesToCreate
+            );
+
+            if (availableSlots.size() < schedulesToCreate) {
+                throw new BadRequestException("Cannot create " + schedulesToCreate + " schedules for date "
+                        + date + ". Only " + availableSlots.size() + " slots are available.");
+            }
+
+            for (TimeSlotDTO slot : availableSlots) {
+                LocalDateTime scheduleDate = date.atTime(slot.getStart());
+
+                Schedule schedule = new Schedule();
+                schedule.setService(service);
+                schedule.setDoctor(doctorProfile);
+                schedule.setDateTime(scheduleDate);
+                schedule.setDuration(scheduleRequest.getDuration());
+                schedule.setStatus(Schedule.ScheduleStatus.valueOf(scheduleRequest.getStatus().toUpperCase()));
+
+                Schedule createdSchedule = scheduleRepository.save(schedule);
+
+                ScheduleDTO scheduleDTO = new ScheduleDTO(createdSchedule);
+                result.add(scheduleDTO);
+            }
+
+            remainingSchedules -= schedulesToCreate;
+        }
+
+        return result;
+    }
+
+    private List<TimeSlotDTO> getOptimalTimeSlots(
+            LocalTime workingStart,
+            LocalTime workingEnd,
+            List<TimeSlotDTO> busySlots,
+            int duration,
+            int requiredSlots
+    ) {
+        List<TimeSlotDTO> result = new ArrayList<>();
+        LocalTime currentTime = workingStart;
+
+        while (currentTime.plusMinutes(duration).isBefore(workingEnd) && result.size() < requiredSlots) {
+            TimeSlotDTO potentialSlot = new TimeSlotDTO(currentTime, currentTime.plusMinutes(duration));
+
+            if (isSlotAvailable(potentialSlot, busySlots)) {
+                result.add(potentialSlot);
+                currentTime = currentTime.plusMinutes(duration + 15);
+            } else {
+                currentTime = currentTime.plusMinutes(15);
+            }
+        }
+
+        return result;
+    }
+
+    private boolean isSlotAvailable(TimeSlotDTO newSlot, List<TimeSlotDTO> busySlots) {
+        for (TimeSlotDTO busySlot : busySlots) {
+            if (newSlot.getStart().isBefore(busySlot.getEnd()) && busySlot.getStart().isBefore(newSlot.getEnd())) {
+                return false;
+            }
+        }
+        return true;
     }
 
     public ScheduleDTO updateSchedule(UUID id, ScheduleFormDTO scheduleDTO) {
@@ -207,19 +301,13 @@ public class ScheduleService {
             schedule.setDuration(scheduleDTO.getDuration());
         }
 
-        LocalDate date = scheduleDTO.getDate() != null && !String.valueOf(scheduleDTO.getDate()).isEmpty()
-                ? scheduleDTO.getDate()
-                : schedule.getDateTime().toLocalDate();
-
-        LocalTime time = scheduleDTO.getTime() != null && !scheduleDTO.getTime().isEmpty()
-                ? Formatter.parseTime(scheduleDTO.getTime())
-                : schedule.getDateTime().toLocalTime();
-
-        LocalDateTime dateTime = date.atTime(time);
+        LocalDateTime dateTime = scheduleDTO.getDateTime();
+        LocalDate date = dateTime.toLocalDate();
+        LocalTime time = dateTime.toLocalTime();
 
         if (!schedule.getDateTime().equals(dateTime)) {
             if (!validateConflict(date, time, schedule.getDuration())) {
-                return null;
+                throw new BadRequestException("There is a conflict with another schedule");
             }
         }
         schedule.setDateTime(dateTime);

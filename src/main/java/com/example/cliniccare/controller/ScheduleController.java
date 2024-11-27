@@ -10,7 +10,6 @@ import com.example.cliniccare.response.ApiResponse;
 import com.example.cliniccare.response.PaginationResponse;
 import com.example.cliniccare.service.ScheduleService;
 import com.example.cliniccare.validation.Validation;
-import jakarta.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,6 +32,42 @@ public class ScheduleController {
     @Autowired
     public ScheduleController(ScheduleService scheduleService) {
         this.scheduleService = scheduleService;
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<?> getScheduleById(@PathVariable UUID id) {
+        try {
+            ScheduleDTO schedule = scheduleService.getScheduleById(id);
+
+            return ResponseEntity.ok(new ApiResponse<>(
+                    true, "Get schedule successfully", schedule
+            ));
+        } catch (NotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ApiResponse<>(
+                    false, e.getMessage(), null
+            ));
+        } catch (Exception e) {
+            logger.error("Failed to get schedule by ID: {}", e.getMessage(), e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new ApiResponse<>(
+                    false, "Failed to get schedule by ID", null
+            ));
+        }
+    }
+
+    @GetMapping("/all")
+    public ResponseEntity<?> getAllSchedules() {
+        try {
+            List<ScheduleDTO> schedules = scheduleService.getAllSchedules();
+
+            return ResponseEntity.ok(new ApiResponse<>(
+                    true, "Get all schedules successfully", schedules
+            ));
+        } catch (Exception e) {
+            logger.error("Failed to get all schedules: {}", e.getMessage(), e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new ApiResponse<>(
+                    false, "Failed to get all schedules", null
+            ));
+        }
     }
 
     @GetMapping
@@ -66,6 +101,37 @@ public class ScheduleController {
             logger.error("Failed to get schedules: {}", e.getMessage(), e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new ApiResponse<>(
                     false, "Failed to get schedules", null
+            ));
+        }
+    }
+
+    @PostMapping("/auto-create")
+    public ResponseEntity<?> autoCreateSchedules(
+            @Validated(ScheduleFormGroup.AutoCreate.class) @RequestBody ScheduleFormDTO scheduleDTO,
+            BindingResult bindingResult
+    ) {
+        try {
+            if (Validation.validateBody(bindingResult) != null) {
+                return Validation.validateBody(bindingResult);
+            }
+
+            List<ScheduleDTO> newSchedules = scheduleService.autoCreateSchedules(scheduleDTO);
+
+            return ResponseEntity.status(HttpStatus.CREATED).body(new ApiResponse<>(
+                    true, "Auto create schedules successfully", newSchedules
+            ));
+        } catch (NotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ApiResponse<>(
+                    false, e.getMessage(), null
+            ));
+        } catch (BadRequestException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ApiResponse<>(
+                    false, e.getMessage(), null
+            ));
+        } catch (Exception e) {
+            logger.error("Failed to auto create schedules: {}", e.getMessage(), e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new ApiResponse<>(
+                    false, "Failed to auto create schedules", null
             ));
         }
     }
@@ -104,7 +170,7 @@ public class ScheduleController {
     @PutMapping("/{id}")
     public ResponseEntity<?> updateSchedule(
             @PathVariable UUID id,
-            @Valid @RequestBody ScheduleFormDTO scheduleDTO,
+            @Validated(ScheduleFormGroup.Update.class) @RequestBody ScheduleFormDTO scheduleDTO,
             BindingResult bindingResult
     ) {
         try {
