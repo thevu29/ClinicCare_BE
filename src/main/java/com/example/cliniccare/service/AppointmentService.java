@@ -80,6 +80,7 @@ public class AppointmentService {
             PaginationDTO paginationDTO,
             String search,
             String date,
+            String status,
             UUID patientId,
             UUID doctorId
     ) {
@@ -97,6 +98,22 @@ public class AppointmentService {
                     )
             );
         }
+        if (date != null && !date.trim().isEmpty()) {
+            DateQueryParser<Appointment> dateParser = new DateQueryParser<>(date, "date");
+            Specification<Appointment> dateSpec = dateParser.createDateSpecification();
+            spec = spec.and(dateSpec);
+        }
+        if (status != null && !status.trim().isEmpty()) {
+            if (!status.equalsIgnoreCase("cancelled") && !status.equalsIgnoreCase("active")) {
+                throw new BadRequestException("Invalid status (only 'Active' or 'Cancelled' allowed)");
+            }
+
+            spec = status.equalsIgnoreCase("cancelled") ?
+                    spec.and((root, query, cb)
+                            -> cb.isNotNull(root.get("cancelBy"))) :
+                    spec.and((root, query, cb)
+                            -> cb.isNull(root.get("cancelBy")));
+        }
         if (patientId != null) {
             User patient = userRepository.findByUserIdAndDeleteAtIsNull(patientId)
                     .orElseThrow(() -> new NotFoundException("Patient not found"));
@@ -110,11 +127,6 @@ public class AppointmentService {
 
             spec = spec.and((root, query, cb)
                     -> cb.equal(root.get("schedule").get("doctor").get("doctorProfileId"), doctor.getDoctorProfileId()));
-        }
-        if (date != null && !date.trim().isEmpty()) {
-            DateQueryParser<Appointment> dateParser = new DateQueryParser<>(date, "date");
-            Specification<Appointment> dateSpec = dateParser.createDateSpecification();
-            spec = spec.and(dateSpec);
         }
 
         Page<Appointment> appointments = appointmentRepository.findAll(spec, pageable);

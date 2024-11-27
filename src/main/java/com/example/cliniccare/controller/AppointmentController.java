@@ -57,13 +57,14 @@ public class AppointmentController {
             @RequestParam(defaultValue = "desc") String order,
             @RequestParam(defaultValue = "") String search,
             @RequestParam(defaultValue = "") String date,
+            @RequestParam(defaultValue = "") String status,
             @RequestParam(required = false) UUID patientId,
             @RequestParam(required = false) UUID doctorId
     ) {
         try {
             PaginationDTO paginationDTO = new PaginationDTO(page, size, sortBy, order);
             PaginationResponse<List<AppointmentDTO>> response = appointmentService
-                    .getAppointments(paginationDTO, search, date, patientId, doctorId);
+                    .getAppointments(paginationDTO, search, date, status, patientId, doctorId);
 
             return ResponseEntity.ok(response);
         } catch (NotFoundException e) {
