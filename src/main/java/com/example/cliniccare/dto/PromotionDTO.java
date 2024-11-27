@@ -2,6 +2,8 @@ package com.example.cliniccare.dto;
 
 import com.example.cliniccare.interfaces.PromotionFormGroup;
 import com.example.cliniccare.model.Promotion;
+import com.example.cliniccare.utils.CustomLocalDateDeserializer;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import jakarta.validation.constraints.*;
 import lombok.Data;
 
@@ -26,6 +28,7 @@ public class PromotionDTO {
 
     @NotNull(message = "Expired At is required", groups = {PromotionFormGroup.Create.class})
     @Future(message = "Expiration date must be in the future")
+    @JsonDeserialize(using = CustomLocalDateDeserializer.class)
     private LocalDate expireAt;
 
     public PromotionDTO() {}

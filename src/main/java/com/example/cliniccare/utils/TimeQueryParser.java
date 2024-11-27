@@ -74,7 +74,6 @@ public class TimeQueryParser<T> {
         return cb.and(startTimePredicate, endTimePredicate);
     }
 
-
     private Predicate handleBeforeTimeSpecification(Root<T> root, CriteriaBuilder cb) {
         String time = this.query.substring(1);
         LocalTime targetTime = parseTime(time);
@@ -106,7 +105,6 @@ public class TimeQueryParser<T> {
                 )
         );
     }
-
 
     private Predicate handleExactTimeSpecification(Root<T> root, CriteriaBuilder cb) {
         LocalTime targetTime = parseTime(this.query);
