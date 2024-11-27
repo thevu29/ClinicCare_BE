@@ -18,6 +18,7 @@ import org.springframework.data.jpa.domain.Specification;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @org.springframework.stereotype.Service
 public class FeedbackService {
@@ -40,6 +41,12 @@ public class FeedbackService {
         this.doctorProfileRepository = doctorProfileRepository;
         this.userRepository = userRepository;
         this.paginationService = paginationService;
+    }
+
+    public List<FeedbackDTO> getAllFeedbacks() {
+        return feedbackRepository.findAll().stream()
+                .map(FeedbackDTO::new)
+                .collect(Collectors.toList());
     }
 
     public PaginationResponse<List<FeedbackDTO>> getFeedbacks(

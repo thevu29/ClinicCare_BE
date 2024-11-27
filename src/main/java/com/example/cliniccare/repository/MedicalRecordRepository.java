@@ -11,5 +11,6 @@ import java.util.UUID;
 
 @Repository
 public interface MedicalRecordRepository extends JpaRepository<MedicalRecord, UUID>, JpaSpecificationExecutor<MedicalRecord> {
+    List<MedicalRecord> findAllByDeleteAtIsNull();
     Optional<MedicalRecord> findByMedicalRecordIdAndDeleteAtIsNull(UUID medicalRecordId);
 }

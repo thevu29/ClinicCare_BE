@@ -46,6 +46,13 @@ public class MedicalRecordService {
         this.paginationService = paginationService;
     }
 
+    public List<MedicalRecordDTO> getAllMedicalRecords() {
+        return medicalRecordRepository.findAllByDeleteAtIsNull()
+                .stream()
+                .map(MedicalRecordDTO::new)
+                .toList();
+    }
+
     public PaginationResponse<List<MedicalRecordDTO>> getMedicalRecord(
             PaginationDTO paginationDTO,
             String search,

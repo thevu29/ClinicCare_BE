@@ -17,6 +17,7 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
 public class AppointmentService {
@@ -67,6 +68,12 @@ public class AppointmentService {
             return "Your appointment at " + schedule.getDateTime().toLocalTime() + " on " +
                     schedule.getDateTime().toLocalDate() + " has been cancelled by doctor";
         }
+    }
+
+    public List<AppointmentDTO> getAllAppointments() {
+        return appointmentRepository.findAll().stream()
+                .map(AppointmentDTO::new)
+                .collect(Collectors.toList());
     }
 
     public PaginationResponse<List<AppointmentDTO>> getAppointments(
@@ -126,6 +133,13 @@ public class AppointmentService {
                 totalPages,
                 totalElements
         );
+    }
+
+    public AppointmentDTO getAppointmentById(UUID appointmentId) {
+        Appointment appointment = appointmentRepository.findById(appointmentId)
+                .orElseThrow(() -> new NotFoundException("Appointment not found"));
+
+        return new AppointmentDTO(appointment);
     }
 
     public AppointmentDTO createAppointment(AppointmentDTO appointmentDTO) {

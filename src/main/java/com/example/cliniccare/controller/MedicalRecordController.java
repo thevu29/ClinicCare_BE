@@ -31,6 +31,21 @@ public class MedicalRecordController {
         this.medicalRecordService = medicalRecordService;
     }
 
+    @GetMapping("/all")
+    public ResponseEntity<?> getAllMedicalRecords() {
+        try {
+            List<MedicalRecordDTO> medicalRecords = medicalRecordService.getAllMedicalRecords();
+            return ResponseEntity.ok(new ApiResponse<>(
+                    true, "Get all medical records successfully", medicalRecords
+            ));
+        } catch (Exception e) {
+            logger.error("Failed to get all medical records: {}", e.getMessage(), e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new ApiResponse<>(
+                    false, "Failed to get all medical records", null
+            ));
+        }
+    }
+
     @GetMapping
     public ResponseEntity<?> getMedicalRecords(
             @RequestParam(defaultValue = "1") int page,

@@ -33,6 +33,21 @@ public class FeedbackController {
         this.feedbackService = feedbackService;
     }
 
+    @GetMapping("/all")
+    public ResponseEntity<?> getAllFeedbacks() {
+        try {
+            List<FeedbackDTO> feedbacks = feedbackService.getAllFeedbacks();
+            return ResponseEntity.ok(new ApiResponse<>(
+                    true, "Get all feedbacks successfully", feedbacks
+            ));
+        } catch (Exception e) {
+            logger.error("Failed to get all feedbacks: {}", e.getMessage(), e);
+            return ResponseEntity.internalServerError().body(new ApiResponse<>(
+                    false, "Failed to get all feedbacks", null
+            ));
+        }
+    }
+
     @GetMapping
     public ResponseEntity<?> getFeedbacks(
             @RequestParam(defaultValue = "1") int page,
