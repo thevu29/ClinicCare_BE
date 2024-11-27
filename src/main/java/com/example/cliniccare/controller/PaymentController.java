@@ -55,6 +55,7 @@ public class PaymentController {
             @RequestParam(defaultValue = "10") int size,
             @RequestParam(defaultValue = "date") String sortBy,
             @RequestParam(defaultValue = "desc") String order,
+            @RequestParam(defaultValue = "desc") String search,
             @RequestParam(required = false) UUID patientId,
             @RequestParam(required = false) UUID serviceId,
             @RequestParam(required = false) String status,
@@ -65,7 +66,7 @@ public class PaymentController {
         try {
             PaginationDTO paginationDTO = new PaginationDTO(page, size, sortBy, order);
             PaginationResponse<List<PaymentDTO>> response = paymentService
-                    .getPayments(paginationDTO, patientId, serviceId, status, method, date, price);
+                    .getPayments(paginationDTO, patientId, serviceId, search, status, method, date, price);
 
             return ResponseEntity.ok(response);
         } catch (NotFoundException e) {

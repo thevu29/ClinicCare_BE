@@ -70,7 +70,7 @@ public class PaymentService {
 
     public PaginationResponse<List<PaymentDTO>> getPayments(
             PaginationDTO paginationDTO, UUID patientId, UUID serviceId,
-            String status, String method, String date, String price
+            String search, String status, String method, String date, String price
     ) {
         Pageable pageable = paginationService.getPageable(paginationDTO);
 
@@ -89,6 +89,14 @@ public class PaymentService {
 
             spec = spec.and((root, query, cb) ->
                     cb.equal(root.get("service").get("serviceId"), service.getServiceId()));
+        }
+        if (search != null && !search.trim().isEmpty()) {
+            String searchLowercase = search.toLowerCase();
+            spec = spec.and((root, query, cb) ->
+                    cb.or(
+                            cb.like(cb.lower(root.get("patient").get("name")), "%" + searchLowercase + "%"),
+                            cb.like(cb.lower(root.get("service").get("name")), "%" + searchLowercase + "%")
+                    ));
         }
         if (status != null && !status.isEmpty()) {
             spec = spec.and((root, query, cb) ->
