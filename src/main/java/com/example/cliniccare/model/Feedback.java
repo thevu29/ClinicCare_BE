@@ -20,14 +20,17 @@ public class Feedback {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "doctor_profile_id")
+    @ToString.Exclude
     private DoctorProfile doctor;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "service_id")
+    @ToString.Exclude
     private Service service;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "patient_id")
+    @ToString.Exclude
     private User patient;
 
     private String feedback;

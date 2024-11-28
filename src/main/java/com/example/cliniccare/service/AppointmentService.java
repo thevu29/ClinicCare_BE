@@ -17,6 +17,7 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
 public class AppointmentService {
@@ -69,10 +70,17 @@ public class AppointmentService {
         }
     }
 
+    public List<AppointmentDTO> getAllAppointments() {
+        return appointmentRepository.findAll().stream()
+                .map(AppointmentDTO::new)
+                .collect(Collectors.toList());
+    }
+
     public PaginationResponse<List<AppointmentDTO>> getAppointments(
             PaginationDTO paginationDTO,
             String search,
             String date,
+            String status,
             UUID patientId,
             UUID doctorId
     ) {
@@ -90,6 +98,22 @@ public class AppointmentService {
                     )
             );
         }
+        if (date != null && !date.trim().isEmpty()) {
+            DateQueryParser<Appointment> dateParser = new DateQueryParser<>(date, "date");
+            Specification<Appointment> dateSpec = dateParser.createDateSpecification();
+            spec = spec.and(dateSpec);
+        }
+        if (status != null && !status.trim().isEmpty()) {
+            if (!status.equalsIgnoreCase("cancelled") && !status.equalsIgnoreCase("active")) {
+                throw new BadRequestException("Invalid status (only 'Active' or 'Cancelled' allowed)");
+            }
+
+            spec = status.equalsIgnoreCase("cancelled") ?
+                    spec.and((root, query, cb)
+                            -> cb.isNotNull(root.get("cancelBy"))) :
+                    spec.and((root, query, cb)
+                            -> cb.isNull(root.get("cancelBy")));
+        }
         if (patientId != null) {
             User patient = userRepository.findByUserIdAndDeleteAtIsNull(patientId)
                     .orElseThrow(() -> new NotFoundException("Patient not found"));
@@ -103,11 +127,6 @@ public class AppointmentService {
 
             spec = spec.and((root, query, cb)
                     -> cb.equal(root.get("schedule").get("doctor").get("doctorProfileId"), doctor.getDoctorProfileId()));
-        }
-        if (date != null && !date.trim().isEmpty()) {
-            DateQueryParser<Appointment> dateParser = new DateQueryParser<>(date, "date");
-            Specification<Appointment> dateSpec = dateParser.createDateSpecification();
-            spec = spec.and(dateSpec);
         }
 
         Page<Appointment> appointments = appointmentRepository.findAll(spec, pageable);
@@ -126,6 +145,13 @@ public class AppointmentService {
                 totalPages,
                 totalElements
         );
+    }
+
+    public AppointmentDTO getAppointmentById(UUID appointmentId) {
+        Appointment appointment = appointmentRepository.findById(appointmentId)
+                .orElseThrow(() -> new NotFoundException("Appointment not found"));
+
+        return new AppointmentDTO(appointment);
     }
 
     public AppointmentDTO createAppointment(AppointmentDTO appointmentDTO) {

@@ -33,6 +33,22 @@ public class PaymentController {
         this.paymentService = paymentService;
     }
 
+    @GetMapping("/all")
+    public ResponseEntity<?> getAllPayments() {
+        try {
+            List<PaymentDTO> payments = paymentService.getAllPayments();
+
+            return ResponseEntity.ok(new ApiResponse<>(
+                    true, "Payments retrieved successfully", payments
+            ));
+        } catch (Exception e) {
+            logger.error("Failed to retrieve payments: {}", e.getMessage(), e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new ApiResponse<>(
+                    false, "Failed to retrieve payments", null
+            ));
+        }
+    }
+
     @GetMapping
     public ResponseEntity<?> getPayments(
             @RequestParam(defaultValue = "1") int page,
@@ -68,22 +84,22 @@ public class PaymentController {
         }
     }
 
-    @GetMapping("/patient/{patientId}")
-    public ResponseEntity<?> getPatientPayments(@PathVariable UUID patientId) {
+    @GetMapping("/{id}")
+    public ResponseEntity<?> getPaymentById(@PathVariable UUID id) {
         try {
-            List<PaymentDTO> payments = paymentService.getPatientPayments(patientId);
+            PaymentDTO payment = paymentService.getPaymentById(id);
 
             return ResponseEntity.ok(new ApiResponse<>(
-                    true, "Patient payments retrieved successfully", payments
+                    true, "Payment retrieved successfully", payment
             ));
         } catch (NotFoundException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ApiResponse<>(
                     false, e.getMessage(), null
             ));
         } catch (Exception e) {
-            logger.error("Failed to retrieve patient payments: {}", e.getMessage(), e);
+            logger.error("Failed to retrieve payment: {}", e.getMessage(), e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new ApiResponse<>(
-                    false, "Failed to retrieve patient payments", null
+                    false, "Failed to retrieve payment", null
             ));
         }
     }

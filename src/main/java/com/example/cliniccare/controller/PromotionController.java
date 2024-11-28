@@ -77,6 +77,23 @@ public class PromotionController {
         }
     }
 
+    @GetMapping("/{id}")
+    public ResponseEntity<?> getPromotionById(@PathVariable UUID id) {
+        try {
+            PromotionDTO promotion = promotionService.getPromotionById(id);
+
+            return ResponseEntity.ok(new ApiResponse<>(true, "Get promotion successfully", promotion));
+        } catch (NotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ApiResponse<>(
+                    false, e.getMessage(), null
+            ));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new ApiResponse<>(
+                    false, e.getMessage(), null
+            ));
+        }
+    }
+
     @PostMapping
     public ResponseEntity<?> createPromotion(
             @Validated({Default.class, PromotionFormGroup.Create.class}) @RequestBody PromotionDTO promotionDTO,
@@ -133,23 +150,6 @@ public class PromotionController {
             logger.error("Failed to update promotion: {}", e.getMessage(), e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new ApiResponse<>(
                     false, "Failed to update promotion", null
-            ));
-        }
-    }
-
-    @GetMapping("/{id}")
-    public ResponseEntity<?> getPromotionById(@PathVariable UUID id) {
-        try {
-            PromotionDTO promotion = promotionService.getPromotionById(id);
-
-            return ResponseEntity.ok(new ApiResponse<>(true, "Get promotion successfully", promotion));
-        } catch (NotFoundException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ApiResponse<>(
-                    false, e.getMessage(), null
-            ));
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new ApiResponse<>(
-                    false, e.getMessage(), null
             ));
         }
     }

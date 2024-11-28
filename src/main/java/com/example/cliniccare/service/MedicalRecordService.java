@@ -2,7 +2,6 @@ package com.example.cliniccare.service;
 
 import com.example.cliniccare.dto.MedicalRecordDTO;
 import com.example.cliniccare.dto.PaginationDTO;
-import com.example.cliniccare.dto.PromotionDTO;
 import com.example.cliniccare.exception.BadRequestException;
 import com.example.cliniccare.exception.NotFoundException;
 import com.example.cliniccare.model.DoctorProfile;
@@ -47,10 +46,12 @@ public class MedicalRecordService {
         this.paginationService = paginationService;
     }
 
-    public List<MedicalRecordDTO> getAllMedicalRecord() {
-        return medicalRecordRepository.findAll().stream().map(MedicalRecordDTO::new).toList();
+    public List<MedicalRecordDTO> getAllMedicalRecords() {
+        return medicalRecordRepository.findAllByDeleteAtIsNull()
+                .stream()
+                .map(MedicalRecordDTO::new)
+                .toList();
     }
-
 
     public PaginationResponse<List<MedicalRecordDTO>> getMedicalRecord(
             PaginationDTO paginationDTO,
@@ -125,11 +126,6 @@ public class MedicalRecordService {
         return new MedicalRecordDTO(medicalRecord);
     }
 
-    public List<MedicalRecordDTO> getFilteredMedicalRecords() {
-        List<MedicalRecord> records = medicalRecordRepository.findAllByDeleteAtIsNullOrderByCreateAtDesc();
-        return records.stream().map(MedicalRecordDTO::new).toList();
-    }
-
     public MedicalRecordDTO createMedicalRecord(MedicalRecordDTO medicalRecordDTO) {
         User user = userRepository.findByUserIdAndDeleteAtIsNull(medicalRecordDTO.getPatientId())
                 .orElseThrow(() -> new NotFoundException("Patient not found"));
@@ -168,17 +164,6 @@ public class MedicalRecordService {
         if (medicalRecordDTO.getDescription() != null && !medicalRecordDTO.getDescription().isEmpty()) {
             medicalRecord.setDescription(medicalRecordDTO.getDescription());
         }
-
-        if(medicalRecordDTO.getPatientId() != null){
-            medicalRecord.setPatient(userRepository.findById(medicalRecordDTO.getPatientId())
-                    .orElseThrow(() -> new NotFoundException("Patient not found")));
-        }
-
-        if (medicalRecordDTO.getDoctorProfileId() != null) {
-            medicalRecord.setDoctor(doctorProfileRepository.findById(medicalRecordDTO.getDoctorProfileId())
-                    .orElseThrow(() -> new NotFoundException("Doctor not found")));
-        }
-
         if (medicalRecordDTO.getServiceId() != null) {
             medicalRecord.setService(serviceRepository.findById(medicalRecordDTO.getServiceId())
                     .orElseThrow(() -> new NotFoundException("Service not found")));

@@ -62,6 +62,12 @@ public class PaymentService {
         }
     }
 
+    public List<PaymentDTO> getAllPayments() {
+        return paymentRepository.findAll().stream()
+                .map(PaymentDTO::new)
+                .toList();
+    }
+
     public PaginationResponse<List<PaymentDTO>> getPayments(
             PaginationDTO paginationDTO, UUID patientId, UUID serviceId,
             String status, String method, String date, String price
@@ -120,12 +126,11 @@ public class PaymentService {
         );
     }
 
-    public List<PaymentDTO> getPatientPayments(UUID patientId) {
-        User patient = patientRepository.findByUserIdAndDeleteAtIsNull(patientId)
-                .orElseThrow(() -> new NotFoundException("Patient not found"));
+    public PaymentDTO getPaymentById(UUID id) {
+        Payment payment = paymentRepository.findById(id)
+                .orElseThrow(() -> new NotFoundException("Payment not found"));
 
-        List<Payment> payments = paymentRepository.findAllByPatient_UserIdOrderByDateDesc(patient.getUserId());
-        return payments.stream().map(PaymentDTO::new).toList();
+        return new PaymentDTO(payment);
     }
 
     @Transactional
