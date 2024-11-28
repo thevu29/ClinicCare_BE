@@ -209,7 +209,7 @@ public class PaymentService {
         String vnp_Command = "pay";
         String orderType = "other";
         long amount = (long) (price * 100L);
-//        String bankCode = "NCB";
+        String bankCode = "NCB";
 
         String vnp_TxnRef = paymentId.toString();
         String vnp_IpAddr = VNPayUtils.getIpAddress(req);
@@ -221,7 +221,7 @@ public class PaymentService {
         vnp_Params.put("vnp_Amount", String.valueOf(amount));
         vnp_Params.put("vnp_CurrCode", "VND");
 
-//        vnp_Params.put("vnp_BankCode", bankCode);
+        vnp_Params.put("vnp_BankCode", bankCode);
         vnp_Params.put("vnp_TxnRef", vnp_TxnRef);
         vnp_Params.put("vnp_OrderInfo", "Thanh toan don hang:" + vnp_TxnRef);
         vnp_Params.put("vnp_OrderType", orderType);
