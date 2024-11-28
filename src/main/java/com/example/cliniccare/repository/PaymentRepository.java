@@ -21,7 +21,7 @@ public interface PaymentRepository extends JpaRepository<Payment, UUID>, JpaSpec
     @Query("SELECT p.service.serviceId, COUNT(p) AS usageCount " +
             "FROM Payment p " +
             "WHERE p.status = 1 " +
-            "GROUP BY p.service.serviceId " +
-            "ORDER BY usageCount DESC")
+            "GROUP BY p.service.serviceId, p.service.price " +
+            "ORDER BY usageCount DESC, p.service.price DESC")
     List<Object[]> findTopServices(Pageable pageable);
 }
