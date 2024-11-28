@@ -181,13 +181,11 @@ public class ServiceManager {
 
         for (Object[] row : topServices) {
             UUID serviceId = (UUID) row[0];
-            long usageCount = ((Number) row[1]).longValue();
 
             Service service = serviceRepository.findByServiceId(serviceId)
                     .orElseThrow(() -> new NotFoundException("Service not found"));
 
             ServiceDTO serviceDTO = new ServiceDTO(service);
-            serviceDTO.setPromotionDiscount((int) usageCount);
             serviceDTOs.add(serviceDTO);
         }
 
