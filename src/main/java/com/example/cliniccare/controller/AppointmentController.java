@@ -18,6 +18,7 @@ import org.springframework.validation.BindingResult;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
@@ -125,6 +126,31 @@ public class AppointmentController {
             logger.error("Failed to cancel appointment: {}", e.getMessage(), e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new ApiResponse<>(
                     false, "Failed to cancel appointment", null
+            ));
+        }
+    }
+
+    @GetMapping("/appointment-statistics")
+    public ResponseEntity<?> getAppointmentStatistics(
+            @RequestParam(required = false) Integer month,
+            @RequestParam(required = false) Integer year
+    ) {
+        try {
+            if (month == null) {
+                month = LocalDateTime.now().getMonthValue();
+            }
+            if (year == null) {
+                year = LocalDateTime.now().getYear();
+            }
+
+            long count = appointmentService.getAppointmentCountForMonth(month, year);
+            return ResponseEntity.ok(new ApiResponse<>(
+                    true, "Get appointment statistics successfully", count
+            ));
+        } catch (Exception e) {
+            logger.error("Failed to retrieve appointment statistics: {}", e.getMessage(), e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new ApiResponse<>(
+                    false, "Failed to get appointment statistics", null
             ));
         }
     }

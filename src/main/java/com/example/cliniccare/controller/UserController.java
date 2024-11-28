@@ -42,7 +42,7 @@ public class UserController {
             return ResponseEntity.ok(new ApiResponse<>(
                     true, "Get all patients successfully", patients
             ));
-        }  catch (Exception e) {
+        } catch (Exception e) {
             logger.error("Failed to get all patients: {}", e.getMessage(), e);
             return ResponseEntity.internalServerError().body(new ApiResponse<>(
                     false, e.getMessage(), null
@@ -209,6 +209,28 @@ public class UserController {
             logger.error("Failed to delete user: {}", e.getMessage(), e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new ApiResponse<>(
                     false, "Failed to delete user", null
+            ));
+        }
+    }
+
+    @GetMapping("/user-registration")
+    public ResponseEntity<ApiResponse<Long>> getUserRegistrationStatistics(
+            @RequestParam int month,
+            @RequestParam int year
+    ) {
+        try {
+            long count = userService.getUserRegistrationCountForMonth(month, year);
+            return ResponseEntity.ok(new ApiResponse<>(
+                    true,
+                    "Get user registration statistics successfully",
+                    count
+            ));
+        } catch (Exception e) {
+            logger.error("Failed to retrieve user registration statistics: {}", e.getMessage(), e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new ApiResponse<>(
+                    false,
+                    "Failed to retrieve user registration statistics",
+                    null
             ));
         }
     }

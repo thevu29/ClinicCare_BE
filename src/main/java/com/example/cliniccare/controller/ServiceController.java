@@ -231,4 +231,19 @@ public class ServiceController {
             ));
         }
     }
+
+    @GetMapping("/top-services")
+    public ResponseEntity<?> getTopServices(@RequestParam int top) {
+        try {
+            List<ServiceDTO> topServices = serviceManager.getTopServices(top);
+            return ResponseEntity.ok(new ApiResponse<>(
+                    true, "Get top services successfully", topServices
+            ));
+        } catch (Exception e) {
+            logger.error("Failed to get top services: {}", e.getMessage(), e);
+            return ResponseEntity.internalServerError().body(new ApiResponse<>(
+                    false, "Failed to get top services", null
+            ));
+        }
+    }
 }

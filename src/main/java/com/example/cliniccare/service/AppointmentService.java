@@ -188,4 +188,14 @@ public class AppointmentService {
 
         return new AppointmentDTO(appointment);
     }
+
+    public long getAppointmentCountForMonth(int month, int year) {
+        if (month < 1 || month > 12) {
+            throw new BadRequestException("Invalid month. Please provide a value between 1 and 12.");
+        }
+        if (year > LocalDateTime.now().getYear()) {
+            throw new BadRequestException("Invalid year. Please provide a valid year.");
+        }
+        return appointmentRepository.countAppointmentsByMonth(month, year);
+    }
 }

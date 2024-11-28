@@ -6,6 +6,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -51,4 +53,8 @@ public interface UserRepository extends JpaRepository<User, UUID>, JpaSpecificat
     Optional<User> findByEmailAndDeleteAtIsNull(String email);
     Boolean existsByEmailAndDeleteAtIsNull(String email);
     List<User> findByRoleNameAndDeleteAtIsNull(String role);
+
+    @Query("SELECT COUNT(u) FROM User u WHERE u.role.name = 'User' AND u.deleteAt IS NULL AND u.doctorProfile IS NULL " +
+            "AND MONTH(u.createAt) = :month AND YEAR(u.createAt) = :year")
+    Long countUsersWithUserRoleOnlyByMonth(@Param("month") int month, @Param("year") int year);
 }

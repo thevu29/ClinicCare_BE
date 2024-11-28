@@ -142,4 +142,18 @@ public class PaymentController {
             ));
         }
     }
+
+    @GetMapping("/monthly-profit")
+    public ResponseEntity<ApiResponse<Double>> getMonthlyProfit(
+            @RequestParam int month,
+            @RequestParam int year
+    ) {
+        double profit = paymentService.getMonthlyProfit(month, year);
+        ApiResponse<Double> response = new ApiResponse<>(
+                true,
+                "Get monthly profit calculated successfully",
+                profit
+        );
+        return ResponseEntity.ok(response);
+    }
 }
