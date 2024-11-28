@@ -1,6 +1,6 @@
 package com.example.cliniccare.repository;
 
-import com.example.cliniccare.model.Feedback;
+import com.example.cliniccare.entity.Feedback;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.stereotype.Repository;

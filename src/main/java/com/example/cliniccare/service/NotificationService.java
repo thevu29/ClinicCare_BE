@@ -2,8 +2,8 @@ package com.example.cliniccare.service;
 
 import com.example.cliniccare.dto.NotificationDTO;
 import com.example.cliniccare.exception.NotFoundException;
-import com.example.cliniccare.model.Notification;
-import com.example.cliniccare.model.User;
+import com.example.cliniccare.entity.Notification;
+import com.example.cliniccare.entity.User;
 import com.example.cliniccare.repository.NotificationRepository;
 import com.example.cliniccare.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;

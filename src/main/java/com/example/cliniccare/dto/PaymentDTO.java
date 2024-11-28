@@ -1,6 +1,6 @@
 package com.example.cliniccare.dto;
 
-import com.example.cliniccare.model.Payment;
+import com.example.cliniccare.entity.Payment;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;

@@ -1,6 +1,6 @@
 package com.example.cliniccare.dto;
 
-import com.example.cliniccare.model.User;
+import com.example.cliniccare.entity.User;
 import lombok.Data;
 
 import java.time.LocalDateTime;

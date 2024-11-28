@@ -1,6 +1,6 @@
 package com.example.cliniccare.dto;
 
-import com.example.cliniccare.model.Role;
+import com.example.cliniccare.entity.Role;
 import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
 

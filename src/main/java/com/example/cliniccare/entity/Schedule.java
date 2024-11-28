@@ -1,4 +1,4 @@
-package com.example.cliniccare.model;
+package com.example.cliniccare.entity;
 
 import jakarta.persistence.*;
 import lombok.*;

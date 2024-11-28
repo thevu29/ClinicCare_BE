@@ -4,7 +4,7 @@ import com.example.cliniccare.dto.PaginationDTO;
 import com.example.cliniccare.dto.ServiceDTO;
 import com.example.cliniccare.exception.BadRequestException;
 import com.example.cliniccare.exception.NotFoundException;
-import com.example.cliniccare.model.Service;
+import com.example.cliniccare.entity.Service;
 import com.example.cliniccare.repository.PromotionRepository;
 import com.example.cliniccare.repository.ServiceRepository;
 import com.example.cliniccare.response.PaginationResponse;

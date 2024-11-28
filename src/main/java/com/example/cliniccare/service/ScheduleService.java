@@ -1,11 +1,12 @@
 package com.example.cliniccare.service;
 
 import com.example.cliniccare.dto.*;
+import com.example.cliniccare.entity.TimeSlot;
 import com.example.cliniccare.exception.BadRequestException;
 import com.example.cliniccare.exception.NotFoundException;
-import com.example.cliniccare.model.DoctorProfile;
-import com.example.cliniccare.model.Schedule;
-import com.example.cliniccare.model.Service;
+import com.example.cliniccare.entity.DoctorProfile;
+import com.example.cliniccare.entity.Schedule;
+import com.example.cliniccare.entity.Service;
 import com.example.cliniccare.repository.DoctorProfileRepository;
 import com.example.cliniccare.repository.ScheduleRepository;
 import com.example.cliniccare.repository.ServiceRepository;
@@ -211,8 +212,8 @@ public class ScheduleService {
             List<Schedule> existingSchedules = scheduleRepository
                     .findByDateTimeBetween(date.atStartOfDay(), date.plusDays(1).atStartOfDay());
 
-            List<TimeSlotDTO> busySlots = existingSchedules.stream()
-                    .map(s -> new TimeSlotDTO(
+            List<TimeSlot> busySlots = existingSchedules.stream()
+                    .map(s -> new TimeSlot(
                             LocalTime.from(s.getDateTime()),
                             LocalTime.from(s.getDateTime().plusMinutes(s.getDuration()))
                     ))
@@ -220,7 +221,7 @@ public class ScheduleService {
 
             int schedulesToCreate = Math.min(schedulesPerDay, remainingSchedules);
 
-            List<TimeSlotDTO> availableSlots = getOptimalTimeSlots(
+            List<TimeSlot> availableSlots = getOptimalTimeSlots(
                     workingStart,
                     workingEnd,
                     busySlots,
@@ -233,7 +234,7 @@ public class ScheduleService {
                         + date + ". Only " + availableSlots.size() + " slots are available.");
             }
 
-            for (TimeSlotDTO slot : availableSlots) {
+            for (TimeSlot slot : availableSlots) {
                 LocalDateTime scheduleDate = date.atTime(slot.getStart());
 
                 Schedule schedule = new Schedule();
@@ -255,18 +256,18 @@ public class ScheduleService {
         return result;
     }
 
-    private List<TimeSlotDTO> getOptimalTimeSlots(
+    private List<TimeSlot> getOptimalTimeSlots(
             LocalTime workingStart,
             LocalTime workingEnd,
-            List<TimeSlotDTO> busySlots,
+            List<TimeSlot> busySlots,
             int duration,
             int requiredSlots
     ) {
-        List<TimeSlotDTO> result = new ArrayList<>();
+        List<TimeSlot> result = new ArrayList<>();
         LocalTime currentTime = workingStart;
 
         while (currentTime.plusMinutes(duration).isBefore(workingEnd) && result.size() < requiredSlots) {
-            TimeSlotDTO potentialSlot = new TimeSlotDTO(currentTime, currentTime.plusMinutes(duration));
+            TimeSlot potentialSlot = new TimeSlot(currentTime, currentTime.plusMinutes(duration));
 
             if (isSlotAvailable(potentialSlot, busySlots)) {
                 result.add(potentialSlot);
@@ -279,8 +280,8 @@ public class ScheduleService {
         return result;
     }
 
-    private boolean isSlotAvailable(TimeSlotDTO newSlot, List<TimeSlotDTO> busySlots) {
-        for (TimeSlotDTO busySlot : busySlots) {
+    private boolean isSlotAvailable(TimeSlot newSlot, List<TimeSlot> busySlots) {
+        for (TimeSlot busySlot : busySlots) {
             if (newSlot.getStart().isBefore(busySlot.getEnd()) && busySlot.getStart().isBefore(newSlot.getEnd())) {
                 return false;
             }
