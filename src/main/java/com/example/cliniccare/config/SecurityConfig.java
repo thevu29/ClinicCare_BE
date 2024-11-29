@@ -2,6 +2,8 @@ package com.example.cliniccare.config;
 
 import com.example.cliniccare.filter.JwtAuthFilter;
 import com.example.cliniccare.service.AuthService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -28,10 +30,20 @@ import java.util.List;
 public class SecurityConfig {
     private final JwtAuthFilter jwtAuthFilter;
     private final AuthService authService;
+    private final OAuth2LoginSuccessHandler oAuth2LoginSuccessHandler;
 
-    public SecurityConfig(JwtAuthFilter jwtAuthFilter, AuthService authService) {
+    @Value("${frontend.url}")
+    private String frontendUrl;
+
+    @Autowired
+    public SecurityConfig(
+            JwtAuthFilter jwtAuthFilter,
+            AuthService authService,
+            OAuth2LoginSuccessHandler oAuth2LoginSuccessHandler
+    ) {
         this.jwtAuthFilter = jwtAuthFilter;
         this.authService = authService;
+        this.oAuth2LoginSuccessHandler = oAuth2LoginSuccessHandler;
     }
 
     @Bean
@@ -42,16 +54,24 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(
                                 "/api/auth/login",
-                                "/api/auth/register"
+                                "/api/auth/register",
+                                "/oauth2/authorization/google",
+                                "/login/oauth2/code/google",
+                                "/api/auth/oauth2-data"
                         ).permitAll()
-                        .requestMatchers(HttpMethod.GET, "/api/schedules/**").permitAll()
+                        .requestMatchers(HttpMethod.GET,
+                                "/api/schedules/**",
+                                "/api/feedbacks/**"
+                        ).permitAll()
                         .anyRequest().authenticated()
                 )
                 .sessionManagement(sess -> sess
-                    .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+                    .sessionCreationPolicy(SessionCreationPolicy.ALWAYS)
                 )
                 .authenticationProvider(authenticationProvider())
-                .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
+                .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
+                .oauth2Login(oauth2 -> oauth2
+                        .successHandler(oAuth2LoginSuccessHandler));
 
         return http.build();
     }
@@ -78,9 +98,10 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(List.of("*"));
+        configuration.setAllowedOrigins(List.of(frontendUrl));
         configuration.setAllowedMethods(List.of("*"));
         configuration.setAllowedHeaders(List.of("*"));
+        configuration.setAllowCredentials(true);
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
         return source;

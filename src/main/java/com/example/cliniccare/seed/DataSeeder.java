@@ -1,4 +1,4 @@
-package com.example.cliniccare.config;
+package com.example.cliniccare.seed;
 
 import com.example.cliniccare.entity.Role;
 import com.example.cliniccare.entity.User;

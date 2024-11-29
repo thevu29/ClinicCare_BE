@@ -14,12 +14,14 @@ public class UserInfoDetails implements UserDetails {
     private final UUID userId;
     private final String username;
     private final String password;
+    private final String name;
     private final GrantedAuthority authority;
 
     public UserInfoDetails(User user) {
         this.userId = user.getUserId();
         this.username = user.getEmail();
         this.password = user.getPassword();
+        this.name = user.getName();
         this.authority = new SimpleGrantedAuthority(user.getRole().getName());
     }
 

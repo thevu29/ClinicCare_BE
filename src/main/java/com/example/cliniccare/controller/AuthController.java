@@ -2,8 +2,10 @@ package com.example.cliniccare.controller;
 
 import com.example.cliniccare.dto.LoginDTO;
 import com.example.cliniccare.entity.AuthRequest;
+import com.example.cliniccare.entity.User;
 import com.example.cliniccare.exception.NotFoundException;
 import com.example.cliniccare.response.ApiResponse;
+import com.example.cliniccare.service.AuthService;
 import com.example.cliniccare.service.JwtService;
 import com.example.cliniccare.entity.UserInfoDetails;
 import com.example.cliniccare.service.TokenBlacklistService;
@@ -21,17 +23,16 @@ import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.validation.BindingResult;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/auth")
 public class AuthController {
     private final JwtService jwtService;
     private final TokenBlacklistService tokenBlacklistService;
+    private final AuthService authService;
     private final AuthenticationManager authenticationManager;
     private static final Logger logger = LoggerFactory.getLogger(AuthController.class);
 
@@ -39,10 +40,12 @@ public class AuthController {
     public AuthController(
             JwtService jwtService,
             TokenBlacklistService tokenBlacklistService,
+            AuthService authService,
             AuthenticationManager authenticationManager
     ) {
         this.tokenBlacklistService = tokenBlacklistService;
         this.jwtService = jwtService;
+        this.authService = authService;
         this.authenticationManager = authenticationManager;
     }
 
@@ -123,5 +126,28 @@ public class AuthController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(new ApiResponse<>(false, "Failed to refresh token", null));
         }
+    }
+
+    @GetMapping("/oauth2-data")
+    public ResponseEntity<?> getOAuth2Data(Authentication authentication) {
+        if (authentication == null || !(authentication.getPrincipal() instanceof OAuth2User principal)) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(new ApiResponse<>(false, "Unauthorized", null));
+        }
+
+        String email = principal.getAttribute("email");
+        String name = principal.getAttribute("name");
+
+        User user = authService.findOrCreateUserFromOAuth(email, name);
+        UserInfoDetails userDetails = new UserInfoDetails(user);
+
+        String accessToken = jwtService.generateToken(userDetails);
+        String refreshToken = jwtService.generateRefreshToken(userDetails);
+
+        return ResponseEntity.ok(new ApiResponse<>(
+                true,
+                "Login successfully",
+                new LoginDTO(userDetails, accessToken, refreshToken)
+        ));
     }
 }
