@@ -29,7 +29,6 @@ import java.util.List;
 @EnableWebSecurity
 public class SecurityConfig {
     private final JwtAuthFilter jwtAuthFilter;
-    private final AuthService authService;
     private final OAuth2LoginSuccessHandler oAuth2LoginSuccessHandler;
 
     @Value("${frontend.url}")
@@ -38,11 +37,9 @@ public class SecurityConfig {
     @Autowired
     public SecurityConfig(
             JwtAuthFilter jwtAuthFilter,
-            AuthService authService,
             OAuth2LoginSuccessHandler oAuth2LoginSuccessHandler
     ) {
         this.jwtAuthFilter = jwtAuthFilter;
-        this.authService = authService;
         this.oAuth2LoginSuccessHandler = oAuth2LoginSuccessHandler;
     }
 
@@ -54,6 +51,8 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(
                                 "/api/auth/login",
+                                "/api/auth/send-email-otp",
+                                "/api/auth/verify-otp",
                                 "/api/auth/register",
                                 "/oauth2/authorization/google",
                                 "/login/oauth2/code/google",
@@ -68,26 +67,11 @@ public class SecurityConfig {
                 .sessionManagement(sess -> sess
                     .sessionCreationPolicy(SessionCreationPolicy.ALWAYS)
                 )
-                .authenticationProvider(authenticationProvider())
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
                 .oauth2Login(oauth2 -> oauth2
                         .successHandler(oAuth2LoginSuccessHandler));
 
         return http.build();
-    }
-
-    @Bean
-    public AuthenticationProvider authenticationProvider() {
-        DaoAuthenticationProvider provider = new DaoAuthenticationProvider();
-        provider.setUserDetailsService(authService);
-        provider.setPasswordEncoder(passwordEncoder());
-        return provider;
-    }
-
-    @Bean
-    public AuthenticationManager authenticationManager(AuthenticationConfiguration config)
-            throws Exception {
-        return config.getAuthenticationManager();
     }
 
     @Bean

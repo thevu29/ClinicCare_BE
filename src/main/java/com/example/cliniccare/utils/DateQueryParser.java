@@ -101,7 +101,7 @@ public class DateQueryParser<T> {
 
     private LocalDate parseAndValidateDate(String date) {
         String trimmedDate = date.trim();
-        if (!Validation.isValidDate(trimmedDate)) {
+        if (Validation.isNotValidDate(trimmedDate)) {
             throw new BadRequestException(DATE_FORMAT_ERROR);
         }
         return LocalDate.parse(trimmedDate);

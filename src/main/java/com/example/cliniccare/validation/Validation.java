@@ -24,17 +24,17 @@ public class Validation {
         return null;
     }
 
-    public static boolean isValidDate(String date) {
+    public static boolean isNotValidDate(String date) {
         String datePattern = "^\\d{4}-\\d{2}-\\d{2}$";
         if (!Pattern.matches(datePattern, date)) {
-            return false;
+            return true;
         }
 
         try {
             LocalDate.parse(date);
-            return true;
-        } catch (DateTimeParseException e) {
             return false;
+        } catch (DateTimeParseException e) {
+            return true;
         }
     }
 }

@@ -7,6 +7,7 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.http.HttpHeaders;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -20,13 +21,13 @@ import java.io.IOException;
 @Component
 public class JwtAuthFilter extends OncePerRequestFilter {
     private final JwtService jwtService;
-    private final AuthService authService;
+    @Lazy private final AuthService authService;
     private static final String BEARER_PREFIX = "Bearer ";
     private final TokenBlacklistRepository tokenBlacklistRepository;
 
     public JwtAuthFilter(
             JwtService jwtService,
-            AuthService authService,
+            @Lazy AuthService authService,
             TokenBlacklistRepository tokenBlacklistRepository
     ) {
         this.jwtService = jwtService;
