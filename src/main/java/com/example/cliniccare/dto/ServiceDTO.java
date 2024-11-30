@@ -1,7 +1,7 @@
 package com.example.cliniccare.dto;
 
 import com.example.cliniccare.interfaces.ServiceFormGroup;
-import com.example.cliniccare.model.Service;
+import com.example.cliniccare.entity.Service;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;

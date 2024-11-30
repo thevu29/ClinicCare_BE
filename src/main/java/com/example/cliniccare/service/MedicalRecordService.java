@@ -4,9 +4,9 @@ import com.example.cliniccare.dto.MedicalRecordDTO;
 import com.example.cliniccare.dto.PaginationDTO;
 import com.example.cliniccare.exception.BadRequestException;
 import com.example.cliniccare.exception.NotFoundException;
-import com.example.cliniccare.model.DoctorProfile;
-import com.example.cliniccare.model.MedicalRecord;
-import com.example.cliniccare.model.User;
+import com.example.cliniccare.entity.DoctorProfile;
+import com.example.cliniccare.entity.MedicalRecord;
+import com.example.cliniccare.entity.User;
 import com.example.cliniccare.repository.DoctorProfileRepository;
 import com.example.cliniccare.repository.MedicalRecordRepository;
 import com.example.cliniccare.repository.ServiceRepository;
@@ -94,7 +94,7 @@ public class MedicalRecordService {
                     cb.equal(root.get("doctor").get("doctorProfileId"), doctor.getDoctorProfileId()));
         }
         if (serviceId != null) {
-            com.example.cliniccare.model.Service service = serviceRepository.findById(serviceId)
+            com.example.cliniccare.entity.Service service = serviceRepository.findById(serviceId)
                     .orElseThrow(() -> new NotFoundException("Service not found"));
 
             spec = spec.and((root, query, cb) ->
@@ -142,7 +142,7 @@ public class MedicalRecordService {
             throw new BadRequestException("Doctor id is not a doctor");
         }
 
-        com.example.cliniccare.model.Service service = serviceRepository
+        com.example.cliniccare.entity.Service service = serviceRepository
                 .findById(medicalRecordDTO.getServiceId())
                 .orElseThrow(() -> new NotFoundException("Service not found"));
 

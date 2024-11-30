@@ -4,7 +4,7 @@ import com.example.cliniccare.dto.AppointmentDTO;
 import com.example.cliniccare.dto.PaginationDTO;
 import com.example.cliniccare.exception.BadRequestException;
 import com.example.cliniccare.exception.NotFoundException;
-import com.example.cliniccare.model.*;
+import com.example.cliniccare.entity.*;
 import com.example.cliniccare.repository.*;
 import com.example.cliniccare.response.PaginationResponse;
 import com.example.cliniccare.utils.DateQueryParser;

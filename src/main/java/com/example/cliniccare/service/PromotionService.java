@@ -3,7 +3,7 @@ package com.example.cliniccare.service;
 import com.example.cliniccare.dto.PaginationDTO;
 import com.example.cliniccare.dto.PromotionDTO;
 import com.example.cliniccare.exception.NotFoundException;
-import com.example.cliniccare.model.Promotion;
+import com.example.cliniccare.entity.Promotion;
 import com.example.cliniccare.repository.PromotionRepository;
 import com.example.cliniccare.response.PaginationResponse;
 import com.example.cliniccare.utils.NumberQueryParser;

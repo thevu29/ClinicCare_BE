@@ -1,7 +1,7 @@
 package com.example.cliniccare.dto;
 
 import com.example.cliniccare.interfaces.PromotionFormGroup;
-import com.example.cliniccare.model.Promotion;
+import com.example.cliniccare.entity.Promotion;
 import com.example.cliniccare.utils.CustomLocalDateDeserializer;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import jakarta.validation.constraints.*;

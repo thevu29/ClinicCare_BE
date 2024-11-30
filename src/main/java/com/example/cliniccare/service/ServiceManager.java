@@ -5,40 +5,34 @@ import com.example.cliniccare.dto.ServiceDTO;
 import com.example.cliniccare.exception.BadRequestException;
 import com.example.cliniccare.exception.NotFoundException;
 import com.example.cliniccare.model.Service;
-import com.example.cliniccare.repository.PaymentRepository;
 import com.example.cliniccare.repository.PromotionRepository;
 import com.example.cliniccare.repository.ServiceRepository;
 import com.example.cliniccare.response.PaginationResponse;
 import com.example.cliniccare.utils.NumberQueryParser;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 @org.springframework.stereotype.Service
 public class ServiceManager {
     private final ServiceRepository serviceRepository;
     private final PromotionRepository promotionRepository;
     private final PaginationService paginationService;
-    private final PaymentRepository paymentRepository;
 
     @Autowired
     public ServiceManager(
             ServiceRepository serviceRepository,
             PromotionRepository promotionRepository,
-            PaginationService paginationService,
-            PaymentRepository paymentRepository) {
+            PaginationService paginationService
+    ) {
         this.serviceRepository = serviceRepository;
         this.promotionRepository = promotionRepository;
         this.paginationService = paginationService;
-        this.paymentRepository = paymentRepository;
     }
 
     private Service.ServiceStatus getServiceStatus(String status) {
@@ -172,24 +166,4 @@ public class ServiceManager {
         serviceRepository.save(service);
         return new ServiceDTO(service);
     }
-
-    public List<ServiceDTO> getTopServices(int top) {
-        Pageable pageable = PageRequest.of(0, top);
-
-        List<Object[]> topServices = paymentRepository.findTopServices(pageable);
-        List<ServiceDTO> serviceDTOs = new ArrayList<>();
-
-        for (Object[] row : topServices) {
-            UUID serviceId = (UUID) row[0];
-
-            Service service = serviceRepository.findByServiceId(serviceId)
-                    .orElseThrow(() -> new NotFoundException("Service not found"));
-
-            ServiceDTO serviceDTO = new ServiceDTO(service);
-            serviceDTOs.add(serviceDTO);
-        }
-
-        return serviceDTOs;
-    }
-
 }

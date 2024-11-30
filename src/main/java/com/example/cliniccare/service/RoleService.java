@@ -4,7 +4,7 @@ import com.example.cliniccare.dto.PaginationDTO;
 import com.example.cliniccare.dto.RoleDTO;
 import com.example.cliniccare.exception.BadRequestException;
 import com.example.cliniccare.exception.NotFoundException;
-import com.example.cliniccare.model.Role;
+import com.example.cliniccare.entity.Role;
 import com.example.cliniccare.repository.RoleRepository;
 import com.example.cliniccare.response.PaginationResponse;
 import org.springframework.beans.factory.annotation.Autowired;
