@@ -4,9 +4,9 @@ import com.example.cliniccare.dto.PaginationDTO;
 import com.example.cliniccare.dto.PaymentDTO;
 import com.example.cliniccare.exception.BadRequestException;
 import com.example.cliniccare.exception.NotFoundException;
-import com.example.cliniccare.model.Payment;
-import com.example.cliniccare.model.Service;
-import com.example.cliniccare.model.User;
+import com.example.cliniccare.entity.Payment;
+import com.example.cliniccare.entity.Service;
+import com.example.cliniccare.entity.User;
 import com.example.cliniccare.repository.PaymentRepository;
 import com.example.cliniccare.repository.ServiceRepository;
 import com.example.cliniccare.repository.UserRepository;
@@ -83,9 +83,15 @@ public class PaymentService {
         }
     }
 
+    public List<PaymentDTO> getAllPayments() {
+        return paymentRepository.findAll().stream()
+                .map(PaymentDTO::new)
+                .toList();
+    }
+
     public PaginationResponse<List<PaymentDTO>> getPayments(
             PaginationDTO paginationDTO, UUID patientId, UUID serviceId,
-            String status, String method, String date, String price
+            String search, String status, String method, String date, String price
     ) {
         Pageable pageable = paginationService.getPageable(paginationDTO);
 
@@ -104,6 +110,14 @@ public class PaymentService {
 
             spec = spec.and((root, query, cb) ->
                     cb.equal(root.get("service").get("serviceId"), service.getServiceId()));
+        }
+        if (search != null && !search.trim().isEmpty()) {
+            String searchLowercase = search.toLowerCase();
+            spec = spec.and((root, query, cb) ->
+                    cb.or(
+                            cb.like(cb.lower(root.get("patient").get("name")), "%" + searchLowercase + "%"),
+                            cb.like(cb.lower(root.get("service").get("name")), "%" + searchLowercase + "%")
+                    ));
         }
         if (status != null && !status.isEmpty()) {
             spec = spec.and((root, query, cb) ->
@@ -141,12 +155,11 @@ public class PaymentService {
         );
     }
 
-    public List<PaymentDTO> getPatientPayments(UUID patientId) {
-        User patient = patientRepository.findByUserIdAndDeleteAtIsNull(patientId)
-                .orElseThrow(() -> new NotFoundException("Patient not found"));
+    public PaymentDTO getPaymentById(UUID id) {
+        Payment payment = paymentRepository.findById(id)
+                .orElseThrow(() -> new NotFoundException("Payment not found"));
 
-        List<Payment> payments = paymentRepository.findAllByPatient_UserIdOrderByDateDesc(patient.getUserId());
-        return payments.stream().map(PaymentDTO::new).toList();
+        return new PaymentDTO(payment);
     }
 
     @Transactional

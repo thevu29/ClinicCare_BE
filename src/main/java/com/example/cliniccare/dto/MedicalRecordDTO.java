@@ -1,7 +1,7 @@
 package com.example.cliniccare.dto;
 
 import com.example.cliniccare.interfaces.MedicalRecordGroup;
-import com.example.cliniccare.model.MedicalRecord;
+import com.example.cliniccare.entity.MedicalRecord;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 

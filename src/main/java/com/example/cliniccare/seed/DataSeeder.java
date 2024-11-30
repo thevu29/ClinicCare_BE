@@ -1,7 +1,7 @@
-package com.example.cliniccare.config;
+package com.example.cliniccare.seed;
 
-import com.example.cliniccare.model.Role;
-import com.example.cliniccare.model.User;
+import com.example.cliniccare.entity.Role;
+import com.example.cliniccare.entity.User;
 import com.example.cliniccare.repository.RoleRepository;
 import com.example.cliniccare.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;

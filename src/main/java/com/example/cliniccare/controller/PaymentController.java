@@ -34,12 +34,29 @@ public class PaymentController {
         this.paymentService = paymentService;
     }
 
+    @GetMapping("/all")
+    public ResponseEntity<?> getAllPayments() {
+        try {
+            List<PaymentDTO> payments = paymentService.getAllPayments();
+
+            return ResponseEntity.ok(new ApiResponse<>(
+                    true, "Payments retrieved successfully", payments
+            ));
+        } catch (Exception e) {
+            logger.error("Failed to retrieve payments: {}", e.getMessage(), e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new ApiResponse<>(
+                    false, "Failed to retrieve payments", null
+            ));
+        }
+    }
+
     @GetMapping
     public ResponseEntity<?> getPayments(
             @RequestParam(defaultValue = "1") int page,
             @RequestParam(defaultValue = "10") int size,
             @RequestParam(defaultValue = "date") String sortBy,
             @RequestParam(defaultValue = "desc") String order,
+            @RequestParam(defaultValue = "desc") String search,
             @RequestParam(required = false) UUID patientId,
             @RequestParam(required = false) UUID serviceId,
             @RequestParam(required = false) String status,
@@ -50,7 +67,7 @@ public class PaymentController {
         try {
             PaginationDTO paginationDTO = new PaginationDTO(page, size, sortBy, order);
             PaginationResponse<List<PaymentDTO>> response = paymentService
-                    .getPayments(paginationDTO, patientId, serviceId, status, method, date, price);
+                    .getPayments(paginationDTO, patientId, serviceId, search, status, method, date, price);
 
             return ResponseEntity.ok(response);
         } catch (NotFoundException e) {
@@ -69,22 +86,22 @@ public class PaymentController {
         }
     }
 
-    @GetMapping("/patient/{patientId}")
-    public ResponseEntity<?> getPatientPayments(@PathVariable UUID patientId) {
+    @GetMapping("/{id}")
+    public ResponseEntity<?> getPaymentById(@PathVariable UUID id) {
         try {
-            List<PaymentDTO> payments = paymentService.getPatientPayments(patientId);
+            PaymentDTO payment = paymentService.getPaymentById(id);
 
             return ResponseEntity.ok(new ApiResponse<>(
-                    true, "Patient payments retrieved successfully", payments
+                    true, "Payment retrieved successfully", payment
             ));
         } catch (NotFoundException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ApiResponse<>(
                     false, e.getMessage(), null
             ));
         } catch (Exception e) {
-            logger.error("Failed to retrieve patient payments: {}", e.getMessage(), e);
+            logger.error("Failed to retrieve payment: {}", e.getMessage(), e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new ApiResponse<>(
-                    false, "Failed to retrieve patient payments", null
+                    false, "Failed to retrieve payment", null
             ));
         }
     }

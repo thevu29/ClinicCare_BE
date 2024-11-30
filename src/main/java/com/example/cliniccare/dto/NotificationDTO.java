@@ -1,6 +1,6 @@
 package com.example.cliniccare.dto;
 
-import com.example.cliniccare.model.Notification;
+import com.example.cliniccare.entity.Notification;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.Getter;

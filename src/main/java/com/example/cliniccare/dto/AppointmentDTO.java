@@ -1,7 +1,7 @@
 package com.example.cliniccare.dto;
 
 import com.example.cliniccare.interfaces.AppointmentGroup;
-import com.example.cliniccare.model.Appointment;
+import com.example.cliniccare.entity.Appointment;
 import com.example.cliniccare.validation.ValidPhone;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;

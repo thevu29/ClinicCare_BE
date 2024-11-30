@@ -33,6 +33,22 @@ public class AppointmentController {
         this.appointmentService = appointmentService;
     }
 
+    @GetMapping("/all")
+    public ResponseEntity<?> getAllAppointments() {
+        try {
+            List<AppointmentDTO> appointments = appointmentService.getAllAppointments();
+
+            return ResponseEntity.ok(new ApiResponse<>(
+                    true, "Get all appointments successfully", appointments
+            ));
+        } catch (Exception e) {
+            logger.error("Failed to get all appointments: {}", e.getMessage(), e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new ApiResponse<>(
+                    false, "Failed to get all appointments", null
+            ));
+        }
+    }
+
     @GetMapping
     public ResponseEntity<?> getAppointments(
             @RequestParam(defaultValue = "1") int page,
@@ -41,13 +57,14 @@ public class AppointmentController {
             @RequestParam(defaultValue = "desc") String order,
             @RequestParam(defaultValue = "") String search,
             @RequestParam(defaultValue = "") String date,
+            @RequestParam(defaultValue = "") String status,
             @RequestParam(required = false) UUID patientId,
             @RequestParam(required = false) UUID doctorId
     ) {
         try {
             PaginationDTO paginationDTO = new PaginationDTO(page, size, sortBy, order);
             PaginationResponse<List<AppointmentDTO>> response = appointmentService
-                    .getAppointments(paginationDTO, search, date, patientId, doctorId);
+                    .getAppointments(paginationDTO, search, date, status, patientId, doctorId);
 
             return ResponseEntity.ok(response);
         } catch (NotFoundException e) {
@@ -62,6 +79,26 @@ public class AppointmentController {
             logger.error("Failed to get appointments: {}", e.getMessage(), e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new ApiResponse<>(
                     false, "Failed to get appointments", null
+            ));
+        }
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<?> getAppointmentById(@PathVariable UUID id) {
+        try {
+            AppointmentDTO appointment = appointmentService.getAppointmentById(id);
+
+            return ResponseEntity.ok(new ApiResponse<>(
+                    true, "Get appointment successfully", appointment
+            ));
+        } catch (NotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ApiResponse<>(
+                    false, e.getMessage(), null
+            ));
+        } catch (Exception e) {
+            logger.error("Failed to get appointment by ID: {}", e.getMessage(), e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new ApiResponse<>(
+                    false, "Failed to get appointment by ID", null
             ));
         }
     }

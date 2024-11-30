@@ -1,6 +1,6 @@
 package com.example.cliniccare.repository;
 
-import com.example.cliniccare.model.User;
+import com.example.cliniccare.entity.User;
 import jakarta.persistence.criteria.Predicate;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;

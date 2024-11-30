@@ -1,17 +1,17 @@
-package com.example.cliniccare.dto;
+package com.example.cliniccare.entity;
 
 import lombok.Data;
 
 import java.time.LocalTime;
 
 @Data
-public class TimeSlotDTO {
+public class TimeSlot {
     private LocalTime start;
     private LocalTime end;
 
-    public TimeSlotDTO() {}
+    public TimeSlot() {}
 
-    public TimeSlotDTO(LocalTime start, LocalTime end) {
+    public TimeSlot(LocalTime start, LocalTime end) {
         this.start = start;
         this.end = end;
     }

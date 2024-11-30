@@ -1,7 +1,7 @@
 package com.example.cliniccare.dto;
 
 import com.example.cliniccare.interfaces.FeedbackFormGroup;
-import com.example.cliniccare.model.Feedback;
+import com.example.cliniccare.entity.Feedback;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.Getter;

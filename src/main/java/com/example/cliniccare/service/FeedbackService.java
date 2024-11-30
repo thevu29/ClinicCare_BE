@@ -4,7 +4,7 @@ import com.example.cliniccare.dto.FeedbackDTO;
 import com.example.cliniccare.dto.PaginationDTO;
 import com.example.cliniccare.exception.BadRequestException;
 import com.example.cliniccare.exception.NotFoundException;
-import com.example.cliniccare.model.*;
+import com.example.cliniccare.entity.*;
 import com.example.cliniccare.repository.*;
 import com.example.cliniccare.response.PaginationResponse;
 import com.example.cliniccare.utils.DateQueryParser;
@@ -14,10 +14,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @org.springframework.stereotype.Service
 public class FeedbackService {
@@ -40,6 +42,13 @@ public class FeedbackService {
         this.doctorProfileRepository = doctorProfileRepository;
         this.userRepository = userRepository;
         this.paginationService = paginationService;
+    }
+
+    @Transactional(readOnly = true)
+    public List<FeedbackDTO> getAllFeedbacks() {
+        return feedbackRepository.findAll().stream()
+                .map(FeedbackDTO::new)
+                .collect(Collectors.toList());
     }
 
     public PaginationResponse<List<FeedbackDTO>> getFeedbacks(
@@ -132,6 +141,7 @@ public class FeedbackService {
         );
     }
 
+    @Transactional(readOnly = true)
     public FeedbackDTO getFeedbackById(UUID id) {
         Feedback feedback = feedbackRepository.findByFeedbackIdAndDeleteAtIsNull(id)
                 .orElseThrow(() -> new NotFoundException("Feedback not found"));
