@@ -191,7 +191,7 @@ public class ScheduleService {
         }
 
         Arrays.stream(scheduleRequest.getDates()).forEach(date -> {
-            if (!Validation.isValidDate(String.valueOf(date))) {
+            if (Validation.isNotValidDate(String.valueOf(date))) {
                 throw new BadRequestException("The date must be in format yyyy-MM-dd (e.g., 2024-12-31)");
             }
         });
