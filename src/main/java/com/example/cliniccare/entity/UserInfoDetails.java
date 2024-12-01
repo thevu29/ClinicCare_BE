@@ -15,6 +15,7 @@ public class UserInfoDetails implements UserDetails {
     private final String username;
     private final String password;
     private final String name;
+    private final String image;
     private final GrantedAuthority authority;
 
     public UserInfoDetails(User user) {
@@ -22,6 +23,7 @@ public class UserInfoDetails implements UserDetails {
         this.username = user.getEmail();
         this.password = user.getPassword();
         this.name = user.getName();
+        this.image = user.getImage();
         this.authority = new SimpleGrantedAuthority(user.getRole().getName());
     }
 
