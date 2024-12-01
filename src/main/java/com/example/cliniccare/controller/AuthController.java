@@ -193,7 +193,7 @@ public class AuthController {
             }
 
             authService.verifyOtp(request);
-            return ResponseEntity.ok(new ApiResponse<>(true, "OTP validated successfully", null));
+            return ResponseEntity.ok(new ApiResponse<>(true, "OTP verified successfully", null));
         } catch (BadRequestException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                     .body(new ApiResponse<>(false, e.getMessage(), null));

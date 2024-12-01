@@ -103,6 +103,10 @@ public class AuthService implements UserDetailsService {
     }
 
     public UserDTO registerUser(UserFormDTO userDTO) throws IOException {
+        if (userRepository.findByEmailAndDeleteAtIsNull(userDTO.getEmail()).isPresent()) {
+            throw new BadRequestException("Email already registered");
+        }
+
         User user = new User();
         user.setName(userDTO.getName());
         user.setEmail(userDTO.getEmail());
