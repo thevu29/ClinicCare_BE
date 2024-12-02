@@ -14,6 +14,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 
+import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
@@ -23,16 +24,19 @@ public class ServiceManager {
     private final ServiceRepository serviceRepository;
     private final PromotionRepository promotionRepository;
     private final PaginationService paginationService;
+    private final FirebaseStorageService firebaseStorageService;
 
     @Autowired
     public ServiceManager(
             ServiceRepository serviceRepository,
             PromotionRepository promotionRepository,
-            PaginationService paginationService
+            PaginationService paginationService,
+            FirebaseStorageService firebaseStorageService
     ) {
         this.serviceRepository = serviceRepository;
         this.promotionRepository = promotionRepository;
         this.paginationService = paginationService;
+        this.firebaseStorageService = firebaseStorageService;
     }
 
     private Service.ServiceStatus getServiceStatus(String status) {
@@ -97,11 +101,16 @@ public class ServiceManager {
         return new ServiceDTO(service);
     }
 
-    public ServiceDTO createService(ServiceDTO serviceDTO) {
+    public ServiceDTO createService(ServiceDTO serviceDTO) throws IOException {
+        if (serviceDTO.getImageFile() == null || serviceDTO.getImageFile().isEmpty()) {
+            throw new BadRequestException("Image is required");
+        }
+
         Service service = new Service();
         service.setName(serviceDTO.getName());
         service.setDescription(serviceDTO.getDescription());
         service.setPrice(serviceDTO.getPrice());
+        service.setImage(firebaseStorageService.uploadImage(serviceDTO.getImageFile()));
         service.setStatus(getServiceStatus(serviceDTO.getStatus()));
         service.setPromotion(promotionRepository.findByPromotionId(serviceDTO.getPromotionId()).orElse(null));
 
@@ -109,7 +118,7 @@ public class ServiceManager {
         return new ServiceDTO(savedService);
     }
 
-    public ServiceDTO updateService(UUID id, ServiceDTO serviceDTO) {
+    public ServiceDTO updateService(UUID id, ServiceDTO serviceDTO) throws IOException {
         Service service = serviceRepository.findByServiceIdAndDeleteAtIsNull(id)
                 .orElseThrow(() -> new NotFoundException("Service not found"));
 
@@ -120,6 +129,9 @@ public class ServiceManager {
         }
         if (serviceDTO.getPrice() != null) {
             service.setPrice(serviceDTO.getPrice());
+        }
+        if (serviceDTO.getImageFile() != null && !serviceDTO.getImageFile().isEmpty()) {
+            service.setImage(firebaseStorageService.updateImage(serviceDTO.getImageFile(), service.getImage()));
         }
         if (serviceDTO.getPromotionId() != null) {
             service.setPromotion(promotionRepository.findByPromotionId(serviceDTO.getPromotionId())

@@ -18,6 +18,7 @@ import org.springframework.validation.BindingResult;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.UUID;
 
@@ -100,7 +101,7 @@ public class ServiceController {
 
     @PostMapping
     public ResponseEntity<?> createService(
-            @Validated(ServiceFormGroup.Create.class) @RequestBody ServiceDTO serviceDTO,
+            @Validated(ServiceFormGroup.Create.class) @ModelAttribute ServiceDTO serviceDTO,
             BindingResult bindingResult
     ) {
         try {
@@ -120,6 +121,11 @@ public class ServiceController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ApiResponse<>(
                     false, e.getMessage(), null
             ));
+        } catch (IOException e) {
+            logger.error("Failed to upload image: {}", e.getMessage(), e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new ApiResponse<>(
+                    false, "Failed to upload image", null
+            ));
         } catch (Exception e) {
             logger.error("Failed to create service: {}", e.getMessage(), e);
             return ResponseEntity.internalServerError().body(new ApiResponse<>(
@@ -131,7 +137,7 @@ public class ServiceController {
     @PutMapping("/update/{id}")
     public ResponseEntity<?> updateService(
             @PathVariable UUID id,
-            @Validated(ServiceFormGroup.Update.class) @RequestBody ServiceDTO serviceDTO,
+            @Validated(ServiceFormGroup.Update.class) @ModelAttribute ServiceDTO serviceDTO,
             BindingResult bindingResult
     ) {
         if (Validation.validateBody(bindingResult) != null) {
@@ -150,6 +156,11 @@ public class ServiceController {
         } catch (BadRequestException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ApiResponse<>(
                     false, e.getMessage(), null
+            ));
+        } catch (IOException e) {
+            logger.error("Failed to upload image: {}", e.getMessage(), e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new ApiResponse<>(
+                    false, "Failed to upload image", null
             ));
         } catch (Exception e) {
             logger.error("Failed to update service: {}", e.getMessage(), e);
