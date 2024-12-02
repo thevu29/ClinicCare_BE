@@ -3,6 +3,7 @@ package com.example.cliniccare.service;
 import com.example.cliniccare.dto.DoctorProfileDTO;
 import com.example.cliniccare.dto.DoctorProfileFormDTO;
 import com.example.cliniccare.dto.PaginationDTO;
+import com.example.cliniccare.entity.Schedule;
 import com.example.cliniccare.exception.BadRequestException;
 import com.example.cliniccare.exception.NotFoundException;
 import com.example.cliniccare.entity.DoctorProfile;
@@ -11,9 +12,11 @@ import com.example.cliniccare.repository.DoctorProfileRepository;
 import com.example.cliniccare.repository.RoleRepository;
 import com.example.cliniccare.repository.UserRepository;
 import com.example.cliniccare.response.PaginationResponse;
+import jakarta.persistence.criteria.Join;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -60,15 +63,34 @@ public class DoctorProfileService {
                 .toList();
     }
 
-    public PaginationResponse<List<DoctorProfileDTO>> getDoctorProfiles(PaginationDTO paginationDTO, String search) {
+    public PaginationResponse<List<DoctorProfileDTO>> getDoctorProfiles(
+            PaginationDTO paginationDTO,
+            String search,
+            UUID serviceId
+    ) {
         Pageable pageable = paginationService.getDoctorProfilePageable(paginationDTO);
-        Page<DoctorProfile> doctorProfiles;
 
-        if (search != null && !search.isEmpty()) {
-            doctorProfiles = doctorProfileRepository.findAllDoctorProfiles(search, pageable);
-        } else {
-            doctorProfiles = doctorProfileRepository.findAllByDeleteAtIsNull(pageable);
+        Specification<DoctorProfile> spec = Specification
+                .where((root, query, cb) -> cb.isNull(root.get("deleteAt"))
+        );
+
+        if (search != null && !search.trim().isEmpty()) {
+            spec = spec.and((root, query, cb) ->
+                    cb.or(
+                            cb.like(root.get("user").get("name"), "%" + search + "%"),
+                            cb.like(root.get("user").get("email"), "%" + search + "%"),
+                            cb.like(root.get("specialty"), "%" + search + "%")
+                    )
+            );
         }
+        if (serviceId != null) {
+            spec = spec.and((root, query, cb) -> {
+                Join<DoctorProfile, Schedule> scheduleJoin = root.join("scheduleList");
+                return cb.equal(scheduleJoin.get("service").get("serviceId"), serviceId);
+            });
+        }
+
+        Page<DoctorProfile> doctorProfiles = doctorProfileRepository.findAll(spec, pageable);
 
         int totalPages = doctorProfiles.getTotalPages();
         long totalElements = doctorProfiles.getTotalElements();
