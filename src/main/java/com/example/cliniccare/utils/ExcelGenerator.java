@@ -1,7 +1,7 @@
 package com.example.cliniccare.utils;
 
 import com.example.cliniccare.dto.MedicalRecordDTO;
-import com.example.cliniccare.model.MedicalRecord;
+import com.example.cliniccare.entity.MedicalRecord;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.ss.util.CellRangeAddress;
 import org.apache.poi.xssf.usermodel.*;

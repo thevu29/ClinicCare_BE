@@ -4,18 +4,21 @@ import com.example.cliniccare.dto.PaginationDTO;
 import com.example.cliniccare.dto.ServiceDTO;
 import com.example.cliniccare.exception.BadRequestException;
 import com.example.cliniccare.exception.NotFoundException;
-import com.example.cliniccare.model.Service;
+import com.example.cliniccare.entity.Service;
+import com.example.cliniccare.repository.PaymentRepository;
 import com.example.cliniccare.repository.PromotionRepository;
 import com.example.cliniccare.repository.ServiceRepository;
 import com.example.cliniccare.response.PaginationResponse;
 import com.example.cliniccare.utils.NumberQueryParser;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 
 import java.io.IOException;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -23,6 +26,7 @@ import java.util.UUID;
 public class ServiceManager {
     private final ServiceRepository serviceRepository;
     private final PromotionRepository promotionRepository;
+    private final PaymentRepository paymentRepository;
     private final PaginationService paginationService;
     private final FirebaseStorageService firebaseStorageService;
 
@@ -30,11 +34,13 @@ public class ServiceManager {
     public ServiceManager(
             ServiceRepository serviceRepository,
             PromotionRepository promotionRepository,
+            PaymentRepository paymentRepository,
             PaginationService paginationService,
             FirebaseStorageService firebaseStorageService
     ) {
         this.serviceRepository = serviceRepository;
         this.promotionRepository = promotionRepository;
+        this.paymentRepository = paymentRepository;
         this.paginationService = paginationService;
         this.firebaseStorageService = firebaseStorageService;
     }
@@ -177,5 +183,21 @@ public class ServiceManager {
         service.setDeleteAt(LocalDateTime.now());
         serviceRepository.save(service);
         return new ServiceDTO(service);
+    }
+
+    public List<ServiceDTO> getTopServices(int top) {
+        Pageable pageable = PageRequest.of(0, top);
+        List<Object[]> topServices = paymentRepository.findTopServices(pageable);
+        List<ServiceDTO> serviceDTOs = new ArrayList<>();
+        for (Object[] row : topServices) {
+            UUID serviceId = (UUID) row[0];
+            long usageCount = ((Number) row[1]).longValue();
+            Service service = serviceRepository.findByServiceId(serviceId)
+                    .orElseThrow(() -> new NotFoundException("Service not found"));
+            ServiceDTO serviceDTO = new ServiceDTO(service);
+            serviceDTO.setPromotionDiscount((int) usageCount);
+            serviceDTOs.add(serviceDTO);
+        }
+        return serviceDTOs;
     }
 }
