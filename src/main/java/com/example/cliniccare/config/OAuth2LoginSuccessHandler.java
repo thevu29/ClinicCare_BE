@@ -17,6 +17,7 @@ import org.springframework.security.oauth2.client.authentication.OAuth2Authentic
 import org.springframework.security.oauth2.core.user.DefaultOAuth2User;
 import org.springframework.security.web.authentication.SavedRequestAwareAuthenticationSuccessHandler;
 import org.springframework.stereotype.Component;
+import org.springframework.web.util.UriComponentsBuilder;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -69,8 +70,13 @@ public class OAuth2LoginSuccessHandler extends SavedRequestAwareAuthenticationSu
                     });
         }
 
+        String targetUrl = UriComponentsBuilder.fromUriString(frontendUrl)
+                .queryParam("provider", "google")
+                .build()
+                .toUriString();
+
         this.setAlwaysUseDefaultTargetUrl(true);
-        this.setDefaultTargetUrl(frontendUrl);
+        this.setDefaultTargetUrl(targetUrl);
         super.onAuthenticationSuccess(request, response, authentication);
     }
 
