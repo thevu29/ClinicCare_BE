@@ -31,6 +31,8 @@ public class Service {
 
     private double price;
 
+    private String image;
+
     private ServiceStatus status;
 
     @Column(name = "create_at")

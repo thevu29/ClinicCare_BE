@@ -13,6 +13,7 @@ public class LoginDTO {
     private String username;
     private String role;
     private String name;
+    private String image;
     private String access_token;
     private String refresh_token;
 
@@ -21,6 +22,7 @@ public class LoginDTO {
         this.username = user.getUsername();
         this.role = user.getAuthorities().stream().findFirst().orElseThrow().getAuthority();
         this.name = user.getName();
+        this.image = user.getImage();
         this.access_token = accessToken;
         this.refresh_token = refreshToken;
     }
