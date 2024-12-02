@@ -35,9 +35,9 @@ public class ServiceController {
     }
 
     @GetMapping("/all")
-    public ResponseEntity<?> getAllServices() {
+    public ResponseEntity<?> getAllServices(@RequestParam(defaultValue = "") String service) {
         try {
-            List<ServiceDTO> services = serviceManager.getAllServices();
+            List<ServiceDTO> services = serviceManager.getAllServices(service);
             return ResponseEntity.ok(new ApiResponse<>(
                     true, "Get all services successfully", services
             ));
