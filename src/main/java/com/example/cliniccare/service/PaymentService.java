@@ -282,6 +282,7 @@ public class PaymentService {
         return vnp_PayUrl + "?" + queryUrl;
     }
 
+    @Transactional
     public Map<String, Object> checkVNPayResponse(Map<String, String> params) {
         Map<String, String> fields = new HashMap<>();
         Map<String, Object> response = new HashMap<>();
@@ -303,9 +304,15 @@ public class PaymentService {
             if ("00".equals(params.get("vnp_TransactionStatus"))) {
                 response.put("message", "Payment Successful!");
                 response.put("success", true);
+
+                // Update payment status
+                changePaymentStatus(UUID.fromString(params.get("vnp_TxnRef")), "PAID");
             } else {
                 response.put("message", "Payment Failed!");
                 response.put("success", false);
+
+                // Update payment status
+                changePaymentStatus(UUID.fromString(params.get("vnp_TxnRef")), "CANCELLED");
             }
 
         } else {
