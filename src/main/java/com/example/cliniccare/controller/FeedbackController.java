@@ -56,14 +56,14 @@ public class FeedbackController {
             @RequestParam(defaultValue = "desc") String order,
             @RequestParam(defaultValue = "") String search,
             @RequestParam(defaultValue = "") String date,
-            @RequestParam(required = false) String doctorId,
-            @RequestParam(required = false) String patientId,
-            @RequestParam(required = false) String serviceId
+            @RequestParam(required = false) UUID userId,
+            @RequestParam(required = false) UUID patientId,
+            @RequestParam(required = false) UUID serviceId
     ) {
         try {
             PaginationDTO paginationDTO = new PaginationDTO(page, size, sortBy, order);
             PaginationResponse<List<FeedbackDTO>> response = feedbackService
-                    .getFeedbacks(paginationDTO, search, date, doctorId, patientId, serviceId);
+                    .getFeedbacks(paginationDTO, search, date, userId, patientId, serviceId);
 
             return ResponseEntity.ok(response);
         } catch (NotFoundException e) {

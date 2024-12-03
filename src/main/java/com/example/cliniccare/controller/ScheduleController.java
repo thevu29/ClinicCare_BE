@@ -55,9 +55,9 @@ public class ScheduleController {
     }
 
     @GetMapping("/all")
-    public ResponseEntity<?> getAllSchedules() {
+    public ResponseEntity<?> getAllSchedules(@RequestParam(required = false) UUID userId) {
         try {
-            List<ScheduleDTO> schedules = scheduleService.getAllSchedules();
+            List<ScheduleDTO> schedules = scheduleService.getAllSchedules(userId);
 
             return ResponseEntity.ok(new ApiResponse<>(
                     true, "Get all schedules successfully", schedules
@@ -81,12 +81,12 @@ public class ScheduleController {
             @RequestParam(defaultValue = "") String time,
             @RequestParam(defaultValue = "") String status,
             @RequestParam(required = false) UUID serviceId,
-            @RequestParam(required = false) UUID doctorId
+            @RequestParam(required = false) UUID userId
     ) {
         try {
             PaginationDTO paginationDTO = new PaginationDTO(page, size, sortBy, order);
             PaginationResponse<List<ScheduleDTO>> response = scheduleService
-                    .getSchedules(paginationDTO, search, date, time, status, serviceId, doctorId);
+                    .getSchedules(paginationDTO, search, date, time, status, serviceId, userId);
 
             return ResponseEntity.ok(response);
         } catch (NotFoundException e) {

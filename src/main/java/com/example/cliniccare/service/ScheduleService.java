@@ -77,14 +77,17 @@ public class ScheduleService {
         return true;
     }
 
-    public List<ScheduleDTO> getAllSchedules() {
-        List<Schedule> schedules = scheduleRepository.findAllByOrderByDateTimeDesc();
+    public List<ScheduleDTO> getAllSchedules(UUID userId) {
+        List<Schedule> schedules = userId == null
+                ? scheduleRepository.findAllByOrderByDateTimeDesc()
+                : scheduleRepository.findAllByDoctor_User_UserIdOrderByDateTimeDesc(userId);
+
         return schedules.stream().map(ScheduleDTO::new).collect(Collectors.toList());
     }
 
     public PaginationResponse<List<ScheduleDTO>> getSchedules(
             PaginationDTO paginationDTO, String search, String date, String time,
-            String status, UUID serviceId, UUID doctorId
+            String status, UUID serviceId, UUID userId
     ) {
         Pageable pageable = paginationService.getPageable(paginationDTO);
         Specification<Schedule> spec = Specification.where(null);
@@ -114,8 +117,8 @@ public class ScheduleService {
             spec = spec.and((root, query, cb) ->
                     cb.equal(root.get("service").get("serviceId"), service.getServiceId()));
         }
-        if (doctorId != null) {
-            DoctorProfile doctor = doctorProfileRepository.findById(doctorId)
+        if (userId != null) {
+            DoctorProfile doctor = doctorProfileRepository.findByUser_UserIdAndDeleteAtIsNull(userId)
                     .orElseThrow(() -> new NotFoundException("Doctor not found"));
 
             spec = spec.and((root, query, cb) ->
