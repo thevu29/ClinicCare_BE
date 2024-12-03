@@ -27,6 +27,10 @@ public class AppointmentDTO {
     @NotNull(message = "Patient ID is required", groups = {AppointmentGroup.Create.class})
     private UUID patientId;
 
+    private String doctorName;
+
+    private String doctorImage;
+
     private LocalDateTime date;
 
     @NotNull(message = "Cancel by is required", groups = {AppointmentGroup.Cancel.class})
@@ -43,6 +47,8 @@ public class AppointmentDTO {
         this.appointmentId = appointment.getAppointmentId();
         this.patientName = appointment.getPatientName();
         this.patientPhone = appointment.getPatientPhone();
+        this.doctorName = appointment.getSchedule().getDoctor().getUser().getName();
+        this.doctorImage = appointment.getSchedule().getDoctor().getUser().getImage();
         this.scheduleId = appointment.getSchedule().getScheduleId();
         this.patientId = appointment.getPatient().getUserId();
         this.date = appointment.getDate();
