@@ -56,7 +56,7 @@ public class PaymentController {
             @RequestParam(defaultValue = "10") int size,
             @RequestParam(defaultValue = "date") String sortBy,
             @RequestParam(defaultValue = "desc") String order,
-            @RequestParam(defaultValue = "desc") String search,
+            @RequestParam(defaultValue = "") String search,
             @RequestParam(required = false) UUID patientId,
             @RequestParam(required = false) UUID serviceId,
             @RequestParam(required = false) String status,

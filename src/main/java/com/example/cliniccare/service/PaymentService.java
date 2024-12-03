@@ -135,8 +135,9 @@ public class PaymentService {
 
         int totalPages = payments.getTotalPages();
         long totalElements = payments.getTotalElements();
-        List<PaymentDTO> paymentDTOs = payments.map(PaymentDTO::new).toList();
         int take = payments.getNumberOfElements();
+
+        List<PaymentDTO> paymentDTOs = payments.map(PaymentDTO::new).toList();
 
         return new PaginationResponse<>(
                 true,
@@ -264,6 +265,7 @@ public class PaymentService {
                 }
             }
         }
+
         String queryUrl = query.toString();
         String vnp_SecureHash = VNPayUtils.hmacSHA512(secretKey, hashData.toString());
         queryUrl += "&vnp_SecureHash=" + vnp_SecureHash;
