@@ -22,6 +22,8 @@ public class FeedbackDTO {
 
     private String patientName;
 
+    private String image;
+
     private UUID doctorId;
 
     private String doctorName;
@@ -39,6 +41,7 @@ public class FeedbackDTO {
         this.feedbackId = feedback.getFeedbackId();
         this.patientId = feedback.getPatient().getUserId();
         this.patientName = feedback.getPatient().getName();
+        this.image = feedback.getPatient().getImage();
         this.doctorId = feedback.getDoctor() == null ? null : feedback.getDoctor().getDoctorProfileId();
         this.doctorName = feedback.getDoctor() == null ? null : feedback.getDoctor().getUser().getName();
         this.serviceId = feedback.getService() == null ? null : feedback.getService().getServiceId();
