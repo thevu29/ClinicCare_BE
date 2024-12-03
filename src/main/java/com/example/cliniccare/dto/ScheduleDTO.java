@@ -13,6 +13,7 @@ public class ScheduleDTO {
     private String serviceName;
     private UUID doctorProfileId;
     private String doctorName;
+    private String image;
     private LocalDateTime dateTime;
     private String status;
     private int duration;
@@ -25,6 +26,7 @@ public class ScheduleDTO {
         this.serviceName = schedule.getService().getName();
         this.doctorName = schedule.getDoctor().getUser().getName();
         this.doctorProfileId = schedule.getDoctor().getDoctorProfileId();
+        this.image = schedule.getDoctor().getUser().getImage();
         this.dateTime = schedule.getDateTime();
         this.status = schedule.getStatus().name();
         this.duration = schedule.getDuration();
