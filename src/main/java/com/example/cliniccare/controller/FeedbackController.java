@@ -176,4 +176,22 @@ public class FeedbackController {
                     .body(new ApiResponse<>(false, "Failed to delete feedback", null));
         }
     }
+
+    @DeleteMapping("/delete")
+    public ResponseEntity<?> deleteFeedbacks(@RequestBody List<UUID> ids) {
+        try {
+            feedbackService.deleteFeedbacks(ids);
+            return ResponseEntity.ok(new ApiResponse<>(
+                    true, "Delete feedbacks successfully", null
+            ));
+        } catch (NotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(new ApiResponse<>(false, e.getMessage(), null));
+        }
+        catch (Exception e) {
+            logger.error("Failed to delete feedbacks: {}", e.getMessage(), e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new ApiResponse<>(false, "Failed to delete feedbacks", null));
+        }
+    }
 }

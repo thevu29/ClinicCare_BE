@@ -31,6 +31,8 @@ public class PaymentDTO {
     @NotBlank(message = "Method is required")
     private String method;
 
+    private String paymentUrl;
+
     public PaymentDTO() {
     }
 

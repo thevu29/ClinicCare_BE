@@ -13,18 +13,35 @@ import com.example.cliniccare.repository.UserRepository;
 import com.example.cliniccare.response.PaginationResponse;
 import com.example.cliniccare.utils.DateQueryParser;
 import com.example.cliniccare.utils.NumberQueryParser;
+import com.example.cliniccare.utils.VNPayUtils;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
+import java.text.SimpleDateFormat;
 import java.time.LocalDate;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 @org.springframework.stereotype.Service
 public class PaymentService {
+    @Value("${vnp_TmnCode}")
+    private String vnp_TmnCode;
+
+    @Value("${vnp_HashSecret}")
+    private String secretKey;
+
+    @Value("${vnp_PayUrl}")
+    private String vnp_PayUrl;
+
+    @Value("${vnp_ReturnUrl}")
+    private String vnp_ReturnUrl;
+
     private final PaymentRepository paymentRepository;
     private final UserRepository patientRepository;
     private final ServiceRepository serviceRepository;
@@ -45,7 +62,6 @@ public class PaymentService {
 
     private Payment.PaymentStatus getPaymentStatus(String status) {
         try {
-            System.out.println(status);
             return status != null && !status.isEmpty()
                     ? Payment.PaymentStatus.valueOf(status.toUpperCase())
                     : Payment.PaymentStatus.PENDING;
@@ -142,7 +158,7 @@ public class PaymentService {
     }
 
     @Transactional
-    public PaymentDTO createPayment(PaymentDTO paymentDTO) {
+    public PaymentDTO createPayment(PaymentDTO paymentDTO, HttpServletRequest req) {
         User patient = patientRepository.findById(paymentDTO.getPatientId())
                 .orElseThrow(() -> new NotFoundException("Patient not found"));
 
@@ -162,7 +178,16 @@ public class PaymentService {
 
         Payment savedPayment = paymentRepository.save(payment);
 
-        return new PaymentDTO(savedPayment);
+        if (savedPayment.getMethod() == Payment.PaymentMethod.BANKING) {
+            String paymentUrl = createPaymentUrl(price, savedPayment.getPaymentId(), req);
+            PaymentDTO newPaymentDTO = new PaymentDTO(savedPayment);
+            newPaymentDTO.setPaymentUrl(paymentUrl);
+
+            return newPaymentDTO;
+        } else {
+            savedPayment.setStatus(Payment.PaymentStatus.PAID);
+            return new PaymentDTO(savedPayment);
+        }
     }
 
     @Transactional
@@ -179,5 +204,107 @@ public class PaymentService {
         Payment updatedPayment = paymentRepository.save(payment);
 
         return new PaymentDTO(updatedPayment);
+    }
+
+    private String createPaymentUrl(double price, UUID paymentId, HttpServletRequest req) {
+        String vnp_Version = "2.1.0";
+        String vnp_Command = "pay";
+        String orderType = "other";
+        long amount = (long) (price * 100L);
+        String bankCode = "NCB";
+
+        String vnp_TxnRef = paymentId.toString();
+        String vnp_IpAddr = VNPayUtils.getIpAddress(req);
+
+        Map<String, String> vnp_Params = new HashMap<>();
+        vnp_Params.put("vnp_Version", vnp_Version);
+        vnp_Params.put("vnp_Command", vnp_Command);
+        vnp_Params.put("vnp_TmnCode", vnp_TmnCode);
+        vnp_Params.put("vnp_Amount", String.valueOf(amount));
+        vnp_Params.put("vnp_CurrCode", "VND");
+
+        vnp_Params.put("vnp_BankCode", bankCode);
+        vnp_Params.put("vnp_TxnRef", vnp_TxnRef);
+        vnp_Params.put("vnp_OrderInfo", "Thanh toán đơn hàng:" + vnp_TxnRef);
+        vnp_Params.put("vnp_OrderType", orderType);
+        vnp_Params.put("vnp_Locale", "vn");
+
+        vnp_Params.put("vnp_ReturnUrl", vnp_ReturnUrl);
+        vnp_Params.put("vnp_IpAddr", vnp_IpAddr);
+
+        Calendar cld = Calendar.getInstance(TimeZone.getTimeZone("Etc/GMT+7"));
+        SimpleDateFormat formatter = new SimpleDateFormat("yyyyMMddHHmmss");
+        String vnp_CreateDate = formatter.format(cld.getTime());
+        vnp_Params.put("vnp_CreateDate", vnp_CreateDate);
+
+        cld.add(Calendar.MINUTE, 15);
+        String vnp_ExpireDate = formatter.format(cld.getTime());
+        vnp_Params.put("vnp_ExpireDate", vnp_ExpireDate);
+
+        List fieldNames = new ArrayList<>(vnp_Params.keySet());
+        Collections.sort(fieldNames);
+        StringBuilder hashData = new StringBuilder();
+        StringBuilder query = new StringBuilder();
+        Iterator itr = fieldNames.iterator();
+
+        while (itr.hasNext()) {
+            String fieldName = (String) itr.next();
+            String fieldValue = vnp_Params.get(fieldName);
+            if (fieldValue != null && !fieldValue.isEmpty()) {
+                hashData.append(fieldName);
+                hashData.append('=');
+                hashData.append(URLEncoder.encode(fieldValue, StandardCharsets.US_ASCII));
+
+                query.append(URLEncoder.encode(fieldName, StandardCharsets.US_ASCII));
+                query.append('=');
+                query.append(URLEncoder.encode(fieldValue, StandardCharsets.US_ASCII));
+                if (itr.hasNext()) {
+                    query.append('&');
+                    hashData.append('&');
+                }
+            }
+        }
+        String queryUrl = query.toString();
+        String vnp_SecureHash = VNPayUtils.hmacSHA512(secretKey, hashData.toString());
+        queryUrl += "&vnp_SecureHash=" + vnp_SecureHash;
+
+        return vnp_PayUrl + "?" + queryUrl;
+    }
+
+    @Transactional
+    public Map<String, Object> checkVNPayResponse(Map<String, String> params) {
+        Map<String, String> fields = new HashMap<>();
+        Map<String, Object> response = new HashMap<>();
+
+        for (Map.Entry<String, String> entry : params.entrySet()) {
+            String fieldName = URLEncoder.encode(entry.getKey(), StandardCharsets.US_ASCII);
+            String fieldValue = URLEncoder.encode(entry.getValue(), StandardCharsets.US_ASCII);
+            if ((fieldValue != null) && (!fieldValue.isEmpty())) {
+                fields.put(fieldName, fieldValue);
+            }
+        }
+
+        String vnp_SecureHash = params.get("vnp_SecureHash");
+        fields.remove("vnp_SecureHashType");
+        fields.remove("vnp_SecureHash");
+        String signValue = VNPayUtils.hashAllFields(fields, secretKey);
+
+        if (signValue.equals(vnp_SecureHash)) {
+            if ("00".equals(params.get("vnp_TransactionStatus"))) {
+                response.put("message", "Payment Successful!");
+                response.put("success", true);
+
+                changePaymentStatus(UUID.fromString(params.get("vnp_TxnRef")), "PAID");
+            } else {
+                response.put("message", "Payment Failed!");
+                response.put("success", false);
+
+                changePaymentStatus(UUID.fromString(params.get("vnp_TxnRef")), "CANCELLED");
+            }
+        } else {
+            response.put("message", "Invalid signature!");
+            response.put("success", false);
+        }
+        return response;
     }
 }

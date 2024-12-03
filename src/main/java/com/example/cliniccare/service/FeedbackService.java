@@ -203,4 +203,17 @@ public class FeedbackService {
         feedback.setDeleteAt(LocalDateTime.now());
         feedbackRepository.save(feedback);
     }
+
+    public void deleteFeedbacks(List<UUID> ids) {
+        List<Feedback> feedbacks = feedbackRepository
+                .findAllByFeedbackIdInAndDeleteAtIsNull(ids);
+
+        if (feedbacks.isEmpty()) {
+            throw new NotFoundException("No feedbacks found for the provided IDs");
+        }
+
+        feedbacks.forEach(feedback -> feedback.setDeleteAt(LocalDateTime.now()));
+
+        feedbackRepository.saveAll(feedbacks);
+    }
 }
