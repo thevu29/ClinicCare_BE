@@ -316,10 +316,6 @@ public class ScheduleService {
         }
         schedule.setDateTime(dateTime);
 
-        if (scheduleDTO.getStatus() != null && !scheduleDTO.getStatus().isEmpty()) {
-            schedule.setStatus(getScheduleStatus(scheduleDTO.getStatus()));
-        }
-
         scheduleRepository.save(schedule);
 
         return new ScheduleDTO(schedule);

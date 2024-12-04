@@ -15,6 +15,7 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -104,15 +105,25 @@ public class AppointmentService {
             spec = spec.and(dateSpec);
         }
         if (status != null && !status.trim().isEmpty()) {
-            if (!status.equalsIgnoreCase("cancelled") && !status.equalsIgnoreCase("active")) {
-                throw new BadRequestException("Invalid status (only 'Active' or 'Cancelled' allowed)");
+            String[] allowedStatus = {"active", "cancelled", "completed"};
+
+            if (!Arrays.asList(allowedStatus).contains(status.toLowerCase())) {
+                throw new BadRequestException("Invalid status (only 'Active', 'Cancelled', or 'Completed' allowed)");
             }
 
-            spec = status.equalsIgnoreCase("cancelled") ?
-                    spec.and((root, query, cb)
-                            -> cb.isNotNull(root.get("cancelBy"))) :
-                    spec.and((root, query, cb)
-                            -> cb.isNull(root.get("cancelBy")));
+            spec = switch (status.toLowerCase()) {
+                case "active" -> spec.and((root, query, cb) -> cb.and(
+                        cb.isNull(root.get("cancelBy")),
+                        cb.notEqual(root.get("schedule").get("status"), Schedule.ScheduleStatus.COMPLETED)
+                ));
+                case "cancelled" -> spec.and((root, query, cb) -> cb.and(
+                        cb.isNotNull(root.get("cancelBy")),
+                        cb.notEqual(root.get("schedule").get("status"), Schedule.ScheduleStatus.COMPLETED)
+                ));
+                case "completed" -> spec.and((root, query, cb)
+                        -> cb.equal(root.get("schedule").get("status"), Schedule.ScheduleStatus.COMPLETED));
+                default -> spec;
+            };
         }
         if (patientId != null) {
             User patient = userRepository.findByUserIdAndDeleteAtIsNull(patientId)
@@ -167,6 +178,7 @@ public class AppointmentService {
         if (schedule.getStatus() == Schedule.ScheduleStatus.BOOKED) {
             throw new BadRequestException("Schedule is already booked");
         }
+
         if (schedule.getDateTime().isBefore(LocalDateTime.now())) {
             throw new BadRequestException("Schedule is already passed");
         }
@@ -214,6 +226,28 @@ public class AppointmentService {
         String message = generateCancellationMessage(appointmentDTO.getCancelBy(), appointment, schedule);
 
         createNotification(message, userReceiveNotification);
+
+        return new AppointmentDTO(appointment);
+    }
+
+    public AppointmentDTO completeAppointment(UUID appointmentId) {
+        Appointment appointment = appointmentRepository.findById(appointmentId)
+                .orElseThrow(() -> new NotFoundException("Appointment not found"));
+
+        if (appointment.getCancelBy() != null) {
+            throw new BadRequestException("Appointment is already cancelled");
+        }
+
+        Schedule schedule = appointment.getSchedule();
+
+        if (schedule.getDateTime().isAfter(LocalDateTime.now())) {
+            throw new BadRequestException("Appointment is not yet due");
+        }
+
+        schedule.setStatus(Schedule.ScheduleStatus.COMPLETED);
+
+        scheduleRepository.save(schedule);
+        appointmentRepository.save(appointment);
 
         return new AppointmentDTO(appointment);
     }

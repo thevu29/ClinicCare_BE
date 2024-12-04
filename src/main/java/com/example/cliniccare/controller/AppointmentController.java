@@ -165,4 +165,28 @@ public class AppointmentController {
             ));
         }
     }
+
+    @PutMapping("complete/{id}")
+    public ResponseEntity<?> completeAppointment(@PathVariable UUID id) {
+        try {
+            AppointmentDTO appointment = appointmentService.completeAppointment(id);
+
+            return ResponseEntity.status(HttpStatus.OK).body(new ApiResponse<>(
+                    true, "Complete appointment successfully", appointment
+            ));
+        } catch (NotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ApiResponse<>(
+                    false, e.getMessage(), null
+            ));
+        } catch (BadRequestException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ApiResponse<>(
+                    false, e.getMessage(), null
+            ));
+        } catch (Exception e) {
+            logger.error("Failed to complete appointment: {}", e.getMessage(), e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new ApiResponse<>(
+                    false, "Failed to complete appointment", null
+            ));
+        }
+    }
 }

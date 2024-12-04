@@ -24,6 +24,8 @@ public class AppointmentDTO {
     @NotNull(message = "Schedule ID is required", groups = {AppointmentGroup.Create.class})
     private UUID scheduleId;
 
+    private boolean isCompleted;
+
     @NotNull(message = "Patient ID is required", groups = {AppointmentGroup.Create.class})
     private UUID patientId;
 
@@ -44,6 +46,7 @@ public class AppointmentDTO {
         this.patientName = appointment.getPatientName();
         this.patientPhone = appointment.getPatientPhone();
         this.scheduleId = appointment.getSchedule().getScheduleId();
+        this.isCompleted = appointment.getSchedule().getStatus().name().equalsIgnoreCase("completed");
         this.patientId = appointment.getPatient().getUserId();
         this.date = appointment.getDate();
         this.cancelBy = appointment.getCancelBy() != null ? appointment.getCancelBy().getUserId() : null;
