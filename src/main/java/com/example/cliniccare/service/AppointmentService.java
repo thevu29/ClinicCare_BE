@@ -178,7 +178,6 @@ public class AppointmentService {
         if (schedule.getStatus() == Schedule.ScheduleStatus.BOOKED) {
             throw new BadRequestException("Schedule is already booked");
         }
-
         if (schedule.getDateTime().isBefore(LocalDateTime.now())) {
             throw new BadRequestException("Schedule is already passed");
         }
@@ -255,5 +254,16 @@ public class AppointmentService {
         appointmentRepository.save(appointment);
 
         return new AppointmentDTO(appointment);
+    }
+
+    public long getAppointmentCountForMonth(Integer month, Integer year) {
+        if (month == null || year == null) {
+            throw new BadRequestException("Please provide month and year");
+        }
+        if (month < 1 || month > 12) {
+            throw new BadRequestException("Invalid month. Please provide a value between 1 and 12.");
+        }
+
+        return appointmentRepository.countAppointmentsByMonth(month, year);
     }
 }

@@ -106,6 +106,15 @@ public class UserService {
         return new UserDTO(user);
     }
 
+    public List<UserDTO> getUserByRole(String role) {
+        List<User> users = userRepository.findByRoleNameAndDeleteAtIsNull(role);
+        List<UserDTO> userDTOS = new ArrayList<>();
+        for (User user : users) {
+            userDTOS.add(new UserDTO(user));
+        }
+        return userDTOS;
+    }
+
     public UserDTO createUser(UserFormDTO userDTO) throws IOException {
         if (userRepository.existsByEmailAndDeleteAtIsNull(userDTO.getEmail())) {
             throw new BadRequestException("Email already exists");
@@ -201,5 +210,16 @@ public class UserService {
         user.setEmail(null);
         user.setDeleteAt(LocalDateTime.now());
         userRepository.save(user);
+    }
+
+    public long getUserRegistrationCountForMonth(Integer month, Integer year) {
+        if (month == null || year == null) {
+            throw new BadRequestException("Please provide month and year");
+        }
+        if (month < 1 || month > 12) {
+            throw new BadRequestException("Invalid month. Please provide a value between 1 and 12.");
+        }
+
+        return userRepository.countUsersWithUserRoleOnlyByMonth(month, year);
     }
 }

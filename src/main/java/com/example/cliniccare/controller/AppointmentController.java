@@ -189,4 +189,26 @@ public class AppointmentController {
             ));
         }
     }
+
+    @GetMapping("/statistics")
+    public ResponseEntity<?> getAppointmentStatistics(
+            @RequestParam(required = false) Integer month,
+            @RequestParam(required = false) Integer year
+    ) {
+        try {
+            long count = appointmentService.getAppointmentCountForMonth(month, year);
+            return ResponseEntity.ok(new ApiResponse<>(
+                    true, "Get appointment statistics successfully", count
+            ));
+        } catch (BadRequestException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ApiResponse<>(
+                    false, e.getMessage(), null
+            ));
+        } catch (Exception e) {
+            logger.error("Failed to retrieve appointment statistics: {}", e.getMessage(), e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new ApiResponse<>(
+                    false, "Failed to get appointment statistics", null
+            ));
+        }
+    }
 }

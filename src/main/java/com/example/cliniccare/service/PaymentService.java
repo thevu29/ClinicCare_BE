@@ -135,9 +135,8 @@ public class PaymentService {
 
         int totalPages = payments.getTotalPages();
         long totalElements = payments.getTotalElements();
-        int take = payments.getNumberOfElements();
-
         List<PaymentDTO> paymentDTOs = payments.map(PaymentDTO::new).toList();
+        int take = payments.getNumberOfElements();
 
         return new PaginationResponse<>(
                 true,
@@ -308,5 +307,19 @@ public class PaymentService {
             response.put("success", false);
         }
         return response;
+    }
+
+    public double getMonthlyRevenue(Integer month, Integer year) {
+        if (month == null || year == null) {
+            throw new BadRequestException("Please provide month and year");
+        }
+        if (month < 1 || month > 12) {
+            throw new BadRequestException("Invalid month. Please provide a value between 1 and 12.");
+        }
+
+        Double profit = paymentRepository.calculateMonthlyProfit(month, year);
+        System.out.println(profit);
+
+        return profit != null ? profit : 0;
     }
 }

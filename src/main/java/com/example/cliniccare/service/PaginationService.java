@@ -15,7 +15,7 @@ public class PaginationService {
 
     public Pageable getDoctorProfilePageable(PaginationDTO paginationQuery) {
         String sortBy = paginationQuery.sortBy;
-        if ("name".equals(sortBy) || "email".equals(sortBy)) {
+        if ("name".equals(sortBy) || "email".equals(sortBy) || "phone".equals(sortBy)) {
             sortBy = "user." + sortBy;
         }
 

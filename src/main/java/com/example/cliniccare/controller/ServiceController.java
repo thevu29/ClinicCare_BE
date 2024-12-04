@@ -2,6 +2,7 @@ package com.example.cliniccare.controller;
 
 import com.example.cliniccare.dto.PaginationDTO;
 import com.example.cliniccare.dto.ServiceDTO;
+import com.example.cliniccare.dto.TopServiceDTO;
 import com.example.cliniccare.exception.BadRequestException;
 import com.example.cliniccare.exception.NotFoundException;
 import com.example.cliniccare.interfaces.ServiceFormGroup;
@@ -239,6 +240,25 @@ public class ServiceController {
             logger.error("Failed to delete service: {}", e.getMessage(), e);
             return ResponseEntity.internalServerError().body(new ApiResponse<>(
                     false, "Failed to delete service", null
+            ));
+        }
+    }
+
+    @GetMapping("/top-services")
+    public ResponseEntity<?> getTopServices(@RequestParam int top) {
+        try {
+            List<TopServiceDTO> topServices = serviceManager.getTopServices(top);
+            return ResponseEntity.ok(new ApiResponse<>(
+                    true, "Get top services successfully", topServices
+            ));
+        } catch (BadRequestException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ApiResponse<>(
+                    false, e.getMessage(), null
+            ));
+        } catch (Exception e) {
+            logger.error("Failed to get top services: {}", e.getMessage(), e);
+            return ResponseEntity.internalServerError().body(new ApiResponse<>(
+                    false, "Failed to get top services", null
             ));
         }
     }

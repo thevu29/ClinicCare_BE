@@ -183,4 +183,19 @@ public class PaymentController {
             ));
         }
     }
+
+    @GetMapping("/revenues")
+    public ResponseEntity<ApiResponse<Double>> getMonthlyRevenue(
+            @RequestParam Integer month,
+            @RequestParam Integer year
+    ) {
+        double revenue = paymentService.getMonthlyRevenue(month, year);
+
+        ApiResponse<Double> response = new ApiResponse<>(
+                true,
+                "Get monthly revenue successfully",
+                revenue
+        );
+        return ResponseEntity.ok(response);
+    }
 }

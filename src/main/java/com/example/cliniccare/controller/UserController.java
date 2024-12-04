@@ -42,7 +42,7 @@ public class UserController {
             return ResponseEntity.ok(new ApiResponse<>(
                     true, "Get all patients successfully", patients
             ));
-        }  catch (Exception e) {
+        } catch (Exception e) {
             logger.error("Failed to get all patients: {}", e.getMessage(), e);
             return ResponseEntity.internalServerError().body(new ApiResponse<>(
                     false, e.getMessage(), null
@@ -98,6 +98,26 @@ public class UserController {
             ));
         }
     }
+
+    @GetMapping("/role/{roleName}")
+    public ResponseEntity<?> getUserByRole(@PathVariable String roleName) {
+        try {
+            List<UserDTO> users = userService.getUserByRole(roleName);
+            return ResponseEntity.ok(new ApiResponse<>(
+                    true, "Get user by role successfully", users
+            ));
+        } catch (NotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ApiResponse<>(
+                    false, e.getMessage(), null
+            ));
+        } catch (Exception e) {
+            logger.error("Failed to get user by role: {}", e.getMessage(), e);
+            return ResponseEntity.internalServerError().body(new ApiResponse<>(
+                    false, e.getMessage(), null
+            ));
+        }
+    }
+
 
     @PostMapping
     public ResponseEntity<?> createUser(
@@ -189,6 +209,32 @@ public class UserController {
             logger.error("Failed to delete user: {}", e.getMessage(), e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new ApiResponse<>(
                     false, "Failed to delete user", null
+            ));
+        }
+    }
+
+    @GetMapping("/statistics")
+    public ResponseEntity<ApiResponse<Long>> getUserRegistrationStatistics(
+            @RequestParam Integer month,
+            @RequestParam Integer year
+    ) {
+        try {
+            long count = userService.getUserRegistrationCountForMonth(month, year);
+            return ResponseEntity.ok(new ApiResponse<>(
+                    true,
+                    "Get user registration statistics successfully",
+                    count
+            ));
+        } catch (BadRequestException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ApiResponse<>(
+                    false, e.getMessage(), null
+            ));
+        } catch (Exception e) {
+            logger.error("Failed to retrieve user registration statistics: {}", e.getMessage(), e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new ApiResponse<>(
+                    false,
+                    "Failed to retrieve user registration statistics",
+                    null
             ));
         }
     }
