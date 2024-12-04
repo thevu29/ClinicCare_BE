@@ -56,14 +56,14 @@ public class FeedbackController {
             @RequestParam(defaultValue = "desc") String order,
             @RequestParam(defaultValue = "") String search,
             @RequestParam(defaultValue = "") String date,
-            @RequestParam(required = false) String doctorId,
-            @RequestParam(required = false) String patientId,
-            @RequestParam(required = false) String serviceId
+            @RequestParam(required = false) UUID userId,
+            @RequestParam(required = false) UUID patientId,
+            @RequestParam(required = false) UUID serviceId
     ) {
         try {
             PaginationDTO paginationDTO = new PaginationDTO(page, size, sortBy, order);
             PaginationResponse<List<FeedbackDTO>> response = feedbackService
-                    .getFeedbacks(paginationDTO, search, date, doctorId, patientId, serviceId);
+                    .getFeedbacks(paginationDTO, search, date, userId, patientId, serviceId);
 
             return ResponseEntity.ok(response);
         } catch (NotFoundException e) {
@@ -174,6 +174,24 @@ public class FeedbackController {
             logger.error("Failed to delete feedback: {}", e.getMessage(), e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(new ApiResponse<>(false, "Failed to delete feedback", null));
+        }
+    }
+
+    @DeleteMapping("/delete")
+    public ResponseEntity<?> deleteFeedbacks(@RequestBody List<UUID> ids) {
+        try {
+            feedbackService.deleteFeedbacks(ids);
+            return ResponseEntity.ok(new ApiResponse<>(
+                    true, "Delete feedbacks successfully", null
+            ));
+        } catch (NotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(new ApiResponse<>(false, e.getMessage(), null));
+        }
+        catch (Exception e) {
+            logger.error("Failed to delete feedbacks: {}", e.getMessage(), e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new ApiResponse<>(false, "Failed to delete feedbacks", null));
         }
     }
 }

@@ -82,7 +82,7 @@ public class AppointmentService {
             String date,
             String status,
             UUID patientId,
-            UUID doctorId
+            UUID userId
     ) {
         Pageable pageable = paginationService.getPageable(paginationDTO);
 
@@ -121,8 +121,8 @@ public class AppointmentService {
             spec = spec.and((root, query, cb) ->
                     cb.equal(root.get("patient").get("userId"), patient.getUserId()));
         }
-        if (doctorId != null) {
-            DoctorProfile doctor = doctorProfileRepository.findByDoctorProfileIdAndDeleteAtIsNull(doctorId)
+        if (userId != null) {
+            DoctorProfile doctor = doctorProfileRepository.findByUser_UserIdAndDeleteAtIsNull(userId)
                     .orElseThrow(() -> new NotFoundException("Doctor not found"));
 
             spec = spec.and((root, query, cb)
@@ -166,6 +166,9 @@ public class AppointmentService {
         }
         if (schedule.getStatus() == Schedule.ScheduleStatus.BOOKED) {
             throw new BadRequestException("Schedule is already booked");
+        }
+        if (schedule.getDateTime().isBefore(LocalDateTime.now())) {
+            throw new BadRequestException("Schedule is already passed");
         }
 
         schedule.setStatus(Schedule.ScheduleStatus.BOOKED);

@@ -13,7 +13,6 @@ import java.util.UUID;
 
 @Repository
 public interface PaymentRepository extends JpaRepository<Payment, UUID>, JpaSpecificationExecutor<Payment> {
-    List<Payment> findAllByPatient_UserIdOrderByDateDesc(UUID patientId);
 
     @Query("SELECT SUM(p.totalPrice) FROM Payment p WHERE MONTH(p.date) = :month AND YEAR(p.date) = :year")
     Double calculateMonthlyProfit(@Param("month") int month, @Param("year") int year);

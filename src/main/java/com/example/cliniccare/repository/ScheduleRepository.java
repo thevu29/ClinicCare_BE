@@ -13,4 +13,5 @@ import java.util.UUID;
 public interface ScheduleRepository extends JpaRepository<Schedule, UUID>, JpaSpecificationExecutor<Schedule> {
     List<Schedule> findAllByOrderByDateTimeDesc();
     List<Schedule> findByDateTimeBetween(LocalDateTime startDateTime, LocalDateTime endDateTime);
+    List<Schedule> findAllByDoctor_User_UserIdOrderByDateTimeDesc(UUID userId);
 }

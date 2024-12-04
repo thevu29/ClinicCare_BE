@@ -93,7 +93,12 @@ public class DateQueryParser<T> {
         LocalDate date = parseAndValidateDate(query);
 
         if (root.get(dateFieldName).getJavaType() == LocalDateTime.class) {
-            return cb.equal(cb.function("DATE", LocalDate.class, root.get(dateFieldName)), date);
+            LocalDateTime startOfDay = date.atStartOfDay();
+            LocalDateTime endOfDay = date.plusDays(1).atStartOfDay();
+            return cb.and(
+                    cb.greaterThanOrEqualTo(root.get(dateFieldName), startOfDay),
+                    cb.lessThan(root.get(dateFieldName), endOfDay)
+            );
         } else {
             return cb.equal(root.get(dateFieldName), date);
         }

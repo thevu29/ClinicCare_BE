@@ -14,6 +14,7 @@ import java.util.UUID;
 @Repository
 public interface ServiceRepository extends JpaRepository<Service, UUID>, JpaSpecificationExecutor<Service> {
     List<Service> findAllByDeleteAtIsNull();
+    List<Service> findAllByDeleteAtIsNullAndNameContaining(String name);
     Optional<Service> findByServiceId(UUID id);
     Optional<Service> findByServiceIdAndDeleteAtIsNull(UUID id);
 }

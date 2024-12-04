@@ -8,6 +8,7 @@ import com.example.cliniccare.response.ApiResponse;
 import com.example.cliniccare.response.PaginationResponse;
 import com.example.cliniccare.service.PaymentService;
 import com.example.cliniccare.validation.Validation;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -55,7 +56,7 @@ public class PaymentController {
             @RequestParam(defaultValue = "10") int size,
             @RequestParam(defaultValue = "date") String sortBy,
             @RequestParam(defaultValue = "desc") String order,
-            @RequestParam(defaultValue = "desc") String search,
+            @RequestParam(defaultValue = "") String search,
             @RequestParam(required = false) UUID patientId,
             @RequestParam(required = false) UUID serviceId,
             @RequestParam(required = false) String status,
@@ -108,14 +109,15 @@ public class PaymentController {
     @PostMapping
     public ResponseEntity<?> createPayment(
             @Valid @RequestBody PaymentDTO paymentDTO,
-            BindingResult bindingResult
+            BindingResult bindingResult,
+            HttpServletRequest req
     ) {
         try {
             if (Validation.validateBody(bindingResult) != null) {
                 return Validation.validateBody(bindingResult);
             }
 
-            PaymentDTO payment = paymentService.createPayment(paymentDTO);
+            PaymentDTO payment = paymentService.createPayment(paymentDTO, req);
 
             return ResponseEntity.status(HttpStatus.CREATED).body(new ApiResponse<>(
                     true, "Payment created successfully", payment
@@ -128,6 +130,28 @@ public class PaymentController {
             logger.error("Failed to create payment: {}", e.getMessage(), e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new ApiResponse<>(
                     false, "Failed to create payment", null
+            ));
+        }
+    }
+
+    @GetMapping("/check-response")
+    public ResponseEntity<?> checkVNPayResponse(
+            @RequestParam Map<String, String> params
+    ) {
+        try {
+            Map<String, Object> response = paymentService.checkVNPayResponse(params);
+            if ((Boolean) response.get("success")) {
+                return ResponseEntity.ok(new ApiResponse<>(
+                        true, (String) response.get("message"), null
+                ));
+            }
+            return ResponseEntity.ok(new ApiResponse<>(
+                    false, (String) response.get("message"), null
+            ));
+        } catch (Exception e) {
+            logger.error("Failed to check VNPay response: {}", e.getMessage(), e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new ApiResponse<>(
+                    false, "Failed to check VNPay response", null
             ));
         }
     }

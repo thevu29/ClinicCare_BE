@@ -55,8 +55,12 @@ public class ServiceManager {
         }
     }
 
-    public List<ServiceDTO> getAllServices() {
-        return serviceRepository.findAllByDeleteAtIsNull().stream().map(ServiceDTO::new).toList();
+    public List<ServiceDTO> getAllServices(String search) {
+        List<Service> services = search != null && !search.trim().isEmpty()
+                ? serviceRepository.findAllByDeleteAtIsNullAndNameContaining(search)
+                : serviceRepository.findAllByDeleteAtIsNull();
+
+        return services.stream().map(ServiceDTO::new).toList();
     }
 
     public PaginationResponse<List<ServiceDTO>> getServices(
