@@ -219,6 +219,11 @@ public class AppointmentService {
         appointmentRepository.save(appointment);
 
         Schedule schedule = appointment.getSchedule();
+
+        if (schedule.getStatus() == Schedule.ScheduleStatus.COMPLETED) {
+            throw new BadRequestException("Appointment is already completed");
+        }
+
         schedule.setStatus(Schedule.ScheduleStatus.AVAILABLE);
         scheduleRepository.save(schedule);
 
