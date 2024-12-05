@@ -1,5 +1,6 @@
 package com.example.cliniccare.service;
 
+import com.google.cloud.storage.Blob;
 import com.google.cloud.storage.Bucket;
 import com.google.firebase.cloud.StorageClient;
 import org.springframework.stereotype.Service;
@@ -22,7 +23,10 @@ public class FirebaseStorageService {
         if (oldImageUrl != null && !oldImageUrl.isEmpty()) {
             String oldFileName = oldImageUrl.substring(oldImageUrl.lastIndexOf("/") + 1, oldImageUrl.indexOf("?"));
             Bucket bucket = StorageClient.getInstance().bucket();
-            bucket.get(oldFileName).delete();
+            Blob oldBlob = bucket.get(oldFileName);
+            if (oldBlob != null) {
+                oldBlob.delete();
+            }
         }
 
         return uploadImage(file);
