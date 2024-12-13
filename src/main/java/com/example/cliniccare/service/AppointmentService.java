@@ -9,11 +9,15 @@ import com.example.cliniccare.repository.*;
 import com.example.cliniccare.response.PaginationResponse;
 import com.example.cliniccare.utils.DateQueryParser;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.List;
@@ -28,6 +32,7 @@ public class AppointmentService {
     private final NotificationRepository notificationRepository;
     private final DoctorProfileRepository doctorProfileRepository;
     private final PaginationService paginationService;
+    private final EmailService emailService;
 
     @Autowired
     public AppointmentService(
@@ -36,7 +41,8 @@ public class AppointmentService {
             UserRepository userRepository,
             NotificationRepository notificationRepository,
             DoctorProfileRepository doctorProfileRepository,
-            PaginationService paginationService
+            PaginationService paginationService,
+            EmailService emailService
     ) {
         this.appointmentRepository = appointmentRepository;
         this.scheduleRepository = scheduleRepository;
@@ -44,6 +50,7 @@ public class AppointmentService {
         this.notificationRepository = notificationRepository;
         this.doctorProfileRepository = doctorProfileRepository;
         this.paginationService = paginationService;
+        this.emailService = emailService;
     }
 
     private void createNotification(String message, User user) {
@@ -198,7 +205,31 @@ public class AppointmentService {
                 schedule.getDoctor().getUser()
         );
 
+        sendAppointmentEmail(appointment);
+
         return new AppointmentDTO(appointment);
+    }
+
+    private void sendAppointmentEmail(Appointment appointment) {
+        try {
+            ClassPathResource resource = new ClassPathResource("templates/AppointmentTemplate.html");
+            String template = new String(Files.readAllBytes(Paths.get(resource.getURI())));
+
+            String emailContent = template
+                    .replace("{appointmentId}", appointment.getAppointmentId().toString())
+                    .replace("{patientName}", appointment.getPatientName())
+                    .replace("{patientPhone}", appointment.getPatientPhone())
+                    .replace("{date}", appointment.getSchedule().getDateTime().toString())
+                    .replace("{serviceName}", appointment.getSchedule().getService().getName());
+
+            emailService.sendHTMlEmail(
+                    appointment.getPatient().getEmail(),
+                    "Appointment Confirmation",
+                    emailContent
+            );
+        } catch (IOException e) {
+            throw new RuntimeException("Failed to load email template", e);
+        }
     }
 
     public AppointmentDTO cancelAppointment(UUID appointmentId, AppointmentDTO appointmentDTO) {

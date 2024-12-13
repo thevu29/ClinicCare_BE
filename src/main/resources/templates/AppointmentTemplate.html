@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .appointment {
+            background-color: #f4f4f4;
+            padding: 20px;
+            border-radius: 5px;
+        }
+        .appointment table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .appointment td {
+            padding: 10px;
+            border-bottom: 1px solid #ddd;
+        }
+    </style>
+    <title></title>
+</head>
+<body>
+<div class="appointment">
+    <table>
+        <tr>
+            <td><strong>Mã lịch hẹn:</strong></td>
+            <td>{appointmentId}</td>
+        </tr>
+        <tr>
+            <td><strong>Bệnh nhân:</strong></td>
+            <td>{patientName}</td>
+        </tr>
+        <tr>
+            <td><strong>Số điện thoại:</strong></td>
+            <td>{patientPhone}</td>
+        </tr>
+        <tr>
+            <td><strong>Ngày hẹn:</strong></td>
+            <td>{date}</td>
+        </tr>
+        <tr>
+            <td><strong>Dịch vụ:</strong></td>
+            <td>{serviceName}</td>
+        </tr>
+    </table>
+</div>
+</body>
+</html>
