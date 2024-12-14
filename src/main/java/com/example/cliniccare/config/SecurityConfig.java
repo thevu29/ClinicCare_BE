@@ -51,7 +51,8 @@ public class SecurityConfig {
                                 "/api/auth/register",
                                 "/oauth2/authorization/google",
                                 "/login/oauth2/code/google",
-                                "/api/auth/oauth2-data"
+                                "/api/auth/oauth2-data",
+                                "/api/ai/chat"
                         ).permitAll()
                         .requestMatchers(HttpMethod.GET,
                                 "/api/schedules/**",
