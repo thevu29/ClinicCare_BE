@@ -110,7 +110,7 @@ Create an `application.properties` file based on application-example.properties 
 ---
 
 ## Firebase Configuration
-Create project in https://console.firebase.google.com/u/0/ and create file serviceAccountKey.json
+Create project in https://console.firebase.google.com/u/0/ and create file `serviceAccountKey.json`
 
 ---
 
